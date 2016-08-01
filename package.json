@@ -1,0 +1,42 @@
+{
+  "name": "react-interactive",
+  "version": "0.0.0",
+  "description": "React interactive component",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "rm -rf lib && babel src -d lib",
+    "prepublish": "npm run build"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafrex/react-interactive.git"
+  },
+  "keywords": [
+    "react",
+    "interactive",
+    "touch",
+    "hover",
+    "active",
+    "click"
+  ],
+  "author": "Rafael Pedicini <code@rafrex.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafrex/react-interactive/issues"
+  },
+  "homepage": "https://github.com/rafrex/react-interactive#readme",
+  "peerDependencies": {
+    "react": "^15.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.11.1",
+    "babel-preset-stage-1": "^6.5.0",
+    "react": "^15.3.0"
+  }
+}
