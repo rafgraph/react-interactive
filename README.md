@@ -25,7 +25,7 @@ Note that there are no default values for any prop, and the only required prop i
 | `forceState` | state object | `{ state: 'normal', focus: false }` | Force enter this state. An object with keys for `state` (one of the 4 mutually exclusive states as a string) and `focus` (as a boolean). Can be useful for dealing with edge cases where the browser doesn't fire the necessary event. |
 | `style` | style object | `{ margin: '10px' }` | Styles that are always applied. Styles are merged with state styles. State styles take precedence when there are conflicts. |
 | `className` | string | `"some-class other-class"` | Classes that are always applied to the element, and are merged with state classes if provided. |
-| `onStateChange` | function | `function({ prevState, nextState }) {...}` | Function called on each state change. Receives an object with `prevState` and `nextState` keys as the sole argument. The value of each key is a string representing one of the four states: `normal`, `hover`, `active`, `touchActive`. This can be used instead of, or along with, the `onEnter` and `onLeave` callbacks for each state. |
+| `onStateChange` | function | `function({ prevState, nextState }) {...}` | Function called on each state change. Receives an object with `prevState` and `nextState` keys as the sole argument. The value of each key is a state object with values for `state` (one of the 4 mutually exclusive states as a string) and `focus` (as a boolean), for example `{ state: 'hover', focus: false }`. This can be used instead of, or along with, the `onEnter` and `onLeave` callbacks for each state. |
 | `onClick` | function | `function(event) {...}` | Function called for both mouse clicks and touch taps (without any delay). The event passed in will either be a `click` event or a `touchend` event. |
 | `onMouseClick` | function | `function(event) {...}` | Function called only on mouse clicks. Not called for click events generated from touches. Event passed in is a `click` event. |
 | `onTap` | function | `function(event) {...}` | Function called on touch tap. Event passed in is a `touchend` event. |
@@ -44,7 +44,7 @@ Note that there are no default values for any prop, and the only required prop i
 Note that if you pass in other event handlers, e.g. `onTouchStart`, they will be called after any React Interactive state changes and callbacks.
 
 #### Merging styles and classes
-- Styles have the have the following precedence when merged:
+- Styles have the following precedence when merged:
   1. `focus` state style if in the focus state
   2. One of the 4 mutually exclusive states' style (`normal`, `hover`, `active`, or `touchActive`)
   3. The `style` prop
