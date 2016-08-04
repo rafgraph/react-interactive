@@ -1,23 +1,27 @@
 # React Interactive
 
-Interactive component for React with 4 independent states (is a state machine, can only be in one of the 4 at any given time):
-- `normal`
-- `hover`
-- `active`
-- `touchActive`
+Interactive state machine as a React component with 8 total states. There are 4 mutually exclusive states, plus 1 boolean state that can be combined with any of the other 4.
+- The 4 mutually exclusive states are:
+  - `normal`
+  - `hover`
+  - `active`
+  - `touchActive`
+- The 1 boolean state is:
+  - `focus`
 
 ## API
 
 ### API for `<Interactive />`
 Note that there are no default values for any prop, and the only required prop is `as`.
 
-| Prop Name | Type | Example | Description |
+| Prop | Type | Example | Description |
 |:----------|:-----|:--------|:------------|
 | `as` | string or component class | `"div"` or `MyComponent` | Html tag name as a string, or a React component class (Interactive's callbacks are passed down as props to your component). **This is required.** |
-| `normal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: {...}, className: 'some-clase', onEnter: function(state){...}, onLeave: function(state){...}, }` <br> or <br> `'hover'` | Style or options object for `normal` state, or a string indicating a state to match. If it's an object, it can be either a regular style object, or an options object with any of these four keys: `style`, `className`, `onEnter`, `onLeave`. If it's an options object, the style value is a style object and is merged with, and takes precedence over, the style prop; the className value is a string of class names and is merged with the className prop; the onEnter and onLeave values are functions that are called when transitioning to and from the state, respectively, and receive the state as a string as their only argument. If it's a string, it must indicate one of the other states whose value is an object, e.g. `hover`, and that state's object will be used for both states. |
+| `normal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: {...}, className: 'some-clase', onEnter: function(state){...}, onLeave: function(state){...}, }` <br> or <br> `'hover'` | Style or options object for `normal` state, or a string indicating a state to match. If it's an object, it can be either a regular style object, or an options object with any of these four keys: `style`, `className`, `onEnter`, `onLeave`. If it's an options object, the style value is a style object and is merged with both the style prop (takes precedence over) and the focus state style (does not takes precedence over); the className value is a string of class names and is merged with the className prop; the onEnter and onLeave values are functions that are called when transitioning to and from the state, respectively, and receive the state as a string as their only argument. If it's a string, it must indicate one of the other states whose value is an object, e.g. `hover`, and that state's object will be used for both states. |
 | `hover` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'green' }` <br> or... (same as above) | Same as above, but for the `hover` state. |
 | `active` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as above, but for the `active` state.  |
 | `touchActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'blue' }` <br> or... (same as above) | Same as above, but for the `touchActive` state. |
+| `focus` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ border: '2px dotted green' }` <br> or... (same as above) | Same as above, except when the `focus` state style is merged with the style prop and one of the mutually exclusive state styles, the focus state style takes precedence over both. |
 | `style` | style object | `{ margin: '10px' }` | Styles that are always applied. Styles are merged with state styles. State styles take precedence when there are conflicts. |
 | `className` | string | `"some-class other-class"` | Classes that are always applied to the element, and are merged with state classes if provided. |
 | `onStateChange` | function | `function({ prevState, nextState }) {...}` | Function called on each state change. Receives an object with `prevState` and `nextState` keys as the sole argument. The value of each key is a string representing one of the four states: `normal`, `hover`, `active`, `touchActive`. This can be used instead of, or along with, the `onEnter` and `onLeave` callbacks for each state. |
@@ -38,7 +42,17 @@ Note that there are no default values for any prop, and the only required prop i
 
 Note that if you pass in other event handlers, e.g. `onTouchStart`, they will be called after any React Interactive state changes and callbacks.
 
-### API for children
+#### Merging styles and classes
+- Styles have the have the following precedence when merged:
+  1. `focus` state style if in the focus state
+  2. One of the 4 mutually exclusive states' style (`normal`, `hover`, `active`, or `touchActive`)
+  3. The `style` prop
+- Classes are merged as a union without precedence.
+  - `focus` state classes if in the focus state
+  - One of the 4 mutually exclusive states' classes (`normal`, `hover`, `active`, or `touchActive`)
+  - The `className` prop
+
+### API for children - TODO
 For example, `<Interactive as="div"><div showOnParent="hover">foo</div></Interactive>`
 
 | Prop Name | Type | Default | Values | Example | Description |
