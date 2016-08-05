@@ -28,7 +28,6 @@
   "bugs": {
     "url": "https://github.com/rafrex/react-interactive/issues"
   },
-  "homepage": "https://github.com/rafrex/react-interactive#readme",
   "peerDependencies": {
     "react": "^15.0.0"
   },
