@@ -9,6 +9,20 @@ Interactive state machine as a React component with 8 total states. There are 4 
 - The 1 boolean state is:
   - `focus`
 
+#### Basic Example
+```javascript
+<Interactive
+  as="div"
+  normal={{ color: 'black' }}
+  hover={{ color: 'green' }}
+  active={{ color: 'red' }}
+  touchActive={{ color: 'blue' }}
+  focus={{ border: '2px dotted green' }}
+  style={{ fontSize: '16px', border: '1px solid black' }}
+  onClick={handleClick}
+/>
+```
+
 ## API
 
 ### API for `<Interactive />`
