@@ -29,7 +29,7 @@ Interactive state machine as a React component with 8 total states. There are 4 
 Note that there are no default values for any prop, and the only required prop is `as`.
 
 | Prop | Type | Example | Description |
-|:----------|:-----|:--------|:------------|
+|:-----|:-----|:--------|:------------|
 | `as` | string or component class | `"div"` or `MyComponent` | Html tag name as a string, or a React component class (Interactive's callbacks are passed down as props to your component). **This is required.** |
 | `normal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: {...}, className: 'some-clase', onEnter: function(state){...}, onLeave: function(state){...}, }` <br> or <br> `'hover'` | Style or options object for `normal` state, or a string indicating a state to match. If it's an object, it can be either a regular style object, or an options object with any of these four keys: `style`, `className`, `onEnter`, `onLeave`. If it's an options object, the style value is a style object and is merged with both the style prop (takes precedence over) and the focus state style (does not takes precedence over); the className value is a string of class names and is merged with the className prop; the onEnter and onLeave values are functions that are called when transitioning to and from the state, respectively, and receive the state as a string as their only argument (are called after `setState` finishes). If it's a string, it must indicate one of the other states whose value is an object, e.g. `hover`, and that state's object will be used for both states. |
 | `hover` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'green' }` <br> or... (same as above) | Same as above, but for the `hover` state. |
@@ -51,7 +51,7 @@ Note that there are no default values for any prop, and the only required prop i
   1. `onMouseClick` or `onTap`
   * `onClick`
 * `onStateChange`
-* `setState` for Interactive is called next, with the following hooks passed in as a callback to `setState`, after `setState` finishes they will be called in the follow order:
+* `setState` for Interactive is called next, with the following hooks passed in as a callback to `setState`, after `setState` finishes they will be called in the following order:
   1. `onLeave` callback for state being left
   * `onEnter` callback for state being entered
 
