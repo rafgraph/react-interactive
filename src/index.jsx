@@ -65,6 +65,17 @@ class ReactInteractive extends React.Component {
     return listeners;
   }
 
+  computeState() {
+    const { mouseOn, buttonDown, touchDown, focus } = this.track;
+    const focusKeyDown = focus && (this.track.spaceKeyDown || this.track.enterKeyDown);
+    const newState = { focus };
+    if (touchDown) newState.iState = 'touchActive';
+    else if (!mouseOn && !focusKeyDown) newState.iState = 'normal';
+    else if (mouseOn && !buttonDown && !focusKeyDown) newState.iState = 'hover';
+    else if ((mouseOn && buttonDown) || focusKeyDown) newState.iState = 'active';
+    return newState;
+  }
+
   handleEvent = (e) => {
     console.log(e.type);
     console.log(e);
@@ -139,19 +150,22 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    // TODO
+    const newState = this.computeState();
+    if ((newState.iState !== this.state.iState) || (newState.focus !== this.state.focus)) {
+      this.setState(newState);
+    }
   }
 
   handleHybridMouseEvent = (e) => {
     console.log(e.type);
-    !this.track.touchDown && (Date.now() - this.track.touchEndTime > 600) && this.handleEvent(e);
+    !this.track.touchDown && ((Date.now() - this.track.touchEndTime) > 600) && this.handleEvent(e);
   }
 
   render() {
     const { as } = this.props;
-    const children = this.state.iState; // for testing purposes
+    const children = `${this.state.iState}-focus:${this.state.focus}`; // for testing purposes
     const props = this.listeners;
-    props.tabIndex = 1;
+    // props.tabIndex = 1;
     return React.createElement(as, props, children);
   }
 }
