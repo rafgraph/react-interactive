@@ -15,6 +15,16 @@ class ReactInteractive extends React.Component {
 
   constructor(props) {
     super(props);
+    this.track = {
+      touchStartTime: Date.now(),
+      touchEndTime: Date.now(),
+      touchDown: false,
+      mouseOn: false,
+      buttonDown: false,
+      focus: false,
+      spaceKeyDown: false,
+      enterKeyDown: false,
+    }
     this.state = {
       iState: 'normal',
       focus: false,
