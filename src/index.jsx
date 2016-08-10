@@ -13,8 +13,25 @@ class ReactInteractive extends React.Component {
     ]),
   }
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      iState: 'normal',
+      focus: false,
+    };
+  }
+
+  handleEvent = (e) => {
+    console.log(e.type);
+  }
+
   render() {
-    const { as, children, ...props } = this.props;
+    const { as } = this.props;
+    const children = this.state.iState; // for testing purposes
+    const props = {
+      onMouseEnter: this.handleEvent,
+      onTouchStart: this.handleEvent,
+    };
     return React.createElement(as, props, children);
   }
 }
