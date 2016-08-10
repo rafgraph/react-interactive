@@ -100,16 +100,22 @@ class ReactInteractive extends React.Component {
         this.props.onTouchStart && this.props.onTouchStart(e);
         this.track.touchDown = true;
         this.track.touchStartTime = Date.now();
+        this.track.mouseOn = false;
+        this.track.buttonDown = false;
         break;
       case 'touchend':
         this.props.onTouchEnd && this.props.onTouchEnd(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
+        this.track.mouseOn = false;
+        this.track.buttonDown = false;
         break;
       case 'touchcancel':
         this.props.onTouchCancel && this.props.onTouchCancel(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
+        this.track.mouseOn = false;
+        this.track.buttonDown = false;
         break;
       case 'focus':
         this.props.onFocus && this.props.onFocus(e);
