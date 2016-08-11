@@ -89,9 +89,9 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
 | Interactive state | Mouse, touch and keyboard states |
 |:------------------|:---------------------------------|
 | *base styles* | *Not an interactive state, always applied, everything merges with them* |
-| normal | `!mouseOn && !mouseDown && !touchDown && !focusKeyDown` |
-| hover | `mouseOn && !mouseDown && !touchDown && !focusKeyDown` |
-| active | `(mouseDown && mouseOn && !touchDown)` &#124;&#124; `(focusKeyDown && !touchDown)` |
+| normal | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
+| hover | `mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
+| active | `(buttonDown && mouseOn && !touchDown)` &#124;&#124; `(focusKeyDown && !touchDown)` |
 | touchActive | `touchDown` |
 The focus state can be combined with the above 4 mutually exclusive states, for a total of 8 states that the React Interactive state machine can be in.
 
