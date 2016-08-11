@@ -103,7 +103,41 @@ class ReactInteractive extends React.Component {
     return newState;
   }
 
-  handleEvent = (e) => {
+  updateState(newState, e = {}) {
+    const iChange = newState.iState !== this.state.iState;
+    const fChange = newState.focus !== this.state.focus;
+
+    // early return if state doesn't need to change
+    if (!iChange && !fChange) return;
+
+    // call onStateChange prop callback
+    this.props.onStateChange && this.props.onStateChange({
+      prevState: this.state,
+      nextState: newState,
+      event: e,
+    });
+
+    // setup onEnter/onLeave state callbacks to pass as cb to setState
+    const prevIState = iChange && this.state.iState;
+    const prevIStateCB = iChange && this.props[prevIState] && this.props[prevIState].onLeave;
+    const nextIState = iChange && newState.iState;
+    const nextIStateCB = iChange && this.props[nextIState] && this.props[nextIState].onEnter;
+    const focusStateCB = fChange && (
+      (this.state.focus && this.props.focus && this.props.focus.onLeave) ||
+      (newState.focus && this.props.focus && this.props.focus.onEnter)
+    );
+    const setStateCallback = () => {
+      prevIStateCB && prevIStateCB(prevIState);
+      nextIStateCB && nextIStateCB(nextIState);
+      focusStateCB && focusStateCB('focus');
+    };
+
+    // only place that setState is called
+    this.setState(newState, setStateCallback);
+  }
+
+
+  handleMouseEvent = (e) => {
     console.log(e.type);
     console.log(e);
 
