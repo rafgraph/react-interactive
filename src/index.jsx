@@ -1,6 +1,17 @@
 import React, { PropTypes } from 'react';
 import detectIt from 'detect-it';
 
+/* eslint-disable */
+const knownProps = {
+  as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
+  forceState:true, style:true, className:true, onStateChange:true,
+  onClick:true, onMouseClick:true, onTap:true, onMouseEnter:true,
+  onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
+  onTouchStart:true, onTouchEnd:true, onTouchCancel:true, onFocus:true,
+  onBlur:true, onKeyDown:true, onKeyUp:true,
+}
+/* eslint-enable */
+
 class ReactInteractive extends React.Component {
   static propTypes = {
     as: PropTypes.oneOfType([
@@ -73,6 +84,12 @@ class ReactInteractive extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    const passThroughProps = {};
+    Object.keys(nextProps).forEach((key) => {
+      if (!knownProps[key]) passThroughProps[key] = nextProps[key];
+    });
+
+    this.passThroughProps = passThroughProps;
     nextProps.forceState && this.updateState(nextProps.forceState);
   }
 
