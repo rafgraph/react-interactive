@@ -7,11 +7,38 @@ class ReactInteractive extends React.Component {
       PropTypes.string,
       PropTypes.func,
     ]).isRequired,
-    children: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.element,
-      PropTypes.array,
+    children: PropTypes.node,
+    normal: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['hover', 'active', 'touchActive', 'focus']),
     ]),
+    hover: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['normal', 'active', 'touchActive', 'focus']),
+    ]),
+    active: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['normal', 'hover', 'touchActive', 'focus']),
+    ]),
+    touchActive: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['normal', 'hover', 'active', 'focus']),
+    ]),
+    focus: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['normal', 'hover', 'active', 'touchActive']),
+    ]),
+    forceState: PropTypes.shape({
+      iState: PropTypes.oneOf(['normal', 'hover', 'active', 'touchActive']),
+      focus: PropTypes.bool,
+    }),
+    style: PropTypes.object,
+    className: PropTypes.string,
+    onStateChange: PropTypes.func,
+    onClick: PropTypes.func,
+    onMouseClick: PropTypes.func,
+    onTap: PropTypes.func,
+
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
     onMouseMove: PropTypes.func,
