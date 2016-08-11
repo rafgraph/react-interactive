@@ -72,6 +72,10 @@ class ReactInteractive extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    nextProps.forceState && this.updateState(nextProps.forceState);
+  }
+
   getListeners() {
     const listeners = {};
     ['onFocus', 'onBlur', 'onKeyDown', 'onKeyUp'].forEach(
