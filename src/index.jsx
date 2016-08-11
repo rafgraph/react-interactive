@@ -75,16 +75,16 @@ class ReactInteractive extends React.Component {
   getListeners() {
     const listeners = {};
     ['onFocus', 'onBlur', 'onKeyDown', 'onKeyUp'].forEach(
-      (onEvent) => { listeners[onEvent] = this.handleEvent; }
+      (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
     );
     if (detectIt.deviceType !== 'mouseOnly') {
       ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
-        (onEvent) => { listeners[onEvent] = this.handleEvent; }
+        (onEvent) => { listeners[onEvent] = this.handleTouchEvent; }
       );
     }
     if (detectIt.deviceType !== 'touchOnly') {
       const handler =
-        detectIt.deviceType === 'mouseOnly' ? this.handleEvent : this.handleHybridMouseEvent;
+        detectIt.deviceType === 'mouseOnly' ? this.handleMouseEvent : this.handleHybridMouseEvent;
       ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp'].forEach(
         (onEvent) => { listeners[onEvent] = handler; }
       );
@@ -168,27 +168,49 @@ class ReactInteractive extends React.Component {
         this.props.onMouseUp && this.props.onMouseUp(e);
         this.track.buttonDown = false;
         break;
+      default:
+        return;
+    }
+
+    this.updateState(this.computeState(), e);
+  }
+
+  handleHybridMouseEvent = (e) => {
+    console.log(e.type);
+    !this.track.touchDown && ((Date.now() - this.track.touchEndTime) > 600) &&
+    this.handleMouseEvent(e);
+  }
+
+  handleTouchEvent = (e) => {
+    switch (e.type) {
       case 'touchstart':
         this.props.onTouchStart && this.props.onTouchStart(e);
         this.track.touchDown = true;
         this.track.touchStartTime = Date.now();
-        this.track.mouseOn = false;
-        this.track.buttonDown = false;
         break;
       case 'touchend':
         this.props.onTouchEnd && this.props.onTouchEnd(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
-        this.track.mouseOn = false;
-        this.track.buttonDown = false;
+
         break;
       case 'touchcancel':
         this.props.onTouchCancel && this.props.onTouchCancel(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
-        this.track.mouseOn = false;
-        this.track.buttonDown = false;
         break;
+      default:
+        return;
+    }
+
+    this.track.mouseOn = false;
+    this.track.buttonDown = false;
+
+    this.updateState(this.computeState(), e);
+  }
+
+  handleFocusEvent = (e) => {
+    switch (e.type) {
       case 'focus':
         this.props.onFocus && this.props.onFocus(e);
         this.track.focus = true;
@@ -211,15 +233,7 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    const newState = this.computeState();
-    if ((newState.iState !== this.state.iState) || (newState.focus !== this.state.focus)) {
-      this.setState(newState);
-    }
-  }
-
-  handleHybridMouseEvent = (e) => {
-    console.log(e.type);
-    !this.track.touchDown && ((Date.now() - this.track.touchEndTime) > 600) && this.handleEvent(e);
+    this.updateState(this.computeState(), e);
   }
 
   render() {
