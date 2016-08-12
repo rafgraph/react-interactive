@@ -43,6 +43,7 @@ Note that there are no default values for any prop, and the only required prop i
 | `onClick` | function | `function(event) {...}` | Function called for both mouse clicks and touch taps (without any delay). The event passed in will either be a `click` event or a `touchend` event. |
 | `onMouseClick` | function | `function(event) {...}` | Function called only on mouse clicks. Not called for click events generated from touches. Event passed in is a `click` event. |
 | `onTap` | function | `function(event) {...}` | Function called on touch tap. Event passed in is a `touchend` event. |
+| `mutableProps` |  | `mutableProps` | By default it's assumed that props passed are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you are passing in mutable props, add `mutableProps` prop, and the component will always update. If you're not sure and notice buggy behavior, then add this property. |
 | `...` | anything | `id="some-id"`, `tabIndex="1"`, etc... | All additional props received are passed through. |
 |  |  |  |  |  |
 
