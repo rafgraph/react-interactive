@@ -91,7 +91,7 @@ class ReactInteractive extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     this.p.sameProps = false;
-    if (!nextProps.mutable && this.sameProps(nextProps)) {
+    if (!nextProps.mutableProps && this.sameProps(nextProps)) {
       this.p.sameProps = true;
     } else {
       this.propsSetup(nextProps);
