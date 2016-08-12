@@ -66,6 +66,10 @@ class ReactInteractive extends React.Component {
 
   constructor(props) {
     super(props);
+    this.state = props.forceState || {
+      iState: 'normal',
+      focus: false,
+    };
     this.track = {
       touchStartTime: Date.now(),
       touchEndTime: Date.now(),
@@ -75,12 +79,9 @@ class ReactInteractive extends React.Component {
       focus: false,
       spaceKeyDown: false,
       enterKeyDown: false,
+      state: this.state,
     };
     this.listeners = this.getListeners();
-    this.state = {
-      iState: 'normal',
-      focus: false,
-    };
   }
 
   componentWillReceiveProps(nextProps) {
@@ -124,34 +125,37 @@ class ReactInteractive extends React.Component {
     return newState;
   }
 
-  updateState(newState, e = {}) {
-    const iChange = newState.iState !== this.state.iState;
-    const fChange = newState.focus !== this.state.focus;
+  updateState(newState, props = {}, e = {}) {
+    const iChange = (newState.iState !== this.track.state.iState);
+    const fChange = (newState.focus !== this.track.state.focus);
 
     // early return if state doesn't need to change
     if (!iChange && !fChange) return;
 
     // call onStateChange prop callback
-    this.props.onStateChange && this.props.onStateChange({
-      prevState: this.state,
+    props.onStateChange && props.onStateChange({
+      prevState: this.track.state,
       nextState: newState,
       event: e,
     });
 
     // setup onEnter/onLeave state callbacks to pass as cb to setState
-    const prevIState = iChange && this.state.iState;
-    const prevIStateCB = iChange && this.props[prevIState] && this.props[prevIState].onLeave;
+    const prevIState = iChange && this.track.state.iState;
+    const prevIStateCB = iChange && props[prevIState] && props[prevIState].onLeave;
     const nextIState = iChange && newState.iState;
-    const nextIStateCB = iChange && this.props[nextIState] && this.props[nextIState].onEnter;
+    const nextIStateCB = iChange && props[nextIState] && props[nextIState].onEnter;
     const focusStateCB = fChange && (
-      (this.state.focus && this.props.focus && this.props.focus.onLeave) ||
-      (newState.focus && this.props.focus && this.props.focus.onEnter)
+      (this.track.state.focus && props.focus && props.focus.onLeave) ||
+      (newState.focus && props.focus && props.focus.onEnter)
     );
     const setStateCallback = () => {
       prevIStateCB && prevIStateCB(prevIState);
       nextIStateCB && nextIStateCB(nextIState);
       focusStateCB && focusStateCB('focus');
     };
+
+    // track new state becasue setState is asyncrounous
+    this.track.state = newState;
 
     // only place that setState is called
     this.setState(newState, setStateCallback);
@@ -193,7 +197,7 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    this.updateState(this.computeState(), e);
+    this.updateState(this.computeState(), this.props, e);
   }
 
   handleHybridMouseEvent = (e) => {
@@ -227,7 +231,7 @@ class ReactInteractive extends React.Component {
     this.track.mouseOn = false;
     this.track.buttonDown = false;
 
-    this.updateState(this.computeState(), e);
+    this.updateState(this.computeState(), this.props, e);
   }
 
   handleFocusEvent = (e) => {
@@ -254,7 +258,7 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    this.updateState(this.computeState(), e);
+    this.updateState(this.computeState(), this.props, e);
   }
 
   render() {
