@@ -3,7 +3,7 @@ import detectIt from 'detect-it';
 
 /* eslint-disable */
 const knownProps = {
-  as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
+  children:true, as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
   forceState:true, style:true, className:true, onStateChange:true,
   onClick:true, onMouseClick:true, onTap:true, onMouseEnter:true,
   onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
