@@ -9,6 +9,8 @@ Interactive state machine as a React component with 8 total states. There are 4 
 - The 1 boolean state is:
   - `focus`
 
+Compared to CSS, React Interactive is a simpler state machine, with better touch device support, and on enter/leave state hooks. See [comparison below](https://github.com/rafrex/react-interactive#interactive-state-machine-comparison).
+
 #### Basic Example
 ```javascript
 <Interactive
