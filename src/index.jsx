@@ -82,16 +82,82 @@ class ReactInteractive extends React.Component {
       state: this.state,
     };
     this.listeners = this.getListeners();
+
+    // this.p is used store things that are a deterministic function of props
+    // to avoid recalulating on every render, it can be thought of as an extension to props
+    this.p = { sameProps: false };
+    this.propsSetup(props);
   }
 
   componentWillReceiveProps(nextProps) {
-    const passThroughProps = {};
-    Object.keys(nextProps).forEach((key) => {
-      if (!knownProps[key]) passThroughProps[key] = nextProps[key];
-    });
+    this.p.sameProps = false;
+    if (!nextProps.mutable && this.sameProps(nextProps)) {
+      this.p.sameProps = true;
+    } else {
+      this.propsSetup(nextProps);
+    }
+    nextProps.forceState && this.updateState(nextProps.forceState, nextProps);
+  }
 
-    this.passThroughProps = passThroughProps;
-    nextProps.forceState && this.updateState(nextProps.forceState);
+  shouldComponentUpdate(nextProps, nextState) {
+    return !(this.p.sameProps || nextProps === this.props) ||
+    (nextState.iState !== this.state.iState) ||
+    (nextState.focus !== this.state.focus);
+  }
+
+  sameProps(nextProps) {
+    const keys = Object.keys(nextProps);
+
+    const nextPOffset = nextProps.forceState ? -1 : 0;
+    const pOffset = this.props.forceState ? -1 : 0;
+    if ((keys.length + nextPOffset) !== (Object.keys(this.props).length + pOffset)) return false;
+
+    for (let i = 0; i < keys.length; i++) {
+      if ((!Object.prototype.hasOwnProperty.call(this.props, keys[i]) ||
+      (nextProps[keys[i]] !== this.props[keys[i]])) &&
+      (keys[i] !== 'forceState')) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  propsSetup(props) {
+    this.p.passThroughProps = this.extractPassThroughProps(props);
+    this.p.normalStyle = this.extractStyle(props, 'normal');
+    this.p.hoverStyle = this.extractStyle(props, 'hover');
+    this.p.activeStyle = this.extractStyle(props, 'active');
+    this.p.touchActiveStyle = this.extractStyle(props, 'touchActive');
+    this.p.focusStyle = this.extractStyle(props, 'focus');
+  }
+
+  extractPassThroughProps(props) {
+    const passThroughProps = {};
+    Object.keys(props).forEach((key) => {
+      if (!knownProps[key]) passThroughProps[key] = props[key];
+    });
+    return passThroughProps;
+  }
+
+  extractStyle(props, state) {
+    if (!props[state]) return { style: null, className: '' };
+    let stateProps = typeof props[state] === 'string' ? props[props[state]] : props[state];
+    let times = 0;
+    while (typeof stateProps === 'string' && times < 3) {
+      stateProps = props[stateProps];
+      times++;
+    }
+    if (typeof stateProps !== 'object') return { style: null, className: '' };
+
+    const extract = {};
+    if (stateProps.style || stateProps.className || stateProps.onEnter || stateProps.onLeave) {
+      extract.style = stateProps.style || null;
+      extract.className = stateProps.className || '';
+    } else {
+      extract.style = stateProps;
+      extract.className = '';
+    }
+    return extract;
   }
 
   getListeners() {
