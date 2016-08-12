@@ -1,5 +1,6 @@
 import React, { PropTypes } from 'react';
 import detectIt from 'detect-it';
+import objectAssign from 'object-assign';
 
 /* eslint-disable */
 const knownProps = {
@@ -328,11 +329,30 @@ class ReactInteractive extends React.Component {
   }
 
   render() {
-    const { as } = this.props;
-    const children = `${this.state.iState}-focus:${this.state.focus}`; // for testing purposes
-    const props = this.listeners;
-    // props.tabIndex = 1;
-    return React.createElement(as, props, children);
+    const style = objectAssign({}, this.props.style,
+      this.p[`${this.state.iState}Style`].style,
+      this.state.focus ? this.p.focusStyle.style : null);
+
+    function joinClasses(className, iStateClass, focusClass) {
+      let joined = className;
+      joined += joined && iStateClass ? ` ${iStateClass}` : `${iStateClass}`;
+      joined += joined && focusClass ? ` ${focusClass}` : `${focusClass}`;
+      return joined;
+    }
+    const className =
+    joinClasses(this.props.className || '', this.p[`${this.state.iState}Style`].className,
+      this.state.focus ? this.p.focusStyle.className : '');
+
+    // props to pass down:
+    // listeners
+    // style
+    // className
+    // passThroughProps
+    const props = objectAssign({}, this.p.passThroughProps, this.listeners);
+    props.style = style;
+    props.className = className;
+
+    return React.createElement(this.props.as, props, this.props.children);
   }
 }
 
