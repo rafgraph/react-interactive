@@ -101,9 +101,18 @@ class ReactInteractive extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    return !(this.p.sameProps || nextProps === this.props) ||
-    (nextState.iState !== this.state.iState) ||
-    (nextState.focus !== this.state.focus);
+    // or statement, returns true on first true value, returns false if all are false
+    return (
+      (!this.p.sameProps && nextProps !== this.props)
+      ||
+      (nextState.iState !== this.state.iState &&
+      (this.p[`${nextState.iState}Style`].style !== this.p[`${this.state.iState}Style`].style ||
+      this.p[`${nextState.iState}Style`].className !==
+      this.p[`${this.state.iState}Style`].className))
+      ||
+      (nextState.focus !== this.state.focus &&
+      (this.p.focusStyle.style !== null || this.p.focusStyle.className !== ''))
+    );
   }
 
   sameProps(nextProps) {
