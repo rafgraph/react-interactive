@@ -82,7 +82,7 @@ class ReactInteractive extends React.Component {
       enterKeyDown: false,
       state: this.state,
     };
-    this.listeners = this.getListeners();
+    this.listeners = this.determineListeners();
 
     // this.p is used store things that are a deterministic function of props
     // to avoid recalulating on every render, it can be thought of as an extension to props
@@ -181,7 +181,7 @@ class ReactInteractive extends React.Component {
     return extract;
   }
 
-  getListeners() {
+  determineListeners() {
     const listeners = {};
     ['onFocus', 'onBlur', 'onKeyDown', 'onKeyUp'].forEach(
       (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
@@ -194,9 +194,11 @@ class ReactInteractive extends React.Component {
     if (detectIt.deviceType !== 'touchOnly') {
       const handler =
         detectIt.deviceType === 'mouseOnly' ? this.handleMouseEvent : this.handleHybridMouseEvent;
-      ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp'].forEach(
-        (onEvent) => { listeners[onEvent] = handler; }
-      );
+      ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp', 'onClick']
+      .forEach((onEvent) => { listeners[onEvent] = handler; });
+    }
+    if (detectIt.deviceType === 'touchOnly') {
+      listeners.onClick = this.handleTouchEvent;
     }
     return listeners;
   }
@@ -250,9 +252,6 @@ class ReactInteractive extends React.Component {
 
 
   handleMouseEvent = (e) => {
-    console.log(e.type);
-    console.log(e);
-
     switch (e.type) {
       case 'mousenter':
         this.props.onMouseEnter && this.props.onMouseEnter(e);
@@ -280,6 +279,10 @@ class ReactInteractive extends React.Component {
         this.props.onMouseUp && this.props.onMouseUp(e);
         this.track.buttonDown = false;
         break;
+      case 'click':
+        this.props.onMouseClick && this.props.onMouseClick(e);
+        this.props.onClick && this.props.onClick(e);
+        return;
       default:
         return;
     }
@@ -288,7 +291,6 @@ class ReactInteractive extends React.Component {
   }
 
   handleHybridMouseEvent = (e) => {
-    console.log(e.type);
     !this.track.touchDown && ((Date.now() - this.track.touchEndTime) > 600) &&
     this.handleMouseEvent(e);
   }
@@ -304,13 +306,27 @@ class ReactInteractive extends React.Component {
         this.props.onTouchEnd && this.props.onTouchEnd(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
-
+        if ((this.props.onClick || this.props.onTap) &&
+        (this.track.touchEndTime - this.track.touchStartTime) < 500) {
+          this.props.onTap && this.props.onTap(e);
+          this.props.onClick && this.props.onClick(e);
+        }
         break;
       case 'touchcancel':
         this.props.onTouchCancel && this.props.onTouchCancel(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
         break;
+
+      // for click events fired on touchOnly devices, listen for becasue
+      // assitive tech will fire click event with out touchend
+      case 'click':
+        if ((this.props.onClick || this.props.onTap) &&
+        (!this.track.touchDown && (Date.now() - this.track.touchEndTime) > 600)) {
+          this.props.onTap && this.props.onTap(e);
+          this.props.onClick && this.props.onClick(e);
+        }
+        return;
       default:
         return;
     }
