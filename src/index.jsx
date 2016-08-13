@@ -122,10 +122,21 @@ class ReactInteractive extends React.Component {
     const pOffset = this.props.forceState ? -1 : 0;
     if ((keys.length + nextPOffset) !== (Object.keys(this.props).length + pOffset)) return false;
 
+    const iStates = { normal: true, hover: true, active: true, touchActive: true, focus: true };
+    const sameIStateProp = (iState) => {
+      if (!(nextProps[iState].style || nextProps[iState].className ||
+      nextProps[iState].onEnter || nextProps[iState].onLeave)) return false;
+      if (nextProps[iState].style !== this.props[iState].style) return false;
+      if (nextProps[iState].className !== this.props[iState].className) return false;
+      if (nextProps[iState].onEnter !== this.props[iState].onEnter) return false;
+      if (nextProps[iState].onLeave !== this.props[iState].onLeave) return false;
+      return true;
+    };
+
     for (let i = 0; i < keys.length; i++) {
       if ((!Object.prototype.hasOwnProperty.call(this.props, keys[i]) ||
-      (nextProps[keys[i]] !== this.props[keys[i]])) &&
-      (keys[i] !== 'forceState')) {
+      (nextProps[keys[i]] !== this.props[keys[i]] && iStates[keys[i]] && !sameIStateProp(keys[i])))
+      && (keys[i] !== 'forceState')) {
         return false;
       }
     }
