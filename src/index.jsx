@@ -82,6 +82,9 @@ class ReactInteractive extends React.Component {
       enterKeyDown: false,
       state: this.state,
     };
+
+    this.refNode = null;
+    this.refCallback = (node) => { this.refNode = node; };
     this.listeners = this.determineListeners();
 
     // this.p is used store things that are a deterministic function of props
@@ -388,7 +391,15 @@ class ReactInteractive extends React.Component {
     props.style = style;
     props.className = className;
 
-    return React.createElement(this.props.as, props, this.props.children);
+    if (typeof this.props.as === 'string') {
+      props.ref = this.refCallback;
+      return React.createElement(this.props.as, props, this.props.children);
+    }
+    // If this.props.as is a component class, then wrap it in a span
+    // so can attach ref without breaking encapsulation
+    return React.createElement('span', { ref: this.refCallback },
+      React.createElement(this.props.as, props, this.props.children)
+    );
   }
 }
 
