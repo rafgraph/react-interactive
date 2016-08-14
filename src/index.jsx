@@ -83,6 +83,7 @@ class ReactInteractive extends React.Component {
       state: this.state,
     };
 
+    this.pointerEventsPolyfill = false;
     this.refNode = null;
     this.refCallback = (node) => { this.refNode = node; };
     this.listeners = this.determineListeners();
@@ -91,6 +92,15 @@ class ReactInteractive extends React.Component {
     // to avoid recalulating on every render, it can be thought of as an extension to props
     this.p = { sameProps: false };
     this.propsSetup(props);
+  }
+
+  componentDidMount() {
+    if (this.pointerEventsPolyfill) {
+      const pfix = detectIt.pointerEventsPrefix;
+      this.refNode.addEventListener(pfix('pointerdown'), this.handlePointerEvent);
+      this.refNode.addEventListener(pfix('pointerup'), this.handlePointerEvent);
+      this.refNode.addEventListener(pfix('pointercancel'), this.handlePointerEvent);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -116,6 +126,15 @@ class ReactInteractive extends React.Component {
       (nextState.focus !== this.state.focus &&
       (this.p.focusStyle.style !== null || this.p.focusStyle.className !== ''))
     );
+  }
+
+  componentWillUnmount() {
+    if (this.pointerEventsPolyfill) {
+      const pfix = detectIt.pointerEventsPrefix;
+      this.refNode.removeEventListener(pfix('pointerdown'), this.handlePointerEvent);
+      this.refNode.removeEventListener(pfix('pointerup'), this.handlePointerEvent);
+      this.refNode.removeEventListener(pfix('pointercancel'), this.handlePointerEvent);
+    }
   }
 
   sameProps(nextProps) {
@@ -190,17 +209,20 @@ class ReactInteractive extends React.Component {
       (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
     );
     if (detectIt.deviceType !== 'mouseOnly') {
-      ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
-        (onEvent) => { listeners[onEvent] = this.handleTouchEvent; }
-      );
+      if (detectIt.hasTouchEventsApi) {
+        ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
+          (onEvent) => { listeners[onEvent] = this.handleTouchEvent; }
+        );
+      } else if (detectIt.hasPointerEventsApi) {
+        this.pointerEventsPolyfill = true;
+      }
     }
     if (detectIt.deviceType !== 'touchOnly') {
       const handler =
         detectIt.deviceType === 'mouseOnly' ? this.handleMouseEvent : this.handleHybridMouseEvent;
       ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp', 'onClick']
       .forEach((onEvent) => { listeners[onEvent] = handler; });
-    }
-    if (detectIt.deviceType === 'touchOnly') {
+    } else {
       listeners.onClick = this.handleTouchEvent;
     }
     return listeners;
@@ -298,8 +320,9 @@ class ReactInteractive extends React.Component {
     this.handleMouseEvent(e);
   }
 
-  handleTouchEvent = (e) => {
-    switch (e.type) {
+  handleTouchEvent = (e, override) => {
+    const type = (override && override.typeOverride) || e.type;
+    switch (type) {
       case 'touchstart':
         this.props.onTouchStart && this.props.onTouchStart(e);
         this.track.touchDown = true;
@@ -338,6 +361,25 @@ class ReactInteractive extends React.Component {
     this.track.buttonDown = false;
 
     this.updateState(this.computeState(), this.props, e);
+  }
+
+  handlePointerEvent = (e) => {
+    const pointerIsTouch = { touch: true, 2: true, pen: true, 3: true };
+    if (!pointerIsTouch[e.pointerType]) return;
+
+    // can't use prefix because even though Edge responds to unprifixed value,
+    // it sets e.type to the prefixed value for some events, so have to check all
+    const pointerMap = {
+      pointerdown: 'touchstart',
+      MSPointerDown: 'touchstart',
+      pointerup: 'touchend',
+      MSPointerUp: 'touchend',
+      pointercancel: 'touchcancel',
+      MSPointerCancel: 'touchCancel',
+    };
+
+    const typeOverride = pointerMap[e.type];
+    this.handleTouchEvent(e, { typeOverride });
   }
 
   handleFocusEvent = (e) => {
