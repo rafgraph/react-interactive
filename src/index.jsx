@@ -397,15 +397,20 @@ class ReactInteractive extends React.Component {
       MSPointerDown: 'mousedown',
       pointerup: 'mouseup',
       MSPointerUp: 'mouseup',
+      pointermove: 'mousemove',
+      MSPointerMove: 'mousemove',
+    };
+    const passThroughToMouse = {
       pointerenter: 'mouseenter',
       MSPointerEnter: 'mouseenter',
       pointerleave: 'mouseleave',
       MSPointerLeave: 'mouseleave',
-      pointermove: 'mousemove',
-      MSPointerMove: 'mousemove',
     };
 
-    if (pointerType[e.pointerType] === 'm' && pointerMouseMap[e.type]) {
+    if (passThroughToMouse[e.type]) {
+      const typeOverride = passThroughToMouse[e.type];
+      this.handleMouseEvent(e, { typeOverride });
+    } else if (pointerType[e.pointerType] === 'm' && pointerMouseMap[e.type]) {
       const typeOverride = pointerMouseMap[e.type];
       this.handleMouseEvent(e, { typeOverride });
     } else if (pointerType[e.pointerType] === 't' && pointerTouchMap[e.type]) {
