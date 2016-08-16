@@ -343,6 +343,11 @@ class ReactInteractive extends React.Component {
   }
 
   handleClickEvent = (route, e) => {
+    // route to respective device type handlers
+    if (route === 'mouse') this.handleMouseEvent(e);
+    else if (route === 'touch') this.handleTouchEvent(e);
+    else if (route === 'hybrid') this.handleHybridMouseEvent(e);
+
     // toggle focus check - need to call blur on click and not on touchend or mouseup so the browser
     // doesn't refocus the element on click after it was blurred on touchend/mouseup, if the element
     // doesn't have focus when the interaction started, then don't call blur, but when the event is
@@ -350,14 +355,12 @@ class ReactInteractive extends React.Component {
     if (this.track.state.focus && (this.track.focusStartState ||
       ((Date.now() - this.track.mouseUpTime > 600) && (Date.now() - this.track.touchEndTime > 600))
     )) {
-      const el = document.activeElement;
-      if (el && el.tagName !== 'INPUT') el.blur();
+      if (typeof this.props.as === 'string') this.refNode.blur();
+      else {
+        const el = document.activeElement;
+        el && el.blur();
+      }
     }
-
-    // route to respective device type handlers
-    if (route === 'mouse') this.handleMouseEvent(e);
-    else if (route === 'touch') this.handleTouchEvent(e);
-    else if (route === 'hybrid') this.handleHybridMouseEvent(e);
   }
 
   handleTouchEvent = (e, override) => {
@@ -373,10 +376,17 @@ class ReactInteractive extends React.Component {
         this.props.onTouchEnd && this.props.onTouchEnd(e);
         this.track.touchDown = false;
         this.track.touchEndTime = Date.now();
-        if ((this.props.onClick || this.props.onTap) &&
-        (this.track.touchEndTime - this.track.touchStartTime) < 500) {
+        if ((this.track.touchEndTime - this.track.touchStartTime) < 500) {
           this.props.onTap && this.props.onTap(e);
           this.props.onClick && this.props.onClick(e);
+
+          if ((this.props.focus || this.props.tabIndex) && !this.track.state.focus &&
+          typeof this.props.as === 'string') {
+            // this calls the focus listener sychronously, and that handler will call
+            // updateState(), so early return here
+            this.refNode.focus();
+            return;
+          }
         }
         break;
       case 'touchcancel':
