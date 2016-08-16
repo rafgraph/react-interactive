@@ -9,7 +9,7 @@ const knownProps = {
   onClick:true, onMouseClick:true, onTap:true, onMouseEnter:true,
   onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
   onTouchStart:true, onTouchEnd:true, onTouchCancel:true, onFocus:true,
-  onBlur:true, onKeyDown:true, onKeyUp:true,
+  onBlur:true, onKeyDown:true, onKeyUp:true, mutableProps:true,
 }
 /* eslint-enable */
 
@@ -63,6 +63,8 @@ class ReactInteractive extends React.Component {
     onBlur: PropTypes.func,
     onKeyDown: PropTypes.func,
     onKeyUp: PropTypes.func,
+
+    mutableProps: PropTypes.bool,
   }
 
   constructor(props) {
