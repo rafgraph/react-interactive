@@ -436,10 +436,10 @@ class ReactInteractive extends React.Component {
       MSPointerUp: 'mouseup',
       pointermove: 'mousemove',
       MSPointerMove: 'mousemove',
-    };
-    const passThroughToMouse = {
       pointerenter: 'mouseenter',
       MSPointerEnter: 'mouseenter',
+    };
+    const passThroughToMouse = {
       pointerleave: 'mouseleave',
       MSPointerLeave: 'mouseleave',
     };
