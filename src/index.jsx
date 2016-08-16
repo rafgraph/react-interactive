@@ -225,10 +225,13 @@ class ReactInteractive extends React.Component {
     );
 
     // bind click event handler based on device type, so handler knows how to route it
-    const dType = detectIt.deviceType;
-    if (dType === 'mouseOnly') listeners.onClick = this.handleClickEvent.bind(this, 'mouse');
-    else if (dType === 'hybrid') listeners.onClick = this.handleClickEvent.bind(this, 'hybrid');
-    else listeners.onClick = this.handleClickEvent.bind(this, 'touch');
+    if (this.props.onClick || this.props.onTap || this.props.onMouseClick ||
+    this.props.focus || this.props.tabIndex) {
+      const dType = detectIt.deviceType;
+      if (dType === 'mouseOnly') listeners.onClick = this.handleClickEvent.bind(this, 'mouse');
+      else if (dType === 'hybrid') listeners.onClick = this.handleClickEvent.bind(this, 'hybrid');
+      else listeners.onClick = this.handleClickEvent.bind(this, 'touch');
+    }
 
     // early return if pointer events polyfill is required
     // pointer event handlers are set in componentDidMount
