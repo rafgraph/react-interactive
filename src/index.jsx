@@ -80,7 +80,9 @@ class ReactInteractive extends React.Component {
       touchDown: false,
       mouseOn: false,
       buttonDown: false,
+      mouseUpTime: Date.now(),
       focus: false,
+      focusStartState: false,
       spaceKeyDown: false,
       enterKeyDown: false,
       state: this.state,
@@ -222,10 +224,11 @@ class ReactInteractive extends React.Component {
       (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
     );
 
-    // set click event handler based on device type
-    if (detectIt.deviceType === 'mouseOnly') listeners.onClick = this.handleMouseEvent;
-    else if (detectIt.deviceType === 'hybrid') listeners.onClick = this.handleHybridMouseEvent;
-    else listeners.onClick = this.handleTouchEvent;
+    // bind click event handler based on device type, so handler knows how to route it
+    const dType = detectIt.deviceType;
+    if (dType === 'mouseOnly') listeners.onClick = this.handleClickEvent.bind(this, 'mouse');
+    else if (dType === 'hybrid') listeners.onClick = this.handleClickEvent.bind(this, 'hybrid');
+    else listeners.onClick = this.handleClickEvent.bind(this, 'touch');
 
     // early return if pointer events polyfill is required
     // pointer event handlers are set in componentDidMount
@@ -317,9 +320,11 @@ class ReactInteractive extends React.Component {
         this.props.onMouseDown && this.props.onMouseDown(e);
         this.track.mouseOn = true;
         this.track.buttonDown = true;
+        this.track.focusStartState = this.track.state.focus;
         break;
       case 'mouseup':
         this.props.onMouseUp && this.props.onMouseUp(e);
+        this.track.mouseUpTime = Date.now();
         this.track.buttonDown = false;
         break;
       case 'click':
@@ -334,8 +339,25 @@ class ReactInteractive extends React.Component {
   }
 
   handleHybridMouseEvent = (e) => {
-    !this.track.touchDown && ((Date.now() - this.track.touchEndTime) > 600) &&
-    this.handleMouseEvent(e);
+    !this.track.touchDown && Date.now() - this.track.touchEndTime > 600 && this.handleMouseEvent(e);
+  }
+
+  handleClickEvent = (route, e) => {
+    // toggle focus check - need to call blur on click and not on touchend or mouseup so the browser
+    // doesn't refocus the element on click after it was blurred on touchend/mouseup, if the element
+    // doesn't have focus when the interaction started, then don't call blur, but when the event is
+    // synthetic (no intereaction) then call blur -> Date.now is synthetic detection
+    if (this.track.state.focus && (this.track.focusStartState ||
+      ((Date.now() - this.track.mouseUpTime > 600) && (Date.now() - this.track.touchEndTime > 600))
+    )) {
+      const el = document.activeElement;
+      if (el && el.tagName !== 'INPUT') el.blur();
+    }
+
+    // route to respective device type handlers
+    if (route === 'mouse') this.handleMouseEvent(e);
+    else if (route === 'touch') this.handleTouchEvent(e);
+    else if (route === 'hybrid') this.handleHybridMouseEvent(e);
   }
 
   handleTouchEvent = (e, override) => {
@@ -345,6 +367,7 @@ class ReactInteractive extends React.Component {
         this.props.onTouchStart && this.props.onTouchStart(e);
         this.track.touchDown = true;
         this.track.touchStartTime = Date.now();
+        this.track.focusStartState = this.track.state.focus;
         break;
       case 'touchend':
         this.props.onTouchEnd && this.props.onTouchEnd(e);
@@ -362,15 +385,16 @@ class ReactInteractive extends React.Component {
         this.track.touchEndTime = Date.now();
         break;
 
-      // for click events fired on touchOnly devices, listen for becasue
-      // assitive tech will fire click event with out touchend
-      case 'click':
+      // for click events fired on touchOnly devices, listen for becasue synthetic
+      // click events won't fire touchend
+      case 'click': {
         if ((this.props.onClick || this.props.onTap) &&
-        (!this.track.touchDown && (Date.now() - this.track.touchEndTime) > 600)) {
+        Date.now() - this.track.touchEndTime > 600) {
           this.props.onTap && this.props.onTap(e);
           this.props.onClick && this.props.onClick(e);
         }
         return;
+      }
       default:
         return;
     }
@@ -384,8 +408,6 @@ class ReactInteractive extends React.Component {
   handlePointerEvent = (e) => {
     const pointerType = { touch: 't', 2: 't', pen: 't', 3: 't', mouse: 'm', 4: 'm' };
 
-    // can't use prefix because even though Edge responds to unprefixed value,
-    // it sets e.type to the prefixed value for some events, so have to check all
     const pointerTouchMap = {
       pointerdown: 'touchstart',
       MSPointerDown: 'touchstart',
