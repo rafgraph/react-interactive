@@ -65,6 +65,7 @@ class ReactInteractive extends React.Component {
     onKeyUp: PropTypes.func,
 
     mutableProps: PropTypes.bool,
+    tabIndex: PropTypes.string,
   }
 
   constructor(props) {
@@ -190,6 +191,7 @@ class ReactInteractive extends React.Component {
     Object.keys(props).forEach((key) => {
       if (!knownProps[key]) passThroughProps[key] = props[key];
     });
+    if (props.focus && !props.tabIndex) passThroughProps.tabIndex = '0';
     return passThroughProps;
   }
 
