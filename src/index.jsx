@@ -427,7 +427,7 @@ class ReactInteractive extends React.Component {
       pointerup: 'touchend',
       MSPointerUp: 'touchend',
       pointercancel: 'touchcancel',
-      MSPointerCancel: 'touchCancel',
+      MSPointerCancel: 'touchcancel',
     };
     const pointerMouseMap = {
       pointerdown: 'mousedown',
