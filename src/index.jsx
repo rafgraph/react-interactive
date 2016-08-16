@@ -95,6 +95,7 @@ class ReactInteractive extends React.Component {
     this.refNode = null;
     this.refCallback = (node) => { this.refNode = node; };
     this.listeners = this.determineListeners();
+    this.clickListener = this.bindClickHandler();
 
     // this.p is used store things that are a deterministic function of props
     // to avoid recalulating on every render, it can be thought of as an extension to props
@@ -224,15 +225,6 @@ class ReactInteractive extends React.Component {
       (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
     );
 
-    // bind click event handler based on device type, so handler knows how to route it
-    if (this.props.onClick || this.props.onTap || this.props.onMouseClick ||
-    this.props.focus || this.props.tabIndex) {
-      const dType = detectIt.deviceType;
-      if (dType === 'mouseOnly') listeners.onClick = this.handleClickEvent.bind(this, 'mouse');
-      else if (dType === 'hybrid') listeners.onClick = this.handleClickEvent.bind(this, 'hybrid');
-      else listeners.onClick = this.handleClickEvent.bind(this, 'touch');
-    }
-
     // early return if pointer events polyfill is required
     // pointer event handlers are set in componentDidMount
     if (this.pointerEventsPolyfill) return listeners;
@@ -249,6 +241,13 @@ class ReactInteractive extends React.Component {
       .forEach((onEvent) => { listeners[onEvent] = handler; });
     }
     return listeners;
+  }
+
+  bindClickHandler() {
+    // bind click event handler based on device type, so handler knows how to route it
+    if (detectIt.deviceType === 'touchOnly') return this.handleClickEvent.bind(this, 'touch');
+    if (detectIt.deviceType === 'hybrid') return this.handleClickEvent.bind(this, 'hybrid');
+    return this.handleClickEvent.bind(this, 'mouse');
   }
 
   computeState() {
@@ -506,6 +505,12 @@ class ReactInteractive extends React.Component {
     const props = objectAssign({}, this.p.passThroughProps, this.listeners);
     props.style = style;
     props.className = className;
+
+    // only set onClick listener if it's required
+    if (this.props.onClick || this.props.onTap || this.props.onMouseClick ||
+    this.props.focus || this.props.tabIndex) {
+      props.onClick = this.clickListener;
+    }
 
     if (typeof this.props.as === 'string') {
       props.ref = this.refCallback;
