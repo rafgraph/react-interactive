@@ -504,7 +504,7 @@ class ReactInteractive extends React.Component {
     // passThroughProps
     const props = objectAssign({}, this.p.passThroughProps, this.listeners);
     props.style = style;
-    props.className = className;
+    if (className) props.className = className;
 
     // only set onClick listener if it's required
     if (this.props.onClick || this.props.onTap || this.props.onMouseClick ||
