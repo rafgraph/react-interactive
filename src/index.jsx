@@ -6,7 +6,7 @@ import objectAssign from 'object-assign';
 const knownProps = {
   children:true, as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
   forceState:true, style:true, className:true, onStateChange:true,
-  onClick:true, onMouseClick:true, onTap:true, onMouseEnter:true,
+  onClick:true, onMouseClick:true, onTap:true, onTapTwo:true, onTapThree:true, onMouseEnter:true,
   onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
   onTouchStart:true, onTouchEnd:true, onTouchCancel:true, onFocus:true,
   onBlur:true, onKeyDown:true, onKeyUp:true, mutableProps:true,
@@ -50,6 +50,8 @@ class ReactInteractive extends React.Component {
     onClick: PropTypes.func,
     onMouseClick: PropTypes.func,
     onTap: PropTypes.func,
+    onTapTwo: PropTypes.func,
+    onTapThree: PropTypes.func,
 
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
@@ -78,6 +80,7 @@ class ReactInteractive extends React.Component {
       touchStartTime: Date.now(),
       touchEndTime: Date.now(),
       touchDown: false,
+      touches: {},
       mouseOn: false,
       buttonDown: false,
       mouseUpTime: Date.now(),
@@ -370,31 +373,91 @@ class ReactInteractive extends React.Component {
     switch (type) {
       case 'touchstart':
         this.props.onTouchStart && this.props.onTouchStart(e);
+
+        // if going from no touch to touch, set touch start time
+        if (!this.track.touchDown) this.track.touchStartTime = Date.now();
         this.track.touchDown = true;
-        this.track.touchStartTime = Date.now();
+
+        // cancel if also touching someplace else on the screen
+        if (e.touches.length !== e.targetTouches.length || this.track.touches.canceled) {
+          this.track.touches.canceled = true;
+        } else {
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            this.track.touches[e.changedTouches[i].identifier] = {
+              startX: e.changedTouches[i].clientX,
+              startY: e.changedTouches[i].clientY,
+            };
+          }
+        }
+
         this.track.focusStartState = this.track.state.focus;
         break;
       case 'touchend':
         this.props.onTouchEnd && this.props.onTouchEnd(e);
-        this.track.touchDown = false;
-        this.track.touchEndTime = Date.now();
-        if ((this.track.touchEndTime - this.track.touchStartTime) < 500) {
-          this.props.onTap && this.props.onTap(e);
-          this.props.onClick && this.props.onClick(e);
+        this.track.touchDown = e.targetTouches.length > 0;
 
-          if ((this.props.focus || this.props.tabIndex) && !this.track.state.focus &&
-          typeof this.props.as === 'string') {
-            // this calls the focus listener sychronously, and that handler will call
-            // updateState(), so early return here
-            this.refNode.focus();
-            return;
+        if (e.touches.length !== e.targetTouches.length || this.track.touches.canceled) {
+          this.track.touches.canceled = true;
+        } else {
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const touchTrack = this.track.touches[e.changedTouches[i].identifier];
+            if (touchTrack) {
+              touchTrack.endX = e.changedTouches[i].clientX;
+              touchTrack.endY = e.changedTouches[i].clientY;
+            }
           }
+        }
+
+        if (e.targetTouches.length === 0) {
+          this.track.touchEndTime = Date.now();
+          if (!this.track.touches.canceled &&
+          (this.track.touchEndTime - this.track.touchStartTime) < 500) {
+            const touches = this.track.touches;
+            const touchKeys = Object.keys(touches);
+            const touchCount = touchKeys.length;
+            const tolerance = 10 + (4 * touchCount);
+
+            if (touchCount < 4 && touchKeys.every((touch) => (
+              Math.abs(touches[touch].endX - touches[touch].startX) < tolerance &&
+              Math.abs(touches[touch].endY - touches[touch].startY) < tolerance
+            ))) {
+              switch (touchCount) {
+                case 1:
+                  this.props.onTap && this.props.onTap(e);
+                  this.props.onClick && this.props.onClick(e);
+
+                  if ((this.props.focus || this.props.tabIndex) && !this.track.state.focus &&
+                  typeof this.props.as === 'string') {
+                    this.track.touches = {};
+                    this.refNode.focus();
+                    // this calls the focus listener sychronously, and that handler will call
+                    // updateState(), so reset and early return here
+                    return;
+                  }
+                  break;
+                case 2:
+                  this.props.onTapTwo && this.props.onTapTwo(e);
+                  break;
+                case 3:
+                  this.props.onTapThree && this.props.onTapThree(e);
+                  break;
+                default:
+              }
+            }
+          }
+
+          this.track.touches = {};
         }
         break;
       case 'touchcancel':
         this.props.onTouchCancel && this.props.onTouchCancel(e);
-        this.track.touchDown = false;
-        this.track.touchEndTime = Date.now();
+        this.track.touchDown = e.targetTouches.length > 0;
+        if (e.targetTouches.length === 0) {
+          this.track.touches = {};
+          this.track.touchEndTime = Date.now();
+        } else {
+          this.track.touches.canceled = true;
+        }
         break;
 
       // for click events fired on touchOnly devices, listen for becasue synthetic
