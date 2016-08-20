@@ -77,14 +77,14 @@ class ReactInteractive extends React.Component {
       focus: false,
     };
     this.track = {
-      touchStartTime: Date.now(),
-      touchEndTime: Date.now(),
+      touchStartTime: Date.now() - 2000,
+      touchEndTime: Date.now() - 1000,
       touchDown: false,
       touches: {},
       mouseOn: false,
       buttonDown: false,
-      mouseUpTime: Date.now(),
       focus: false,
+      focusTransition: 'reset',
       focusStartState: false,
       spaceKeyDown: false,
       enterKeyDown: false,
@@ -98,7 +98,7 @@ class ReactInteractive extends React.Component {
     this.refNode = null;
     this.refCallback = (node) => { this.refNode = node; };
     this.listeners = this.determineListeners();
-    this.clickListener = this.bindClickHandler();
+    this.clickListener = this.determineClickHandler();
 
     // this.p is used store things that are a deterministic function of props
     // to avoid recalulating on every render, it can be thought of as an extension to props
@@ -246,11 +246,11 @@ class ReactInteractive extends React.Component {
     return listeners;
   }
 
-  bindClickHandler() {
-    // bind click event handler based on device type, so handler knows how to route it
-    if (detectIt.deviceType === 'touchOnly') return this.handleClickEvent.bind(this, 'touch');
-    if (detectIt.deviceType === 'hybrid') return this.handleClickEvent.bind(this, 'hybrid');
-    return this.handleClickEvent.bind(this, 'mouse');
+  determineClickHandler() {
+    // determine click event handler based on device type
+    if (detectIt.deviceType === 'touchOnly') return this.handleTouchEvent;
+    if (detectIt.deviceType === 'hybrid') return this.handleHybridMouseEvent;
+    return this.handleMouseEvent;
   }
 
   computeState() {
@@ -326,11 +326,31 @@ class ReactInteractive extends React.Component {
         this.track.mouseOn = true;
         this.track.buttonDown = true;
         this.track.focusStartState = this.track.state.focus;
+
+        if (!this.track.state.focus && (this.props.focus || this.props.tabIndex) &&
+        typeof this.props.as === 'string') {
+          this.track.focusTransition = 'mouseDownFocus';
+          this.refNode.focus();
+          return;
+        }
         break;
       case 'mouseup':
         this.props.onMouseUp && this.props.onMouseUp(e);
-        this.track.mouseUpTime = Date.now();
         this.track.buttonDown = false;
+
+        if (this.track.state.focus && !this.track.focusStartState) {
+          this.track.focusTransition = 'reset';
+          this.track.focusStartState = false;
+        } else if (this.track.state.focus) {
+          this.track.focusTransition = 'mouseUpBlur';
+          if (typeof this.props.as === 'string') {
+            this.refNode.blur();
+          } else {
+            const el = document.activeElement;
+            el && el.blur();
+          }
+          return;
+        }
         break;
       case 'click':
         this.props.onMouseClick && this.props.onMouseClick(e);
@@ -347,25 +367,22 @@ class ReactInteractive extends React.Component {
     !this.track.touchDown && Date.now() - this.track.touchEndTime > 600 && this.handleMouseEvent(e);
   }
 
-  handleClickEvent = (route, e) => {
-    // route to respective device type handlers
-    if (route === 'mouse') this.handleMouseEvent(e);
-    else if (route === 'touch') this.handleTouchEvent(e);
-    else if (route === 'hybrid') this.handleHybridMouseEvent(e);
+  hasTaps = () => {
+    if (this.track.touches.canceled) return false;
+    const touches = this.track.touches;
+    const touchKeys = Object.keys(touches);
+    const touchCount = touchKeys.length;
 
-    // toggle focus check - need to call blur on click and not on touchend or mouseup so the browser
-    // doesn't refocus the element on click after it was blurred on touchend/mouseup, if the element
-    // doesn't have focus when the interaction started, then don't call blur, but when the event is
-    // synthetic (no intereaction) then call blur -> Date.now is synthetic detection
-    if (this.track.state.focus && (this.track.focusStartState ||
-      ((Date.now() - this.track.mouseUpTime > 600) && (Date.now() - this.track.touchEndTime > 600))
-    )) {
-      if (typeof this.props.as === 'string') this.refNode.blur();
-      else {
-        const el = document.activeElement;
-        el && el.blur();
-      }
-    }
+    const tapWithinTime = () => ((this.track.touchEndTime - this.track.touchStartTime) < 500);
+    const touchesNotMoved = () => (
+      touchKeys.every((touch) => (
+        Math.abs(touches[touch].endX - touches[touch].startX) < 15 + (3 * touchCount) &&
+        Math.abs(touches[touch].endY - touches[touch].startY) < 15 + (3 * touchCount)
+      ))
+    );
+
+    if (tapWithinTime() && touchesNotMoved()) return touchCount;
+    return false;
   }
 
   handleTouchEvent = (e, override) => {
@@ -379,9 +396,10 @@ class ReactInteractive extends React.Component {
         this.track.touchDown = true;
 
         // cancel if also touching someplace else on the screen
-        if (e.touches.length !== e.targetTouches.length || this.track.touches.canceled) {
-          this.track.touches.canceled = true;
-        } else {
+        if (e.touches.length !== e.targetTouches.length) this.track.touches.canceled = true;
+
+        if (!this.track.touches.canceled) {
+          // log touch start position for each touch
           for (let i = 0; i < e.changedTouches.length; i++) {
             this.track.touches[e.changedTouches[i].identifier] = {
               startX: e.changedTouches[i].clientX,
@@ -389,16 +407,16 @@ class ReactInteractive extends React.Component {
             };
           }
         }
-
-        this.track.focusStartState = this.track.state.focus;
         break;
       case 'touchend':
         this.props.onTouchEnd && this.props.onTouchEnd(e);
         this.track.touchDown = e.targetTouches.length > 0;
 
-        if (e.touches.length !== e.targetTouches.length || this.track.touches.canceled) {
-          this.track.touches.canceled = true;
-        } else {
+        // cancel if also touching someplace else on the screen
+        if (e.touches.length !== e.targetTouches.length) this.track.touches.canceled = true;
+
+        if (!this.track.touches.canceled) {
+          // log touch end position for each touch
           for (let i = 0; i < e.changedTouches.length; i++) {
             const touchTrack = this.track.touches[e.changedTouches[i].identifier];
             if (touchTrack) {
@@ -410,51 +428,51 @@ class ReactInteractive extends React.Component {
 
         if (e.targetTouches.length === 0) {
           this.track.touchEndTime = Date.now();
-          if (!this.track.touches.canceled &&
-          (this.track.touchEndTime - this.track.touchStartTime) < 500) {
-            const touches = this.track.touches;
-            const touchKeys = Object.keys(touches);
-            const touchCount = touchKeys.length;
-            const tolerance = 10 + (4 * touchCount);
 
-            if (touchCount < 4 && touchKeys.every((touch) => (
-              Math.abs(touches[touch].endX - touches[touch].startX) < tolerance &&
-              Math.abs(touches[touch].endY - touches[touch].startY) < tolerance
-            ))) {
-              switch (touchCount) {
-                case 1:
-                  this.props.onTap && this.props.onTap(e);
-                  this.props.onClick && this.props.onClick(e);
-
-                  if ((this.props.focus || this.props.tabIndex) && !this.track.state.focus &&
-                  typeof this.props.as === 'string') {
-                    this.track.touches = {};
-                    this.refNode.focus();
-                    // this calls the focus listener sychronously, and that handler will call
-                    // updateState(), so reset and early return here
-                    return;
-                  }
-                  break;
-                case 2:
-                  this.props.onTapTwo && this.props.onTapTwo(e);
-                  break;
-                case 3:
-                  this.props.onTapThree && this.props.onTapThree(e);
-                  break;
-                default:
-              }
-            }
-          }
-
+          const taps = this.hasTaps();
           this.track.touches = {};
+
+          switch (taps) {
+            case 1:
+              this.props.onTap && this.props.onTap(e);
+              this.props.onClick && this.props.onClick(e);
+
+              // toggle focus
+              if (this.track.state.focus) {
+                this.track.focusTransition = 'touchEndBlur';
+                if (typeof this.props.as === 'string') {
+                  this.refNode.blur();
+                } else {
+                  const el = document.activeElement;
+                  el && el.blur();
+                }
+                // early return because blur() will call updateSate()
+                return;
+              } else if (typeof this.props.as === 'string' &&
+              (this.props.focus || this.props.tabIndex)) {
+                this.track.focusTransition = 'touchEndFocus';
+                this.refNode.focus();
+                // early return because focus() will call updateSate()
+                return;
+              }
+              break;
+            case 2:
+              this.props.onTapTwo && this.props.onTapTwo(e);
+              break;
+            case 3:
+              this.props.onTapThree && this.props.onTapThree(e);
+              break;
+            default:
+          }
         }
         break;
+
       case 'touchcancel':
         this.props.onTouchCancel && this.props.onTouchCancel(e);
         this.track.touchDown = e.targetTouches.length > 0;
         if (e.targetTouches.length === 0) {
-          this.track.touches = {};
           this.track.touchEndTime = Date.now();
+          this.track.touches = {};
         } else {
           this.track.touches.canceled = true;
         }
@@ -463,10 +481,31 @@ class ReactInteractive extends React.Component {
       // for click events fired on touchOnly devices, listen for becasue synthetic
       // click events won't fire touchend
       case 'click': {
-        if ((this.props.onClick || this.props.onTap) &&
-        Date.now() - this.track.touchEndTime > 600) {
+        const transition = this.track.focusTransition;
+        if (transition === 'browserFocus') this.track.focusTransition = 'reset';
+
+        if (Date.now() - this.track.touchEndTime > 600) {
           this.props.onTap && this.props.onTap(e);
           this.props.onClick && this.props.onClick(e);
+
+          if (transition === 'reset') {
+            // toggle focus
+            if (this.track.state.focus) {
+              this.track.focusTransition = 'clickBlur';
+              if (typeof this.props.as === 'string') {
+                this.refNode.blur();
+              } else {
+                const el = document.activeElement;
+                el && el.blur();
+              }
+              return;
+            } else if (typeof this.props.as === 'string' &&
+            (this.props.focus || this.props.tabIndex)) {
+              this.track.focusTransition = 'clickFcous';
+              this.refNode.focus();
+              return;
+            }
+          }
         }
         return;
       }
@@ -476,7 +515,6 @@ class ReactInteractive extends React.Component {
 
     this.track.mouseOn = false;
     this.track.buttonDown = false;
-
     this.updateState(this.computeState(), this.props, e);
   }
 
@@ -519,10 +557,47 @@ class ReactInteractive extends React.Component {
   }
 
   handleFocusEvent = (e) => {
+    const transitionAs = (transition) => {
+      this.props.onFocus && this.props.onFocus(e);
+      this.track.focusTransition = transition;
+      this.track.focus = true;
+    };
+
     switch (e.type) {
       case 'focus':
-        this.props.onFocus && this.props.onFocus(e);
-        this.track.focus = true;
+        if (detectIt.deviceType === 'touchOnly') {
+          if (this.track.focusTransition === 'touchEndBlur') {
+            this.track.focusTransition = 'reset';
+            if (typeof this.props.as === 'string') this.refNode.blur();
+            else {
+              const el = document.activeElement;
+              el && el.blur();
+            }
+          } else if (this.track.focusTransition === 'touchEndFocus' ||
+          this.track.focusTransition === 'clickFocus') {
+            transitionAs('reset');
+          } else if (this.track.focusTransition === 'reset' ||
+          this.track.focusTransition === 'clickBlur' ||
+          this.track.focusTransition === 'browserFocus') {
+            transitionAs('browserFocus');
+          }
+        } else if (detectIt.deviceType === 'mouseOnly' || detectIt.deviceType === 'hybrid') {
+          if (this.track.focusTransition === 'touchEndBlur') {
+            this.track.focusTransition = 'reset';
+            if (typeof this.props.as === 'string') this.refNode.blur();
+            else {
+              const el = document.activeElement;
+              el && el.blur();
+            }
+          } else if (this.track.focusTransition === 'mouseDownFocus' ||
+          this.track.focusTransition === 'touchEndFocus') {
+            transitionAs('reset');
+          } else if (this.track.focusTransition === 'reset' ||
+          this.track.focusTransition === 'mouseUpBlur' ||
+          this.track.focusTransition === 'browserFocus') {
+            transitionAs('browserFocus');
+          }
+        }
         break;
       case 'blur':
         this.props.onBlur && this.props.onBlur(e);
