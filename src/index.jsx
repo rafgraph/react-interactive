@@ -93,10 +93,6 @@ class ReactInteractive extends React.Component {
       state: this.state,
     };
 
-    // detect if pointer events polyfill is required
-    // (required if only way to access a device's touch capabilities is through pointer events)
-    this.pointerEventsPolyfill = detectIt.hasTouch && !detectIt.hasTouchEventsApi;
-
     this.refNode = null;
     this.topNode = null;
     this.listeners = this.determineListeners();
@@ -106,18 +102,6 @@ class ReactInteractive extends React.Component {
     // to avoid recalulating on every render, it can be thought of as an extension to props
     this.p = { sameProps: false };
     this.propsSetup(props);
-  }
-
-  componentDidMount() {
-    if (this.pointerEventsPolyfill) {
-      const pfix = detectIt.pointerEventsPrefix;
-      this.refNode.addEventListener(pfix('pointerdown'), this.handlePointerEvent, true);
-      this.refNode.addEventListener(pfix('pointerup'), this.handlePointerEvent, true);
-      this.refNode.addEventListener(pfix('pointercancel'), this.handlePointerEvent, true);
-      this.refNode.addEventListener(pfix('pointerenter'), this.handlePointerEvent, true);
-      this.refNode.addEventListener(pfix('pointerleave'), this.handlePointerEvent, true);
-      this.refNode.addEventListener(pfix('pointermove'), this.handlePointerEvent, true);
-    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -155,18 +139,6 @@ class ReactInteractive extends React.Component {
     if (this.track.updateTopNode) {
       this.track.updateTopNode = false;
       this.refCallback(this.refNode);
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.pointerEventsPolyfill) {
-      const pfix = detectIt.pointerEventsPrefix;
-      this.refNode.removeEventListener(pfix('pointerdown'), this.handlePointerEvent, true);
-      this.refNode.removeEventListener(pfix('pointerup'), this.handlePointerEvent, true);
-      this.refNode.removeEventListener(pfix('pointercancel'), this.handlePointerEvent, true);
-      this.refNode.removeEventListener(pfix('pointerenter'), this.handlePointerEvent, true);
-      this.refNode.removeEventListener(pfix('pointerleave'), this.handlePointerEvent, true);
-      this.refNode.removeEventListener(pfix('pointermove'), this.handlePointerEvent, true);
     }
   }
 
@@ -254,18 +226,14 @@ class ReactInteractive extends React.Component {
       (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
     );
 
-    // early return if pointer events polyfill is required
-    // pointer event handlers are set in componentDidMount
-    if (this.pointerEventsPolyfill) return listeners;
-
-    if (detectIt.deviceType !== 'mouseOnly') {
+    if (detectIt.hasTouchEventsApi) {
       ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
         (onEvent) => { listeners[onEvent] = this.handleTouchEvent; }
       );
     }
     if (detectIt.deviceType !== 'touchOnly') {
-      const handler =
-        detectIt.deviceType === 'mouseOnly' ? this.handleMouseEvent : this.handleHybridMouseEvent;
+      const handler = (detectIt.hasTouchEventsApi && detectIt.deviceType === 'hybrid') ?
+        this.handleHybridMouseEvent : this.handleMouseEvent;
       ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp']
       .forEach((onEvent) => { listeners[onEvent] = handler; });
     }
@@ -273,9 +241,9 @@ class ReactInteractive extends React.Component {
   }
 
   determineClickHandler() {
-    // determine click event handler based on device type
-    if (detectIt.deviceType === 'touchOnly') return this.handleTouchEvent;
-    if (detectIt.deviceType === 'hybrid') return this.handleHybridMouseEvent;
+    const dIt = detectIt;
+    if (dIt.deviceType === 'touchOnly') return this.handleTouchEvent;
+    if (dIt.deviceType === 'hybrid' && dIt.hasTouchEventApi) return this.handleHybridMouseEvent;
     return this.handleMouseEvent;
   }
 
@@ -349,9 +317,8 @@ class ReactInteractive extends React.Component {
     return tag !== 'INPUT' && tag !== 'BUTTON';
   }
 
-  handleMouseEvent = (e, override) => {
-    const type = (override && override.typeOverride) || e.type;
-    switch (type) {
+  handleMouseEvent = (e) => {
+    switch (e.type) {
       case 'mouseenter':
         this.props.onMouseEnter && this.props.onMouseEnter(e);
         this.track.mouseOn = true;
@@ -420,12 +387,11 @@ class ReactInteractive extends React.Component {
     return false;
   }
 
-  handleTouchEvent = (e, override) => {
+  handleTouchEvent = (e) => {
     this.track.mouseOn = false;
     this.track.buttonDown = false;
 
-    const type = (override && override.typeOverride) || e.type;
-    switch (type) {
+    switch (e.type) {
       case 'touchstart':
         this.props.onTouchStart && this.props.onTouchStart(e);
 
@@ -513,44 +479,6 @@ class ReactInteractive extends React.Component {
     }
 
     this.updateState(this.computeState(), this.props, e);
-  }
-
-  handlePointerEvent = (e) => {
-    const pointerType = { touch: 't', 2: 't', pen: 't', 3: 't', mouse: 'm', 4: 'm' };
-
-    const pointerTouchMap = {
-      pointerdown: 'touchstart',
-      MSPointerDown: 'touchstart',
-      pointerup: 'touchend',
-      MSPointerUp: 'touchend',
-      pointercancel: 'touchcancel',
-      MSPointerCancel: 'touchcancel',
-    };
-    const pointerMouseMap = {
-      pointerdown: 'mousedown',
-      MSPointerDown: 'mousedown',
-      pointerup: 'mouseup',
-      MSPointerUp: 'mouseup',
-      pointermove: 'mousemove',
-      MSPointerMove: 'mousemove',
-      pointerenter: 'mouseenter',
-      MSPointerEnter: 'mouseenter',
-    };
-    const passThroughToMouse = {
-      pointerleave: 'mouseleave',
-      MSPointerLeave: 'mouseleave',
-    };
-
-    if (passThroughToMouse[e.type]) {
-      const typeOverride = passThroughToMouse[e.type];
-      this.handleMouseEvent(e, { typeOverride });
-    } else if (pointerType[e.pointerType] === 'm' && pointerMouseMap[e.type]) {
-      const typeOverride = pointerMouseMap[e.type];
-      this.handleMouseEvent(e, { typeOverride });
-    } else if (pointerType[e.pointerType] === 't' && pointerTouchMap[e.type]) {
-      const typeOverride = pointerTouchMap[e.type];
-      this.handleTouchEvent(e, { typeOverride });
-    }
   }
 
   handleFocusEvent = (e) => {
