@@ -86,8 +86,10 @@ class ReactInteractive extends React.Component {
       focus: false,
       focusTransition: 'reset',
       focusStartState: false,
+      blurTime: Date.now() - 1000,
       spaceKeyDown: false,
       enterKeyDown: false,
+      updateTopNode: false,
       state: this.state,
     };
 
@@ -96,7 +98,7 @@ class ReactInteractive extends React.Component {
     this.pointerEventsPolyfill = detectIt.hasTouch && !detectIt.hasTouchEventsApi;
 
     this.refNode = null;
-    this.refCallback = (node) => { this.refNode = node; };
+    this.topNode = null;
     this.listeners = this.determineListeners();
     this.clickListener = this.determineClickHandler();
 
@@ -119,12 +121,12 @@ class ReactInteractive extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    this.track.updateTopNode = (this.props.as !== nextProps.as && typeof this.props.as !== 'string'
+    && typeof nextProps.as !== 'string');
+
     this.p.sameProps = false;
-    if (!nextProps.mutableProps && this.sameProps(nextProps)) {
-      this.p.sameProps = true;
-    } else {
-      this.propsSetup(nextProps);
-    }
+    if (!nextProps.mutableProps && this.sameProps(nextProps)) this.p.sameProps = true;
+    else this.propsSetup(nextProps);
     nextProps.forceState && this.updateState(nextProps.forceState, nextProps);
   }
 
@@ -143,6 +145,16 @@ class ReactInteractive extends React.Component {
     );
   }
 
+  componentDidUpdate() {
+    // refCallback isn't called by React when `as` is component becasue the span wrapper
+    // remains the same element and is not re-mounted in the DOM, so need to call refCallback here
+    // if `as` is new and a component.
+    if (this.track.updateTopNode) {
+      this.track.updateTopNode = false;
+      this.refCallback(this.refNode);
+    }
+  }
+
   componentWillUnmount() {
     if (this.pointerEventsPolyfill) {
       const pfix = detectIt.pointerEventsPrefix;
@@ -152,6 +164,17 @@ class ReactInteractive extends React.Component {
       this.refNode.removeEventListener(pfix('pointerenter'), this.handlePointerEvent, true);
       this.refNode.removeEventListener(pfix('pointerleave'), this.handlePointerEvent, true);
       this.refNode.removeEventListener(pfix('pointermove'), this.handlePointerEvent, true);
+    }
+  }
+
+  refCallback = (node) => {
+    this.refNode = node;
+    if (node) {
+      if (typeof this.props.as !== 'string') this.topNode = node.firstChild;
+      else this.topNode = node;
+      if (this.track.state.focus) {
+        this.focusTransition('focus', 'refCallbackFocus');
+      }
     }
   }
 
@@ -300,6 +323,28 @@ class ReactInteractive extends React.Component {
     this.setState(newState, setStateCallback);
   }
 
+  focusTransition = (event, transition) => {
+    this.track.focusTransition = transition;
+    if (event === 'blur') this.track.blurTime = Date.now();
+    this.topNode[event]();
+  }
+
+  toggleFocus = (toggleAs) => {
+    if (this.track.state.focus && this.tagIsBlurable()) {
+      this.focusTransition('blur', `${toggleAs}Blur`);
+      return true;
+    }
+    if (!this.track.state.focus && (this.props.focus || this.props.tabIndex)) {
+      this.focusTransition('focus', `${toggleAs}Focus`);
+      return true;
+    }
+    return false;
+  };
+
+  tagIsBlurable = () => {
+    const tag = this.topNode.tagName;
+    return tag !== 'INPUT' && tag !== 'BUTTON';
+  }
 
   handleMouseEvent = (e, override) => {
     const type = (override && override.typeOverride) || e.type;
@@ -326,29 +371,16 @@ class ReactInteractive extends React.Component {
         this.track.mouseOn = true;
         this.track.buttonDown = true;
         this.track.focusStartState = this.track.state.focus;
-
-        if (!this.track.state.focus && (this.props.focus || this.props.tabIndex) &&
-        typeof this.props.as === 'string') {
-          this.track.focusTransition = 'mouseDownFocus';
-          this.refNode.focus();
+        if (!this.track.state.focus && (this.props.focus || this.props.tabIndex)) {
+          this.focusTransition('focus', 'mouseDownFocus');
           return;
         }
         break;
       case 'mouseup':
         this.props.onMouseUp && this.props.onMouseUp(e);
         this.track.buttonDown = false;
-
-        if (this.track.state.focus && !this.track.focusStartState) {
-          this.track.focusTransition = 'reset';
-          this.track.focusStartState = false;
-        } else if (this.track.state.focus) {
-          this.track.focusTransition = 'mouseUpBlur';
-          if (typeof this.props.as === 'string') {
-            this.refNode.blur();
-          } else {
-            const el = document.activeElement;
-            el && el.blur();
-          }
+        if (this.track.state.focus && this.track.focusStartState && this.tagIsBlurable()) {
+          this.focusTransition('blur', 'mouseUpBlur');
           return;
         }
         break;
@@ -386,6 +418,9 @@ class ReactInteractive extends React.Component {
   }
 
   handleTouchEvent = (e, override) => {
+    this.track.mouseOn = false;
+    this.track.buttonDown = false;
+
     const type = (override && override.typeOverride) || e.type;
     switch (type) {
       case 'touchstart':
@@ -436,25 +471,7 @@ class ReactInteractive extends React.Component {
             case 1:
               this.props.onTap && this.props.onTap(e);
               this.props.onClick && this.props.onClick(e);
-
-              // toggle focus
-              if (this.track.state.focus) {
-                this.track.focusTransition = 'touchEndBlur';
-                if (typeof this.props.as === 'string') {
-                  this.refNode.blur();
-                } else {
-                  const el = document.activeElement;
-                  el && el.blur();
-                }
-                // early return because blur() will call updateSate()
-                return;
-              } else if (typeof this.props.as === 'string' &&
-              (this.props.focus || this.props.tabIndex)) {
-                this.track.focusTransition = 'touchEndFocus';
-                this.refNode.focus();
-                // early return because focus() will call updateSate()
-                return;
-              }
+              if (this.toggleFocus('touchEnd')) return;
               break;
             case 2:
               this.props.onTapTwo && this.props.onTapTwo(e);
@@ -481,31 +498,10 @@ class ReactInteractive extends React.Component {
       // for click events fired on touchOnly devices, listen for becasue synthetic
       // click events won't fire touchend
       case 'click': {
-        const transition = this.track.focusTransition;
-        if (transition === 'browserFocus') this.track.focusTransition = 'reset';
-
         if (Date.now() - this.track.touchEndTime > 600) {
           this.props.onTap && this.props.onTap(e);
           this.props.onClick && this.props.onClick(e);
-
-          if (transition === 'reset') {
-            // toggle focus
-            if (this.track.state.focus) {
-              this.track.focusTransition = 'clickBlur';
-              if (typeof this.props.as === 'string') {
-                this.refNode.blur();
-              } else {
-                const el = document.activeElement;
-                el && el.blur();
-              }
-              return;
-            } else if (typeof this.props.as === 'string' &&
-            (this.props.focus || this.props.tabIndex)) {
-              this.track.focusTransition = 'clickFcous';
-              this.refNode.focus();
-              return;
-            }
-          }
+          if (this.toggleFocus('touchEnd')) return;
         }
         return;
       }
@@ -513,8 +509,6 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    this.track.mouseOn = false;
-    this.track.buttonDown = false;
     this.updateState(this.computeState(), this.props, e);
   }
 
@@ -557,49 +551,26 @@ class ReactInteractive extends React.Component {
   }
 
   handleFocusEvent = (e) => {
-    const transitionAs = (transition) => {
-      this.props.onFocus && this.props.onFocus(e);
-      this.track.focusTransition = transition;
-      this.track.focus = true;
-    };
-
     switch (e.type) {
       case 'focus':
-        if (detectIt.deviceType === 'touchOnly') {
-          if (this.track.focusTransition === 'touchEndBlur') {
-            this.track.focusTransition = 'reset';
-            if (typeof this.props.as === 'string') this.refNode.blur();
-            else {
-              const el = document.activeElement;
-              el && el.blur();
-            }
-          } else if (this.track.focusTransition === 'touchEndFocus' ||
-          this.track.focusTransition === 'clickFocus') {
-            transitionAs('reset');
-          } else if (this.track.focusTransition === 'reset' ||
-          this.track.focusTransition === 'clickBlur' ||
-          this.track.focusTransition === 'browserFocus') {
-            transitionAs('browserFocus');
-          }
-        } else if (detectIt.deviceType === 'mouseOnly' || detectIt.deviceType === 'hybrid') {
-          if (this.track.focusTransition === 'touchEndBlur') {
-            this.track.focusTransition = 'reset';
-            if (typeof this.props.as === 'string') this.refNode.blur();
-            else {
-              const el = document.activeElement;
-              el && el.blur();
-            }
-          } else if (this.track.focusTransition === 'mouseDownFocus' ||
-          this.track.focusTransition === 'touchEndFocus') {
-            transitionAs('reset');
-          } else if (this.track.focusTransition === 'reset' ||
-          this.track.focusTransition === 'mouseUpBlur' ||
-          this.track.focusTransition === 'browserFocus') {
-            transitionAs('browserFocus');
-          }
+        if (this.track.state.focus) return;
+        if (this.track.focusTransition !== 'reset' || !this.tagIsBlurable() ||
+        (detectIt.deviceType !== 'touchOnly' && Date.now() - this.track.blurTime > 600)) {
+          this.props.onFocus && this.props.onFocus(e);
+          this.track.focusTransition = 'reset';
+          this.track.focus = true;
+        } else if (this.tagIsBlurable()) {
+          this.focusTransition('blur', 'focusForceBlur');
+          return;
         }
         break;
       case 'blur':
+        if (this.track.focusTransition === 'focusForceBlur' && !this.track.state.focus) {
+          this.track.focusTransition = 'reset';
+          return;
+        }
+        this.track.focusTransition = 'reset';
+        if (!this.track.state.focus) return;
         this.props.onBlur && this.props.onBlur(e);
         this.track.focus = false;
         break;
