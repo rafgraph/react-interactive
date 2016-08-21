@@ -127,7 +127,10 @@ class ReactInteractive extends React.Component {
     this.p.sameProps = false;
     if (!nextProps.mutableProps && this.sameProps(nextProps)) this.p.sameProps = true;
     else this.propsSetup(nextProps);
-    nextProps.forceState && this.updateState(nextProps.forceState, nextProps);
+    if (nextProps.forceState) {
+      if (nextProps.forceState.focus !== this.track.state.focus) this.toggleFocus('forceState');
+      this.updateState(nextProps.forceState, nextProps);
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
