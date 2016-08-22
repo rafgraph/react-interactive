@@ -173,12 +173,9 @@ class ReactInteractive extends React.Component {
 
     const iStates = { normal: true, hover: true, active: true, touchActive: true, focus: true };
     const sameIStateProp = (iState) => {
-      if (!(propsB[iState].style || propsB[iState].className ||
-      propsB[iState].onEnter || propsB[iState].onLeave)) return false;
-      if (propsB[iState].style !== propsA[iState].style) return false;
-      if (propsB[iState].className !== propsA[iState].className) return false;
-      if (propsB[iState].onEnter !== propsA[iState].onEnter) return false;
-      if (propsB[iState].onLeave !== propsA[iState].onLeave) return false;
+      const iStateKeys = ['style', 'className', 'onEnter', 'onLeave'];
+      if (!iStateKeys.some((key) => propsB[iState][key])) return false;
+      if (iStateKeys.some((key) => propsB[iState][key] !== propsA[iState][key])) return false;
       return true;
     };
 
