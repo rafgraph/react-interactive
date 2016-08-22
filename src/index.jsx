@@ -53,6 +53,7 @@ class ReactInteractive extends React.Component {
     onTap: PropTypes.func,
     onTapTwo: PropTypes.func,
     onTapThree: PropTypes.func,
+    onTapFour: PropTypes.func,
 
     onMouseEnter: PropTypes.func,
     onMouseLeave: PropTypes.func,
@@ -486,6 +487,9 @@ class ReactInteractive extends React.Component {
               break;
             case 3:
               this.p.props.onTapThree && this.p.props.onTapThree(e);
+              break;
+            case 4:
+              this.p.props.onTapFour && this.p.props.onTapFour(e);
               break;
             default:
           }
