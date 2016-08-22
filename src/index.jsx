@@ -18,6 +18,7 @@ class ReactInteractive extends React.Component {
     as: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.func,
+      PropTypes.element,
     ]).isRequired,
     children: PropTypes.node,
     normal: PropTypes.oneOfType([
@@ -100,6 +101,7 @@ class ReactInteractive extends React.Component {
 
     // this.p is used store things that are a deterministic function of props
     // to avoid recalulating on every render, it can be thought of as an extension to props
+    // and is only updated in the constructor and componentWillReceiveProps
     this.p = { sameProps: false };
     this.propsSetup(props);
   }
@@ -109,7 +111,7 @@ class ReactInteractive extends React.Component {
     && typeof nextProps.as !== 'string');
 
     this.p.sameProps = false;
-    if (!nextProps.mutableProps && this.sameProps(nextProps)) this.p.sameProps = true;
+    if (!nextProps.mutableProps && this.sameProps(this.props, nextProps)) this.p.sameProps = true;
     else this.propsSetup(nextProps);
     if (nextProps.forceState) {
       if (nextProps.forceState.focus !== this.track.state.focus) this.toggleFocus('forceState');
@@ -145,7 +147,7 @@ class ReactInteractive extends React.Component {
   refCallback = (node) => {
     this.refNode = node;
     if (node) {
-      if (typeof this.props.as !== 'string') this.topNode = node.firstChild;
+      if (typeof this.p.props.as !== 'string') this.topNode = node.firstChild;
       else this.topNode = node;
       if (this.track.state.focus) {
         this.focusTransition('focus', 'refCallbackFocus');
@@ -153,50 +155,90 @@ class ReactInteractive extends React.Component {
     }
   }
 
-  sameProps(nextProps) {
-    const keys = Object.keys(nextProps);
+  sameProps(propsA, propsB) {
+    // If children are ReactElements, e.g. JSX as opposed to strings,
+    // they will not be equal even if they are the same because React.createElement(...)
+    // returns a new instance every time and is called on every render,
+    // so unless there is a deep compare of the ReactElement tree of children,
+    // it doesn't make sense to continue checking other props.
+    // Note, that when nothing has changed in props,
+    // the only thing that's not equal are the children, so check first.
+    if (propsA.children !== propsB.children) return false;
 
-    const nextPOffset = nextProps.forceState ? -1 : 0;
-    const pOffset = this.props.forceState ? -1 : 0;
-    if ((keys.length + nextPOffset) !== (Object.keys(this.props).length + pOffset)) return false;
+    const keys = Object.keys(propsB);
+
+    const nextPOffset = propsB.forceState ? -1 : 0;
+    const pOffset = propsA.forceState ? -1 : 0;
+    if ((keys.length + nextPOffset) !== (Object.keys(propsA).length + pOffset)) return false;
 
     const iStates = { normal: true, hover: true, active: true, touchActive: true, focus: true };
     const sameIStateProp = (iState) => {
-      if (!(nextProps[iState].style || nextProps[iState].className ||
-      nextProps[iState].onEnter || nextProps[iState].onLeave)) return false;
-      if (nextProps[iState].style !== this.props[iState].style) return false;
-      if (nextProps[iState].className !== this.props[iState].className) return false;
-      if (nextProps[iState].onEnter !== this.props[iState].onEnter) return false;
-      if (nextProps[iState].onLeave !== this.props[iState].onLeave) return false;
+      if (!(propsB[iState].style || propsB[iState].className ||
+      propsB[iState].onEnter || propsB[iState].onLeave)) return false;
+      if (propsB[iState].style !== propsA[iState].style) return false;
+      if (propsB[iState].className !== propsA[iState].className) return false;
+      if (propsB[iState].onEnter !== propsA[iState].onEnter) return false;
+      if (propsB[iState].onLeave !== propsA[iState].onLeave) return false;
       return true;
     };
 
     for (let i = 0; i < keys.length; i++) {
-      if ((!Object.prototype.hasOwnProperty.call(this.props, keys[i]) ||
-      (nextProps[keys[i]] !== this.props[keys[i]] && iStates[keys[i]] && !sameIStateProp(keys[i])))
-      && (keys[i] !== 'forceState')) {
-        return false;
+      if (keys[i] !== 'forceState') {
+        if (!Object.prototype.hasOwnProperty.call(propsA, keys[i])) return false;
+        if (propsB[keys[i]] !== propsA[keys[i]]) {
+          if (keys[i] === 'as') {
+            if (React.isValidElement(propsA.as) && React.isValidElement(propsB.as)) {
+              // If `as` is JSX/ReactElement, shallowly compare it's props
+              // with a recursive call to sameProps - this should only recurse one time
+              // because the JSX/ReactElement shouldn't have the `as` prop.
+              if (!this.sameProps(propsA.as.props, propsB.as.props)) return false;
+            } else {
+              return false;
+            }
+          } else if (!(iStates[keys[i]] && sameIStateProp(keys[i]))) {
+            return false;
+          }
+        }
       }
     }
     return true;
   }
 
   propsSetup(props) {
-    this.p.passThroughProps = this.extractPassThroughProps(props);
-    this.p.normalStyle = this.extractStyle(props, 'normal');
-    this.p.hoverStyle = this.extractStyle(props, 'hover');
-    this.p.activeStyle = this.extractStyle(props, 'active');
-    this.p.touchActiveStyle = this.extractStyle(props, 'touchActive');
-    this.p.focusStyle = this.extractStyle(props, 'focus');
+    const { mergedProps, passThroughProps } = this.mergeAndExtractProps(props);
+    this.p.normalStyle = this.extractStyle(mergedProps, 'normal');
+    this.p.hoverStyle = this.extractStyle(mergedProps, 'hover');
+    this.p.activeStyle = this.extractStyle(mergedProps, 'active');
+    this.p.touchActiveStyle = this.extractStyle(mergedProps, 'touchActive');
+    this.p.focusStyle = this.extractStyle(mergedProps, 'focus');
+    this.p.passThroughProps = passThroughProps;
+    this.p.props = mergedProps;
   }
 
-  extractPassThroughProps(props) {
+  mergeAndExtractProps = (props) => {
+    const mergedProps = {};
     const passThroughProps = {};
     Object.keys(props).forEach((key) => {
+      mergedProps[key] = props[key];
       if (!knownProps[key]) passThroughProps[key] = props[key];
     });
+    if (React.isValidElement(props.as)) {
+      // if `as` is JSX/ReactElement, then merge in it's props
+      Object.keys(props.as.props).forEach((key) => {
+        mergedProps[key] = props.as.props[key];
+        if (!knownProps[key]) passThroughProps[key] = props.as.props[key];
+      });
+      // set `as` to the JSX/ReactElement's `type`:
+      // if the ReactElement is a ReactDOMElement then `type` will be a string, e.g. 'div', 'span'
+      // if the ReactElement is a ReactComponentElement, then `type` will be
+      // either a ReactClass or a ReactFunctionalComponent, e.g. as={<MyComponent />}
+      // https://facebook.github.io/react/docs/glossary.html
+      mergedProps.as = props.as.type;
+    } else {
+      mergedProps.as = props.as;
+    }
     if (props.focus && !props.tabIndex) passThroughProps.tabIndex = '0';
-    return passThroughProps;
+    return { mergedProps, passThroughProps };
   }
 
   extractStyle(props, state) {
@@ -305,7 +347,7 @@ class ReactInteractive extends React.Component {
       this.focusTransition('blur', `${toggleAs}Blur`);
       return true;
     }
-    if (!this.track.state.focus && (this.props.focus || this.props.tabIndex)) {
+    if (!this.track.state.focus && (this.p.props.focus || this.p.props.tabIndex)) {
       this.focusTransition('focus', `${toggleAs}Focus`);
       return true;
     }
@@ -320,34 +362,34 @@ class ReactInteractive extends React.Component {
   handleMouseEvent = (e) => {
     switch (e.type) {
       case 'mouseenter':
-        this.props.onMouseEnter && this.props.onMouseEnter(e);
+        this.p.props.onMouseEnter && this.p.props.onMouseEnter(e);
         this.track.mouseOn = true;
         this.track.buttonDown = e.buttons === 1;
         break;
       case 'mouseleave':
-        this.props.onMouseLeave && this.props.onMouseLeave(e);
+        this.p.props.onMouseLeave && this.p.props.onMouseLeave(e);
         this.track.mouseOn = false;
         this.track.buttonDown = false;
         break;
       case 'mousemove':
-        this.props.onMouseMove && this.props.onMouseMove(e);
+        this.p.props.onMouseMove && this.p.props.onMouseMove(e);
         // early return for mouse move
         if (this.track.mouseOn && this.track.buttonDown === (e.buttons === 1)) return;
         this.track.mouseOn = true;
         this.track.buttonDown = e.buttons === 1;
         break;
       case 'mousedown':
-        this.props.onMouseDown && this.props.onMouseDown(e);
+        this.p.props.onMouseDown && this.p.props.onMouseDown(e);
         this.track.mouseOn = true;
         this.track.buttonDown = true;
         this.track.focusStartState = this.track.state.focus;
-        if (!this.track.state.focus && (this.props.focus || this.props.tabIndex)) {
+        if (!this.track.state.focus && (this.p.props.focus || this.p.props.tabIndex)) {
           this.focusTransition('focus', 'mouseDownFocus');
           return;
         }
         break;
       case 'mouseup':
-        this.props.onMouseUp && this.props.onMouseUp(e);
+        this.p.props.onMouseUp && this.p.props.onMouseUp(e);
         this.track.buttonDown = false;
         if (this.track.state.focus && this.track.focusStartState && this.tagIsBlurable()) {
           this.focusTransition('blur', 'mouseUpBlur');
@@ -355,14 +397,14 @@ class ReactInteractive extends React.Component {
         }
         break;
       case 'click':
-        this.props.onMouseClick && this.props.onMouseClick(e);
-        this.props.onClick && this.props.onClick(e);
+        this.p.props.onMouseClick && this.p.props.onMouseClick(e);
+        this.p.props.onClick && this.p.props.onClick(e);
         return;
       default:
         return;
     }
 
-    this.updateState(this.computeState(), this.props, e);
+    this.updateState(this.computeState(), this.p.props, e);
   }
 
   handleHybridMouseEvent = (e) => {
@@ -393,7 +435,7 @@ class ReactInteractive extends React.Component {
 
     switch (e.type) {
       case 'touchstart':
-        this.props.onTouchStart && this.props.onTouchStart(e);
+        this.p.props.onTouchStart && this.p.props.onTouchStart(e);
 
         // if going from no touch to touch, set touch start time
         if (!this.track.touchDown) this.track.touchStartTime = Date.now();
@@ -413,7 +455,7 @@ class ReactInteractive extends React.Component {
         }
         break;
       case 'touchend':
-        this.props.onTouchEnd && this.props.onTouchEnd(e);
+        this.p.props.onTouchEnd && this.p.props.onTouchEnd(e);
         this.track.touchDown = e.targetTouches.length > 0;
 
         // cancel if also touching someplace else on the screen
@@ -438,15 +480,15 @@ class ReactInteractive extends React.Component {
 
           switch (taps) {
             case 1:
-              this.props.onTap && this.props.onTap(e);
-              this.props.onClick && this.props.onClick(e);
+              this.p.props.onTap && this.p.props.onTap(e);
+              this.p.props.onClick && this.p.props.onClick(e);
               if (this.toggleFocus('touchEnd')) return;
               break;
             case 2:
-              this.props.onTapTwo && this.props.onTapTwo(e);
+              this.p.props.onTapTwo && this.p.props.onTapTwo(e);
               break;
             case 3:
-              this.props.onTapThree && this.props.onTapThree(e);
+              this.p.props.onTapThree && this.p.props.onTapThree(e);
               break;
             default:
           }
@@ -454,7 +496,7 @@ class ReactInteractive extends React.Component {
         break;
 
       case 'touchcancel':
-        this.props.onTouchCancel && this.props.onTouchCancel(e);
+        this.p.props.onTouchCancel && this.p.props.onTouchCancel(e);
         this.track.touchDown = e.targetTouches.length > 0;
         if (e.targetTouches.length === 0) {
           this.track.touchEndTime = Date.now();
@@ -468,8 +510,8 @@ class ReactInteractive extends React.Component {
       // click events won't fire touchend
       case 'click': {
         if (Date.now() - this.track.touchEndTime > 600) {
-          this.props.onTap && this.props.onTap(e);
-          this.props.onClick && this.props.onClick(e);
+          this.p.props.onTap && this.p.props.onTap(e);
+          this.p.props.onClick && this.p.props.onClick(e);
           if (this.toggleFocus('touchEnd')) return;
         }
         return;
@@ -478,7 +520,7 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    this.updateState(this.computeState(), this.props, e);
+    this.updateState(this.computeState(), this.p.props, e);
   }
 
   handleFocusEvent = (e) => {
@@ -487,7 +529,7 @@ class ReactInteractive extends React.Component {
         if (this.track.state.focus) return;
         if (this.track.focusTransition !== 'reset' || !this.tagIsBlurable() ||
         (detectIt.deviceType !== 'touchOnly' && Date.now() - this.track.blurTime > 600)) {
-          this.props.onFocus && this.props.onFocus(e);
+          this.p.props.onFocus && this.p.props.onFocus(e);
           this.track.focusTransition = 'reset';
           this.track.focus = true;
         } else if (this.tagIsBlurable()) {
@@ -502,16 +544,16 @@ class ReactInteractive extends React.Component {
         }
         this.track.focusTransition = 'reset';
         if (!this.track.state.focus) return;
-        this.props.onBlur && this.props.onBlur(e);
+        this.p.props.onBlur && this.p.props.onBlur(e);
         this.track.focus = false;
         break;
       case 'keydown':
-        this.props.onKeyDown && this.props.onKeyDown(e);
+        this.p.props.onKeyDown && this.p.props.onKeyDown(e);
         if (e.key === ' ') this.track.spaceKeyDown = true;
         else if (e.key === 'Enter') this.track.enterKeyDown = true;
         break;
       case 'keyup':
-        this.props.onKeyUp && this.props.onKeyUp(e);
+        this.p.props.onKeyUp && this.p.props.onKeyUp(e);
         if (e.key === ' ') this.track.spaceKeyDown = false;
         else if (e.key === 'Enter') this.track.enterKeyDown = false;
         break;
@@ -519,11 +561,11 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    this.updateState(this.computeState(), this.props, e);
+    this.updateState(this.computeState(), this.p.props, e);
   }
 
   render() {
-    const style = objectAssign({}, this.props.style,
+    const style = objectAssign({}, this.p.props.style,
       this.p[`${this.state.iState}Style`].style,
       this.state.focus ? this.p.focusStyle.style : null);
 
@@ -534,7 +576,7 @@ class ReactInteractive extends React.Component {
       return joined;
     }
     const className =
-    joinClasses(this.props.className || '', this.p[`${this.state.iState}Style`].className,
+    joinClasses(this.p.props.className || '', this.p[`${this.state.iState}Style`].className,
       this.state.focus ? this.p.focusStyle.className : '');
 
     // props to pass down:
@@ -547,19 +589,19 @@ class ReactInteractive extends React.Component {
     if (className) props.className = className;
 
     // only set onClick listener if it's required
-    if (this.props.onClick || this.props.onTap || this.props.onMouseClick ||
-    this.props.focus || this.props.tabIndex) {
+    if (this.p.props.onClick || this.p.props.onTap || this.p.props.onMouseClick ||
+    this.p.props.focus || this.p.props.tabIndex) {
       props.onClick = this.clickListener;
     }
 
-    if (typeof this.props.as === 'string') {
+    if (typeof this.p.props.as === 'string') {
       props.ref = this.refCallback;
-      return React.createElement(this.props.as, props, this.props.children);
+      return React.createElement(this.p.props.as, props, this.p.props.children);
     }
-    // If this.props.as is a component class, then wrap it in a span
+    // If this.p.props.as is a component class, then wrap it in a span
     // so can attach ref without breaking encapsulation
     return React.createElement('span', { ref: this.refCallback },
-      React.createElement(this.props.as, props, this.props.children)
+      React.createElement(this.p.props.as, props, this.p.props.children)
     );
   }
 }
