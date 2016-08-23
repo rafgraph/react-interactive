@@ -335,8 +335,7 @@ class ReactInteractive extends React.Component {
 
     // only place that setState is called
     this.setState(newState,
-      this.p.props.setStateCallback &&
-      this.p.props.setStateCallback.bind(this, { prevState, nextState })
+      props.setStateCallback && props.setStateCallback.bind(this, { prevState, nextState })
     );
   }
 
