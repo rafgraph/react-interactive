@@ -6,8 +6,8 @@ import objectAssign from 'object-assign';
 const knownProps = {
   children:true, as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
   forceState:true, style:true, className:true, onStateChange:true, setStateCallback:true,
-  onClick:true, onMouseClick:true, onTap:true, onTapTwo:true, onTapThree:true, onMouseEnter:true,
-  onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
+  onClick:true, onMouseClick:true, onTap:true, onTapTwo:true, onTapThree:true, onTapFour:true,
+  onMouseEnter:true, onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
   onTouchStart:true, onTouchEnd:true, onTouchCancel:true, onFocus:true,
   onBlur:true, onKeyDown:true, onKeyUp:true, mutableProps:true,
 }
