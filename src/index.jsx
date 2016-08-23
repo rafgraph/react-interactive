@@ -5,7 +5,7 @@ import objectAssign from 'object-assign';
 /* eslint-disable */
 const knownProps = {
   children:true, as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
-  forceState:true, style:true, className:true, onStateChange:true,
+  forceState:true, style:true, className:true, onStateChange:true, setStateCallback:true,
   onClick:true, onMouseClick:true, onTap:true, onTapTwo:true, onTapThree:true, onMouseEnter:true,
   onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
   onTouchStart:true, onTouchEnd:true, onTouchCancel:true, onFocus:true,
@@ -48,6 +48,7 @@ class ReactInteractive extends React.Component {
     style: PropTypes.object,
     className: PropTypes.string,
     onStateChange: PropTypes.func,
+    setStateCallback: PropTypes.func,
     onClick: PropTypes.func,
     onMouseClick: PropTypes.func,
     onTap: PropTypes.func,
@@ -299,39 +300,44 @@ class ReactInteractive extends React.Component {
   }
 
   updateState(newState, props = {}, e = {}) {
-    const iChange = (newState.iState !== this.track.state.iState);
+    const prevIState = this.track.state.iState;
+    const nextIState = newState.iState;
+    const iChange = (nextIState !== prevIState);
     const fChange = (newState.focus !== this.track.state.focus);
 
     // early return if state doesn't need to change
     if (!iChange && !fChange) return;
 
-    // call onStateChange prop callback
-    props.onStateChange && props.onStateChange({
-      prevState: this.track.state,
-      nextState: newState,
-      event: e,
-    });
-
-    // setup onEnter/onLeave state callbacks to pass as cb to setState
-    const prevIState = iChange && this.track.state.iState;
-    const prevIStateCB = iChange && props[prevIState] && props[prevIState].onLeave;
-    const nextIState = iChange && newState.iState;
-    const nextIStateCB = iChange && props[nextIState] && props[nextIState].onEnter;
-    const focusStateCB = fChange && (
-      (this.track.state.focus && props.focus && props.focus.onLeave) ||
-      (newState.focus && props.focus && props.focus.onEnter)
-    );
-    const setStateCallback = () => {
-      prevIStateCB && prevIStateCB(prevIState);
-      nextIStateCB && nextIStateCB(nextIState);
-      focusStateCB && focusStateCB('focus');
+    const prevState = {
+      iState: prevIState,
+      focus: this.track.state.focus,
     };
+    const nextState = {
+      iState: nextIState,
+      focus: newState.focus,
+    };
+
+    // call onStateChange prop callback
+    props.onStateChange && props.onStateChange({ prevState, nextState, event: e });
+
+    // call onEnter and onLeave callbacks
+    if (iChange) {
+      props[prevIState] && props[prevIState].onLeave && props[prevIState].onLeave(prevIState);
+      props[nextIState] && props[nextIState].onEnter && props[nextIState].onEnter(nextIState);
+    }
+    if (fChange) {
+      const transition = newState.focus ? 'onEnter' : 'onLeave';
+      props.focus && props.focus[transition] && props.focus[transition]('focus');
+    }
 
     // track new state becasue setState is asyncrounous
     this.track.state = newState;
 
     // only place that setState is called
-    this.setState(newState, setStateCallback);
+    this.setState(newState,
+      this.p.props.setStateCallback &&
+      this.p.props.setStateCallback.bind(this, { prevState, nextState })
+    );
   }
 
   focusTransition = (event, transition) => {
