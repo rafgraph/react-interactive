@@ -214,7 +214,7 @@ class ReactInteractive extends React.Component {
     this.p.props = mergedProps;
   }
 
-  mergeAndExtractProps = (props) => {
+  mergeAndExtractProps(props) {
     const mergedProps = {};
     const passThroughProps = {};
     Object.keys(props).forEach((key) => {
@@ -339,13 +339,13 @@ class ReactInteractive extends React.Component {
     );
   }
 
-  focusTransition = (event, transition) => {
+  focusTransition(event, transition) {
     this.track.focusTransition = transition;
     if (event === 'blur') this.track.blurTime = Date.now();
     this.topNode[event]();
   }
 
-  toggleFocus = (toggleAs) => {
+  toggleFocus(toggleAs) {
     if (this.track.state.focus && this.tagIsBlurable()) {
       this.focusTransition('blur', `${toggleAs}Blur`);
       return true;
@@ -355,9 +355,9 @@ class ReactInteractive extends React.Component {
       return true;
     }
     return false;
-  };
+  }
 
-  tagIsBlurable = () => {
+  tagIsBlurable() {
     const tag = this.topNode.tagName;
     return tag !== 'INPUT' && tag !== 'BUTTON';
   }
@@ -414,7 +414,7 @@ class ReactInteractive extends React.Component {
     !this.track.touchDown && Date.now() - this.track.touchEndTime > 600 && this.handleMouseEvent(e);
   }
 
-  hasTaps = () => {
+  hasTaps() {
     if (this.track.touches.canceled) return false;
     const touches = this.track.touches;
     const touchKeys = Object.keys(touches);
