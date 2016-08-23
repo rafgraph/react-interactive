@@ -240,22 +240,22 @@ class ReactInteractive extends React.Component {
     return { mergedProps, passThroughProps };
   }
 
-  extractStyle(props, state) {
-    if (!props[state]) return { style: null, className: '' };
-    let stateProps = typeof props[state] === 'string' ? props[props[state]] : props[state];
+  extractStyle(props, iState) {
+    if (!props[iState]) return { style: null, className: '' };
+    let iStateProps = typeof props[iState] === 'string' ? props[props[iState]] : props[iState];
     let times = 0;
-    while (typeof stateProps === 'string' && times < 3) {
-      stateProps = props[stateProps];
+    while (typeof iStateProps === 'string' && times < 3) {
+      iStateProps = props[iStateProps];
       times++;
     }
-    if (typeof stateProps !== 'object') return { style: null, className: '' };
+    if (typeof iStateProps !== 'object') return { style: null, className: '' };
 
     const extract = {};
-    if (stateProps.style || stateProps.className || stateProps.onEnter || stateProps.onLeave) {
-      extract.style = stateProps.style || null;
-      extract.className = stateProps.className || '';
+    if (iStateProps.style || iStateProps.className || iStateProps.onEnter || iStateProps.onLeave) {
+      extract.style = iStateProps.style || null;
+      extract.className = iStateProps.className || '';
     } else {
-      extract.style = stateProps;
+      extract.style = iStateProps;
       extract.className = '';
     }
     return extract;
