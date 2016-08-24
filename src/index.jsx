@@ -115,9 +115,9 @@ class ReactInteractive extends React.Component {
     this.p.sameProps = false;
     if (!nextProps.mutableProps && this.sameProps(this.props, nextProps)) this.p.sameProps = true;
     else this.propsSetup(nextProps);
-    if (nextProps.forceState) {
-      if (nextProps.forceState.focus !== this.track.state.focus) this.toggleFocus('forceState');
-      this.updateState(nextProps.forceState, nextProps);
+    if (this.p.props.forceState) {
+      if (this.p.props.forceState.focus !== this.track.state.focus) this.toggleFocus('forceState');
+      this.updateState(this.p.props.forceState, this.p.props);
     }
   }
 
