@@ -89,7 +89,6 @@ class ReactInteractive extends React.Component {
       focus: false,
       focusTransition: 'reset',
       focusStartState: false,
-      blurTime: Date.now() - 1000,
       spaceKeyDown: false,
       enterKeyDown: false,
       updateTopNode: false,
@@ -339,9 +338,9 @@ class ReactInteractive extends React.Component {
     );
   }
 
-  focusTransition(event, transition) {
-    this.track.focusTransition = transition;
-    if (event === 'blur') this.track.blurTime = Date.now();
+  // transition to a new focus state and track what initiated the transition
+  focusTransition(event, transitionAs) {
+    this.track.focusTransition = transitionAs;
     this.topNode[event]();
   }
 
@@ -513,12 +512,19 @@ class ReactInteractive extends React.Component {
         break;
 
       // for click events fired on touchOnly devices, listen for becasue synthetic
-      // click events won't fire touchend
+      // click events won't fire touchend event
       case 'click': {
         if (Date.now() - this.track.touchEndTime > 600) {
           this.p.props.onTap && this.p.props.onTap(e);
           this.p.props.onClick && this.p.props.onClick(e);
-          if (this.toggleFocus('touchEnd')) return;
+          if (!this.track.state.focus || this.track.focusTransition !== 'browserFocus') {
+            if (this.toggleFocus('touchEnd')) return;
+          }
+          this.track.focusTransition = 'reset';
+        } else if (this.track.state.focus && this.track.focusTransition === 'browserFocus') {
+          this.p.props.onTap && this.p.props.onTap(e);
+          this.p.props.onClick && this.p.props.onClick(e);
+          this.track.focusTransition = 'reset';
         }
         return;
       }
@@ -533,22 +539,20 @@ class ReactInteractive extends React.Component {
     switch (e.type) {
       case 'focus':
         if (this.track.state.focus) return;
-        if (this.track.focusTransition !== 'reset' || !this.tagIsBlurable() ||
-        (detectIt.deviceType !== 'touchOnly' && Date.now() - this.track.blurTime > 600)) {
-          this.p.props.onFocus && this.p.props.onFocus(e);
-          this.track.focusTransition = 'reset';
-          this.track.focus = true;
-        } else if (this.tagIsBlurable()) {
+        if (this.track.focusTransition === 'touchEndBlur') {
           this.focusTransition('blur', 'focusForceBlur');
           return;
         }
+        this.p.props.onFocus && this.p.props.onFocus(e);
+        this.track.focusTransition = this.track.focusTransition === 'reset' ?
+        'browserFocus' : 'reset';
+        this.track.focus = true;
         break;
       case 'blur':
         if (this.track.focusTransition === 'focusForceBlur' && !this.track.state.focus) {
           this.track.focusTransition = 'reset';
           return;
         }
-        this.track.focusTransition = 'reset';
         if (!this.track.state.focus) return;
         this.p.props.onBlur && this.p.props.onBlur(e);
         this.track.focus = false;
