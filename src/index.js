@@ -284,7 +284,7 @@ class ReactInteractive extends React.Component {
   determineClickHandler() {
     const dIt = detectIt;
     if (dIt.deviceType === 'touchOnly') return this.handleTouchEvent;
-    if (dIt.deviceType === 'hybrid' && dIt.hasTouchEventApi) return this.handleHybridMouseEvent;
+    if (dIt.deviceType === 'hybrid' && dIt.hasTouchEventsApi) return this.handleHybridMouseEvent;
     return this.handleMouseEvent;
   }
 
