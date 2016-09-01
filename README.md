@@ -11,7 +11,7 @@ Interactive state machine as a React component with 8 total states. There are 4 
 
 Compared to CSS, React Interactive is a simpler state machine, with better touch device support, and on enter/leave state hooks. See [comparison below](https://github.com/rafrex/react-interactive#interactive-state-machine-comparison).
 
-#### Basic Example
+#### Basic Examples
 ```javascript
 <Interactive
   as="div"
@@ -19,10 +19,23 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
   hover={{ color: 'green' }}
   active={{ color: 'red' }}
   touchActive={{ color: 'blue' }}
-  focus={{ border: '2px dotted green' }}
-  style={{ fontSize: '16px', border: '1px solid black' }}
+  focus={{ border: '2px solid yellow' }}
+  style={{ fontSize: '16px', padding: '3px', border: '2px dotted black' }}
   onClick={handleClick}
-/>
+>This is an interactive and focusable div</Interactive>
+```
+```javascript
+// Interactive as a React Router Link component
+import { Link } from 'react-router';
+...
+<Interactive
+  as={Link}
+  to="/some/path"
+  hover={{ color: 'green' }}
+  active="hover"
+  touchActive={{ color: 'blue' }}
+  style={{ color: 'black', padding: '3px' }}
+>This is an interactive React Router Link component</Interactive>
 ```
 
 ## API
