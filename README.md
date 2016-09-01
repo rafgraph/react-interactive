@@ -38,6 +38,14 @@ import { Link } from 'react-router';
 >This is an interactive React Router Link component</Interactive>
 ```
 
+#### Installing `react-interactive`
+```shell
+$ npm install react-interactive
+```
+```javascript
+import Interactive from 'react-interactive';
+```
+
 ## API
 
 ### API for `<Interactive />`
