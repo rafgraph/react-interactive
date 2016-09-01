@@ -72,14 +72,6 @@ Note that if you pass in other event handlers, e.g. `onTouchStart`, they will be
   - One of the 4 mutually exclusive states' classes (`normal`, `hover`, `active`, or `touchActive`)
   - The `className` prop
 
-### API for children - TODO
-For example, `<Interactive as="div"><div showOnParent="hover">foo</div></Interactive>`
-
-| Prop Name | Type | Default | Values | Example | Description |
-|:----------|:-----|:--------|:-------|:--------|:------------|
-| `showOnParent` | string | always show | `normal`, `hover`, `active`, `touchActive` | `'hover touchActive'` | Only render child when parent is in one of the specified states. List as a space separated string. |
-
-
 ## Interactive state machine comparison
 Compared to CSS, React Interactive is a simpler state machine, with better touch device support, and on enter/leave state hooks.
 - Let's define some basic mouse, touch, and keyboard states:
