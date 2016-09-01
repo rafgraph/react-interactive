@@ -689,8 +689,9 @@ class ReactInteractive extends React.Component {
 
   render() {
     // build style object, priority order: focus style (if in focus state), iState style, style prop
-    const style = objectAssign({}, this.p.props.style,
-      this.p[`${this.state.iState}Style`].style,
+    const style = {};
+    if (this.p.props.onClick || this.p.props.onMouseClick) style.cursor = 'pointer';
+    objectAssign(style, this.p.props.style, this.p[`${this.state.iState}Style`].style,
       this.state.focus ? this.p.focusStyle.style : null);
 
     // build className string, union of class names from className prop, iState className,
