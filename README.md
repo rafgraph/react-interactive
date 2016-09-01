@@ -77,7 +77,7 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
 - Let's define some basic mouse, touch, and keyboard states:
   - `mouseOn`: the mouse is on the element
   - `buttonDown`: the mouse button is down while the mouse is on the element
-  - `touchDown`: touch is on the screen and started on the element
+  - `touchDown`: at least one touch point is in contact with the screen and started on the element
   - `focusKeyDown`:
     - For React Interactive, this if the element has focus and the space bar or enter key is down.
     - For CSS, this is something like, if the element is a button, has focus, and the space bar is down, then it is in the `foucsKeyDown` state, but is not consistent across browsers (haven’t done enough testing to know all the edge cases).
@@ -99,11 +99,10 @@ Note that since a state machine can only be in one state at a time, to view inte
 |:------------------|:-----|:---------------------------------|:----------------|
 | *base styles* | *Always applied, everything merges with them* | *Not an interactive state* | *`.class`* |
 | normal | Rarely used in CSS (overriding base styles is used instead)  | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` | `.class:not(:hover):not(:active)` |
-| hover | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` &#124;&#124; `(after touchDown and sticks until you tap someplace else - the sticky hover bug)` | `.class:hover` |
+| hover | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` &#124;&#124; `(after touchDown and sticks until you tap someplace else - the sticky hover CSS bug on touch devices)` | `.class:hover` |
 | hoverActive | Both hover and active styles applied | `(mouseOn && buttonDown)` &#124;&#124; `(mouseOn && focusKeyDown)` &#124;&#124; `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
 | active | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` &#124;&#124; `(focusKeyDown && !mouseOn)` &#124;&#124; `(touchDown && and not on element currently, but not consistent across browsers)` | `.class:active` |
-|  |  |  |  |
 
-The focus state can be combined with any of the above CSS interactive states, for a doubling of the total number of states that the CSS interactive state machine can be in.
+The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
 
-Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and on touch devices interactive CSS is not well supported. Also, there are no state change hooks with CSS.
+Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and on touch devices interactive CSS is not well supported. Also, there are no state change hooks with interactive CSS.
