@@ -52,15 +52,14 @@ Note that there are no default values for any prop, and the only required prop i
 |  |  |  |  |  |
 
 #### Order that callbacks are called in:
-1. Action callbacks are called first in the following order (higher specificity first):
-  1. `onMouseClick` or `onTap`
+1. Event callbacks are called first in the following order (higher specificity first):
+  1. `onMouseClick` or `onTap` (they are mutually exclusive)
   * `onClick`
 * `onStateChange`
-* `setState` for Interactive is called next, with the following hooks passed in as a callback to `setState`, after `setState` finishes they will be called in the following order:
-  1. `onLeave` callback for state being left
-  * `onEnter` callback for state being entered
+* `onLeave` and `onEnter` state hooks
+* `setStateCallback` is passed in as a callback to `setState`, and is called after `setState` finishes
 
-Note that if you pass in other event handlers, e.g. `onTouchStart`, they will be called after any React Interactive state changes and callbacks.
+Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`, etc..., they will be called *before* React Interactive changes its state and calls any of its callbacks.
 
 #### Merging styles and classes
 - Styles have the following precedence when merged:
