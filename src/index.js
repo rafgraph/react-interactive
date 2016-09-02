@@ -690,7 +690,14 @@ class ReactInteractive extends React.Component {
   render() {
     // build style object, priority order: focus style (if in focus state), iState style, style prop
     const style = {};
-    if (this.p.props.onClick || this.p.props.onMouseClick) style.cursor = 'pointer';
+    // make the cursor a pointer by default if `as` is not an input or textarea and
+    // there is a click handler or the element can receive focus
+    if ((typeof this.p.props.as !== 'string' ||
+    (this.p.props.as.toLowerCase() !== 'input' && this.p.props.as.toLowerCase() !== 'textarea')) &&
+    (this.p.props.onClick || this.p.props.onMouseClick ||
+    this.p.props.focus || this.p.props.tabIndex)) {
+      style.cursor = 'pointer';
+    }
     objectAssign(style, this.p.props.style, this.p[`${this.state.iState}Style`].style,
       this.state.focus ? this.p.focusStyle.style : null);
 
