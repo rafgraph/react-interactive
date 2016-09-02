@@ -403,7 +403,7 @@ class ReactInteractive extends React.Component {
 
   // toggle focus if it's allowed, returns a boolean representing if focus was toggled
   toggleFocus(toggleAs) {
-    // only toggle out of focus if the tag is blurrable (not input or button)
+    // only toggle out of focus if the tag is blurable (not input, button or textarea)
     if (this.track.state.focus && this.tagIsBlurable()) {
       this.focusTransition('blur', `${toggleAs}Blur`);
       return true;
@@ -419,7 +419,7 @@ class ReactInteractive extends React.Component {
   // returns true if the tag is allowed to be blurred, false otherwise
   tagIsBlurable() {
     const tag = this.topNode.tagName;
-    return tag !== 'INPUT' && tag !== 'BUTTON';
+    return tag !== 'INPUT' && tag !== 'BUTTON' && tag !== 'TEXTAREA';
   }
 
   handleMouseEvent = (e) => {
