@@ -347,9 +347,12 @@ class ReactInteractive extends React.Component {
     const focusKeyDown = focus && (this.track.spaceKeyDown || this.track.enterKeyDown);
     const newState = { focus };
     if (touchDown) newState.iState = 'touchActive';
-    else if (!mouseOn && !focusKeyDown) newState.iState = 'normal';
-    else if (mouseOn && !buttonDown && !focusKeyDown) newState.iState = 'hover';
-    else if ((mouseOn && buttonDown) || focusKeyDown) newState.iState = 'active';
+    // only enter the active state if there is an `active` prop
+    else if (mouseOn && ((!buttonDown && !focusKeyDown) || !this.p.props.active)) {
+      newState.iState = 'hover';
+    } else if (this.p.props.active && ((mouseOn && buttonDown) || focusKeyDown)) {
+      newState.iState = 'active';
+    } else newState.iState = 'normal';
     return newState;
   }
 
