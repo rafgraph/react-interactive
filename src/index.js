@@ -651,11 +651,11 @@ class ReactInteractive extends React.Component {
 
         this.p.props.onFocus && this.p.props.onFocus(e);
 
-        // if focusTransition is 'reset' or contains 'Blur', then the focus event must be
-        // from the the browser, so set focusTransition to 'browserFocus', otherwise reset it
+        // if focusTransition is 'reset', 'browserFocus', or contains 'Blur', the focus event must
+        // be from the browser, so set focusTransition to 'browserFocus', otherwise reset it
         this.track.focusTransition =
-        (this.track.focusTransition === 'reset' || /Blur/.test(this.track.focusTransition)) ?
-        'browserFocus' : 'reset';
+        (this.track.focusTransition === 'reset' || this.track.focusTransition === 'browserFocus' ||
+        /Blur/.test(this.track.focusTransition)) ? 'browserFocus' : 'reset';
 
         this.track.focus = true;
         break;
