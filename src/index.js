@@ -421,8 +421,8 @@ class ReactInteractive extends React.Component {
 
   // returns true if the tag is allowed to be blurred, false otherwise
   tagIsBlurable() {
-    const tag = this.topNode.tagName;
-    return tag !== 'INPUT' && tag !== 'BUTTON' && tag !== 'TEXTAREA';
+    const nonBlurable = { INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1 };
+    return nonBlurable[this.topNode.tagName] === undefined;
   }
 
   handleMouseEvent = (e) => {
