@@ -183,3 +183,13 @@ Note that since a state machine can only be in one state at a time, to view inte
 The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
 
 Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and on touch devices interactive CSS is not well supported. Also, there are no state change hooks with interactive CSS.
+
+
+## Notes
+- Focus state:
+  - React Interactive's focus state is always kept in sync with the browser's focus state. Added focus functionality like focus toggle and `tabOnlyFocus` is implemented by controlling the browser's focus state.
+  - If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser.
+  - All elements will toggle focus except if the element's tag name is `input`, `textarea`, `button`, `select`, or `option`.
+  - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
+  - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 touch point tap. Also, on touchOnly devices, a click event not preceded by a touch event will toggle focus on/off.
+  - The focus state change occurs in the same render as the mutually exclusive state changes. For example, on mouse down enters the `focus` state and the `hoverActive` state on the same render. The is achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls, one to enter the `hoverActive` state and one to enter the `focus` state (while two `setState` calls don't always mean two renders, it usually ends up that way).
