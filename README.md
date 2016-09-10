@@ -66,8 +66,7 @@ import { Link } from 'react-router';
 >This is an interactive div with separate active states</Interactive>
 ```
 ```javascript
-// Example link with separate states for
-// mouse, touch, and keyboard interactions
+// Interactive link with separate states for mouse, touch, and keyboard interactions
 <Interactive
   as="a"
   href="https://example.tld"
@@ -80,7 +79,7 @@ import { Link } from 'react-router';
   // touch interactions: normal -> touchActive
   touchActive={{ color: 'blue' }}
 
-  // keyboard interactions: normal -> focus -> keyActive
+  // keyboard interactions: normal -> normal with focus -> keyActive with focus
   focus={{
     style: { outline: '2px solid yellow' },
     // so the focus state is not entered during mouse or touch interactions
@@ -88,7 +87,7 @@ import { Link } from 'react-router';
   }}
   keyActive={{ color: 'yellow' }}
 
->Interactive link with separate styles for each interaction type</Interactive>
+>Interactive link with separate styles for each type of interaction</Interactive>
 ```
 
 #### Installing `react-interactive`
