@@ -102,7 +102,7 @@ import Interactive from 'react-interactive';
 
 ### API for `<Interactive />`
 Note that there are no default values for any prop, and the only required prop is `as`.  
-For the definitions of when each state is entered, see the [state machine definition](https://github.com/rafrex/react-interactive#react-interactive-state-machine) below.
+For the definition of when each state is entered, see the [state machine definition](https://github.com/rafrex/react-interactive#react-interactive-state-machine) below.
 
 | Prop | Type | Example | Description |
 |:-----|:-----|:--------|:------------|
