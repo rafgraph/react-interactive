@@ -193,3 +193,17 @@ Note that you could achieve mutually exclusive hover and active states if you ap
   - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
   - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 touch point tap. Also, on touchOnly devices, a click event not preceded by a touch event will toggle focus on/off.
   - The focus state change occurs in the same render as the mutually exclusive state changes. For example, on mouse down enters the `focus` state and the `hoverActive` state on the same render. The is achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls, one to enter the `hoverActive` state and one to enter the `focus` state (while two `setState` calls don't always mean two renders, it usually ends up that way).
+- React Interactive state machine:
+  - The total number of states that the React Interactive state machine can be is 9.
+  - There are 5 mutually exclusive and comprehensive states: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 1 boolean state: `focus`, with the exception of `keyActive`, which is only available while in the `focus` state, for a total of 9 states:
+    - `normal`
+    - `normal` with `focus`
+    - `hover`
+    - `hover` with `focus`
+    - `hoverActive`
+    - `hoverActive` with `focus`
+    - `touchActive`
+    - `touchActive` with `focus`
+    - `keyActive` with `focus`
+  - The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
+  - The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
