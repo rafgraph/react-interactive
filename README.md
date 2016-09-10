@@ -185,40 +185,42 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 
 
 ## Notes
-- `as` prop:
-  - If `as` is a ReactComponent:
-    - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html).
-    - In order for React Interactive to work `as` a ReactComponent, the component must pass down the props it receives from React Interactive to the top DOM node that it renders, and it cannot override any of the passed down event handlers, e.g. `onMouseEnter`. Also, the component cannot change its top DOM node once it's rendered unless the change is the result of new props. This is because React Interactive keeps a reference to the component's top DOM node so it can do things like call `focus()`, and if the top DOM node changes without React Interactive's knowledge, then things start to break. Note that React Router's Link component meets these requirements.
-    - When `as` is a ReactComponent it is wrapped in a `<span>` in order for React Interactive to maintain a reference to the top DOM node without breaking encapsulation. Without the span wrapper the only way to access the top DOM node would be through using `ReactDOM.findDOMNode(component)`, which breaks encapsulation and is discouraged, and also doesn't work with stateless functional components.
-  - If `as` is a JSX/ReactElement:
-    - The props of the top ReactElement are merged with, and take precedence over, Interactive's props. For example:
-    ```javascript
-    const jsxElement = <div hover={{ color: 'blue' }}>Some jsxElement text</div>;
-    <Interactive
-      as={jsxElement}
-      hover={{ color: 'green' }}
-      active={{ color: 'red' }}
-    >Some other text</Interactive>
-    ```
-    - This will create a `div` with text that reads 'Some jsxElement text' and will be blue on hover and red on active. When the props are merged, `jsxElement`'s `hover` prop and `children` take precedence over `Interactive`'s `hover` prop and `children`, but since `jsxElement` didn't specify an `active` prop, `Interactive`'s `active` prop is still valid.
-- Focus state:
-  - React Interactive's focus state is always kept in sync with the browser's focus state. Added focus functionality like focus toggle and `tabOnlyFocus` is implemented by controlling the browser's focus state.
-  - If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser.
-  - All elements will toggle focus except if the element's tag name is `input`, `textarea`, `button`, `select`, or `option`.
-  - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
-  - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 touch point tap. Also, on touchOnly devices, a click event not preceded by a touch event will toggle focus on/off.
-  - The focus state change occurs in the same render as the mutually exclusive state changes. For example, on mouse down enters the `focus` state and the `hoverActive` state on the same render. The is achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls, one to enter the `hoverActive` state and one to enter the `focus` state (while two `setState` calls don't always mean two renders, it usually ends up that way).
-- React Interactive state machine:
-  - The total number of states that the React Interactive state machine can be is 9.
-  - There are 5 mutually exclusive and comprehensive states: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 1 boolean state: `focus`, with the exception of `keyActive`, which is only available while in the `focus` state, for a total of 9 states:
-    - `normal`
-    - `normal` with `focus`
-    - `hover`
-    - `hover` with `focus`
-    - `hoverActive`
-    - `hoverActive` with `focus`
-    - `touchActive`
-    - `touchActive` with `focus`
-    - `keyActive` with `focus`
-  - The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
-  - The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
+#### `as` prop:
+- If `as` is a ReactComponent:
+  - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html).
+  - In order for React Interactive to work `as` a ReactComponent, the component must pass down the props it receives from React Interactive to the top DOM node that it renders, and it cannot override any of the passed down event handlers, e.g. `onMouseEnter`. Also, the component cannot change its top DOM node once it's rendered unless the change is the result of new props. This is because React Interactive keeps a reference to the component's top DOM node so it can do things like call `focus()`, and if the top DOM node changes without React Interactive's knowledge, then things start to break. Note that React Router's Link component meets these requirements.
+  - When `as` is a ReactComponent it is wrapped in a `<span>` in order for React Interactive to maintain a reference to the top DOM node without breaking encapsulation. Without the span wrapper the only way to access the top DOM node would be through using `ReactDOM.findDOMNode(component)`, which breaks encapsulation and is discouraged, and also doesn't work with stateless functional components.
+- If `as` is a JSX/ReactElement:
+  - The props of the top ReactElement are merged with, and take precedence over, Interactive's props. For example:
+  ```javascript
+  const jsxElement = <div hover={{ color: 'blue' }}>Some jsxElement text</div>;
+  <Interactive
+    as={jsxElement}
+    hover={{ color: 'green' }}
+    active={{ color: 'red' }}
+  >Some other text</Interactive>
+  ```
+  - This will create a `div` with text that reads 'Some jsxElement text' and will be blue on hover and red on active. When the props are merged, `jsxElement`'s `hover` prop and `children` take precedence over `Interactive`'s `hover` prop and `children`, but since `jsxElement` didn't specify an `active` prop, `Interactive`'s `active` prop is still valid.
+
+#### Focus state:
+- React Interactive's focus state is always kept in sync with the browser's focus state. Added focus functionality like focus toggle and `tabOnlyFocus` is implemented by controlling the browser's focus state.
+- If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser.
+- All elements will toggle focus except if the element's tag name is `input`, `textarea`, `button`, `select`, or `option`.
+- For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
+- For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 touch point tap. Also, on touchOnly devices, a click event not preceded by a touch event will toggle focus on/off.
+- The focus state change occurs in the same render as the mutually exclusive state changes. For example, on mouse down enters the `focus` state and the `hoverActive` state on the same render. The is achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls, one to enter the `hoverActive` state and one to enter the `focus` state (while two `setState` calls don't always mean two renders, in this situation it usually ends up that way because the two calls are not in the same synchronously executed code block).
+
+#### React Interactive state machine:
+- The total number of states that the React Interactive state machine can be is 9.
+- There are 5 mutually exclusive and comprehensive states: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 1 boolean state: `focus`, with the exception of `keyActive`, which is only available while in the `focus` state, for a total of 9 states:
+  - `normal`
+  - `normal` with `focus`
+  - `hover`
+  - `hover` with `focus`
+  - `hoverActive`
+  - `hoverActive` with `focus`
+  - `touchActive`
+  - `touchActive` with `focus`
+  - `keyActive` with `focus`
+- The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
+- The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
