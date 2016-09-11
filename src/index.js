@@ -124,7 +124,12 @@ class ReactInteractive extends React.Component {
     if (this.p.props.forceState) {
       // toggle focus if it changed - required to keep browser's focus state in sync with RI's
       if (this.p.props.forceState.focus !== this.track.state.focus) this.toggleFocus('forceState');
-      this.updateState(this.p.props.forceState, this.p.props);
+      this.updateState(
+        this.p.props.forceState,
+        this.p.props,
+        // create dummy 'event' object that caused the state change, will be passed to onStateChange
+        { type: 'forcestate', persist: () => {} }
+      );
     }
   }
 
@@ -357,7 +362,7 @@ class ReactInteractive extends React.Component {
   }
 
   // takes a new state, calls setState and the state change callbacks
-  updateState(newState, props, e = {}) {
+  updateState(newState, props, event) {
     const prevIState = this.track.state.iState;
     const nextIState = newState.iState;
     const iChange = (nextIState !== prevIState);
@@ -386,7 +391,7 @@ class ReactInteractive extends React.Component {
     );
 
     // call onStateChange prop callback
-    props.onStateChange && props.onStateChange({ prevState, nextState, event: e });
+    props.onStateChange && props.onStateChange({ prevState, nextState, event });
 
     // call onEnter and onLeave callbacks
     if (iChange) {
