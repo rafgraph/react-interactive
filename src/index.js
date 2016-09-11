@@ -376,6 +376,15 @@ class ReactInteractive extends React.Component {
       focus: newState.focus,
     };
 
+    // track new state because setState is asyncrounous
+    this.track.state = newState;
+
+    // only place that setState is called
+    this.setState(
+      newState,
+      props.setStateCallback && props.setStateCallback.bind(this, { prevState, nextState })
+    );
+
     // call onStateChange prop callback
     props.onStateChange && props.onStateChange({ prevState, nextState, event: e });
 
@@ -388,14 +397,6 @@ class ReactInteractive extends React.Component {
       const transition = newState.focus ? 'onEnter' : 'onLeave';
       props.focus && props.focus[transition] && props.focus[transition]('focus');
     }
-
-    // track new state because setState is asyncrounous
-    this.track.state = newState;
-
-    // only place that setState is called
-    this.setState(newState,
-      props.setStateCallback && props.setStateCallback.bind(this, { prevState, nextState })
-    );
   }
 
   // transition to a new focus state and track what initiated the transition
