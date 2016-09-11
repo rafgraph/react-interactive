@@ -12,26 +12,34 @@ class ReactInteractive extends React.Component {
     children: PropTypes.node,
     normal: PropTypes.oneOfType([
       PropTypes.object,
-      PropTypes.oneOf(['hover', 'active', 'touchActive', 'focus']),
+      PropTypes.oneOf(['hover', 'active', 'hoverActive', 'touchActive', 'keyActive', 'focus']),
     ]),
     hover: PropTypes.oneOfType([
       PropTypes.object,
-      PropTypes.oneOf(['normal', 'active', 'touchActive', 'focus']),
+      PropTypes.oneOf(['normal', 'active', 'hoverActive', 'touchActive', 'keyActive', 'focus']),
     ]),
     active: PropTypes.oneOfType([
       PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'touchActive', 'focus']),
+      PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive', 'focus']),
+    ]),
+    hoverActive: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['normal', 'hover', 'active', 'touchActive', 'keyActive', 'focus']),
     ]),
     touchActive: PropTypes.oneOfType([
       PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'active', 'focus']),
+      PropTypes.oneOf(['normal', 'hover', 'active', 'hoverActive', 'keyActive', 'focus']),
+    ]),
+    keyActive: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.oneOf(['normal', 'hover', 'active', 'hoverActive', 'touchActive', 'focus']),
     ]),
     focus: PropTypes.oneOfType([
       PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'active', 'touchActive']),
+      PropTypes.oneOf(['normal', 'hover', 'active', 'hoverActive', 'touchActive', 'keyActive']),
     ]),
     forceState: PropTypes.shape({
-      iState: PropTypes.oneOf(['normal', 'hover', 'active', 'touchActive']),
+      iState: PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive']),
       focus: PropTypes.bool,
     }),
     style: PropTypes.object,
@@ -67,7 +75,8 @@ class ReactInteractive extends React.Component {
 
     // state is always an object with two keys, `iState` and `focus`
     this.state = props.forceState || {
-      // iState is always 1 of 4 strings: 'normal', 'hover', 'active', 'touchActive'
+      // iState is always 1 of 5 strings:
+      // 'normal', 'hover', 'hoverActive', 'touchActive', 'keyActive'
       iState: 'normal',
       // focus is always a boolean
       focus: false,
@@ -213,7 +222,8 @@ class ReactInteractive extends React.Component {
         // if the two props aren't equal, do some additional checks before returning false
         if (propsB[keysB[i]] !== propsA[keysB[i]]) {
           // list of state props to compare one level deeper
-          const stateProps = { normal: 1, hover: 1, active: 1, touchActive: 1, focus: 1 };
+          const stateProps =
+          { normal: 1, hover: 1, hoverActive: 1, touchActive: 1, keyActive: 1, focus: 1 };
           if (keysB[i] === 'as') {
             if (React.isValidElement(propsA.as) && React.isValidElement(propsB.as)) {
               // If `as` is JSX/ReactElement, shallowly compare it's props
@@ -238,8 +248,9 @@ class ReactInteractive extends React.Component {
     const { mergedProps, passThroughProps } = this.mergeAndExtractProps(props);
     this.p.normalStyle = this.extractStyle(mergedProps, 'normal');
     this.p.hoverStyle = this.extractStyle(mergedProps, 'hover');
-    this.p.activeStyle = this.extractStyle(mergedProps, 'active');
+    this.p.hoverActiveStyle = this.extractStyle(mergedProps, 'hoverActive');
     this.p.touchActiveStyle = this.extractStyle(mergedProps, 'touchActive');
+    this.p.keyActiveStyle = this.extractStyle(mergedProps, 'keyActive');
     this.p.focusStyle = this.extractStyle(mergedProps, 'focus');
     this.p.passThroughProps = passThroughProps;
     this.p.props = mergedProps;
@@ -250,12 +261,13 @@ class ReactInteractive extends React.Component {
     /* eslint-disable */
     // known props to not pass through, every prop not on this list is passed through
     const knownProps = {
-      children:true, as:true, normal:true, hover:true, active:true, touchActive:true, focus:true,
-      forceState:true, style:true, className:true, onStateChange:true, setStateCallback:true,
-      onClick:true, onMouseClick:true, onTap:true, onTapTwo:true, onTapThree:true, onTapFour:true,
-      onMouseEnter:true, onMouseLeave:true, onMouseMove:true, onMouseDown:true, onMouseUp:true,
-      onTouchStart:true, onTouchEnd:true, onTouchCancel:true, onFocus:true,
-      onBlur:true, onKeyDown:true, onKeyUp:true, mutableProps:true,
+      children:true, as:true, normal:true, hover:true, active:true, hoverActive:true,
+      touchActive:true, keyActive:true, focus:true, forceState:true, style:true, className:true,
+      onStateChange:true, setStateCallback:true, onClick:true, onMouseClick:true, onTap:true,
+      onTapTwo:true, onTapThree:true, onTapFour:true, onMouseEnter:true, onMouseLeave:true,
+      onMouseMove:true, onMouseDown:true, onMouseUp:true, onTouchStart:true, onTouchEnd:true,
+      onTouchCancel:true, onFocus:true, onBlur:true, onKeyDown:true, onKeyUp:true,
+      mutableProps:true,
     }
     /* eslint-enable */
     const mergedProps = {};
@@ -351,10 +363,11 @@ class ReactInteractive extends React.Component {
     const { mouseOn, buttonDown, touchDown, focus } = this.track;
     const focusKeyDown = focus && (this.track.spaceKeyDown || this.track.enterKeyDown);
     const newState = { focus };
-    if (touchDown) newState.iState = 'touchActive';
-    else if (!mouseOn && !focusKeyDown) newState.iState = 'normal';
-    else if (mouseOn && !buttonDown && !focusKeyDown) newState.iState = 'hover';
-    else if ((mouseOn && buttonDown) || focusKeyDown) newState.iState = 'active';
+    if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown) newState.iState = 'normal';
+    else if (mouseOn && !buttonDown && !touchDown && !focusKeyDown) newState.iState = 'hover';
+    else if (mouseOn && buttonDown && !touchDown && !focusKeyDown) newState.iState = 'hoverActive';
+    else if (focusKeyDown && !touchDown) newState.iState = 'keyActive';
+    else if (touchDown) newState.iState = 'touchActive';
     return newState;
   }
 
