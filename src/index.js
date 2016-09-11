@@ -428,7 +428,8 @@ class ReactInteractive extends React.Component {
       return true;
     }
     // only toggle into focus if RI is focusable
-    if (!this.track.state.focus && (this.p.props.focus || this.p.props.tabIndex)) {
+    if (!this.track.state.focus &&
+    (this.p.props.focus || this.p.props.tabIndex || !this.tagIsBlurable())) {
       this.focusTransition('focus', `${toggleAs}Focus`);
       return true;
     }
