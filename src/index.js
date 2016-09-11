@@ -311,13 +311,11 @@ class ReactInteractive extends React.Component {
 
   // extract and return the style object and className string for the state given
   extractStyle(props, state) {
-    if (!props[state]) return { style: null, className: '' };
-
-    // if the state prop is a string pointing to another state prop to use for its style and
-    // className, then loop until the state prop to use is found (i.e. it's not a string)
-    let stateProps = typeof props[state] === 'string' ? props[props[state]] : props[state];
+    // if no hoverActive prop, then use hover prop for style and classes
+    let stateProps = (state === 'hoverActive' && !props.hoverActive) ? 'hover' : state;
+    // loop until the state prop to use is found (i.e. it's not a string)
     let times = 0;
-    while (typeof stateProps === 'string' && times < 4) {
+    while (typeof stateProps === 'string' && times < 6) {
       stateProps = props[stateProps];
       times++;
     }
