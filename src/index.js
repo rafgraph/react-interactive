@@ -222,8 +222,15 @@ class ReactInteractive extends React.Component {
         // if the two props aren't equal, do some additional checks before returning false
         if (propsB[keysB[i]] !== propsA[keysB[i]]) {
           // list of state props to compare one level deeper
-          const stateProps =
-          { normal: 1, hover: 1, hoverActive: 1, touchActive: 1, keyActive: 1, focus: 1 };
+          const stateProps = {
+            normal: true,
+            hover: true,
+            active: true,
+            hoverActive: true,
+            touchActive: true,
+            keyActive: true,
+            focus: true,
+          };
           if (keysB[i] === 'as') {
             if (React.isValidElement(propsA.as) && React.isValidElement(propsB.as)) {
               // If `as` is JSX/ReactElement, shallowly compare it's props
@@ -291,6 +298,12 @@ class ReactInteractive extends React.Component {
     } else {
       mergedProps.as = props.as;
     }
+    // use the `active` prop for `[type]Active` if no `[type]Active` prop
+    if (mergedProps.active) {
+      if (!mergedProps.hoverActive) mergedProps.hoverActive = mergedProps.active;
+      if (!mergedProps.touchActive) mergedProps.touchActive = mergedProps.active;
+      if (!mergedProps.keyActive) mergedProps.keyActive = mergedProps.active;
+    }
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
     if (mergedProps.focus && !mergedProps.tabIndex) passThroughProps.tabIndex = '0';
     return { mergedProps, passThroughProps };
@@ -304,7 +317,7 @@ class ReactInteractive extends React.Component {
     // className, then loop until the state prop to use is found (i.e. it's not a string)
     let stateProps = typeof props[state] === 'string' ? props[props[state]] : props[state];
     let times = 0;
-    while (typeof stateProps === 'string' && times < 3) {
+    while (typeof stateProps === 'string' && times < 4) {
       stateProps = props[stateProps];
       times++;
     }
