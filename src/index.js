@@ -103,6 +103,9 @@ class ReactInteractive extends React.Component {
     this.refNode = null;
     // the actual top DOM node of `as`, needed when `as` is wrapped in a span
     this.topNode = null;
+    // tagName and type properties of topNode
+    this.tagName = '';
+    this.type = '';
 
     // the listeners to pass down as props to the element/component
     this.listeners = this.determineListeners();
@@ -178,6 +181,8 @@ class ReactInteractive extends React.Component {
       // if `as` is a component, then the `refNode` is the span wrapper, so get its firstChild
       if (typeof this.p.props.as !== 'string') this.topNode = node.firstChild;
       else this.topNode = node;
+      this.tagName = node.tagName;
+      this.type = node.type;
       if (this.track.state.focus) {
         // if in the focus state, then call focus() on `this.topNode` so the browser focus state
         // is in sync with RI's focus state
@@ -372,7 +377,20 @@ class ReactInteractive extends React.Component {
   // compute the state based on what's set in `this.track`, returns a new state object
   computeState() {
     const { mouseOn, buttonDown, touchDown, focus } = this.track;
-    const focusKeyDown = focus && (this.track.spaceKeyDown || this.track.enterKeyDown);
+    // const focusKeyDown = focus && (this.track.spaceKeyDown || this.track.enterKeyDown);
+    const focusKeyDown = focus && (() => {
+      const tag = this.tagName;
+      const type = this.type;
+      if (this.track.enterKeyDown &&
+      (tag !== 'INPUT' || (type !== 'checkbox' && type !== 'radio'))) {
+        return true;
+      }
+      if (this.track.spaceKeyDown && (tag === 'BUTTON' ||
+      (tag === 'INPUT' && (type === 'checkbox' || type === 'radio' || type === 'submit')))) {
+        return true;
+      }
+      return false;
+    })();
     const newState = { focus };
     if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown) newState.iState = 'normal';
     else if (mouseOn && !buttonDown && !touchDown && !focusKeyDown) newState.iState = 'hover';
@@ -460,7 +478,7 @@ class ReactInteractive extends React.Component {
   // returns true if the tag is allowed to be blurred, false otherwise
   tagIsBlurable() {
     const nonBlurable = { INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1 };
-    return nonBlurable[this.topNode.tagName] === undefined;
+    return nonBlurable[this.tagName] === undefined;
   }
 
   handleMouseEvent = (e) => {
