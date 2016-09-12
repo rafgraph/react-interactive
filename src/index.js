@@ -107,9 +107,9 @@ class ReactInteractive extends React.Component {
     this.tagName = '';
     this.type = '';
 
-    // the listeners to pass down as props to the element/component
-    this.listeners = this.determineListeners();
-    this.clickListener = this.determineClickHandler();
+    // the event handlers to pass down as props to the element/component
+    this.eventHandlers = this.determineHandlers();
+    this.clickHandler = this.determineClickHandler();
 
     // this.p is used store things that are a deterministic function of props
     // to avoid recalculating every time they are needed, it can be thought of as a pure
@@ -340,16 +340,18 @@ class ReactInteractive extends React.Component {
     return extract;
   }
 
-  // determine event listeners to set based on the device type - only determined once in constructor
-  determineListeners() {
-    const listeners = {};
-    ['onFocus', 'onBlur', 'onKeyDown', 'onKeyUp'].forEach(
-      (onEvent) => { listeners[onEvent] = this.handleFocusEvent; }
-    );
+  // determine event handlers to set based on the device type - only determined once in constructor
+  determineHandlers() {
+    const eventHandlers = {
+      onFocus: this.handleFocusEvent,
+      onBlur: this.handleFocusEvent,
+      onKeyDown: this.handleKeyEvent,
+      onKeyUp: this.handleKeyEvent,
+    };
 
     if (detectIt.hasTouchEventsApi) {
       ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
-        (onEvent) => { listeners[onEvent] = this.handleTouchEvent; }
+        (onEvent) => { eventHandlers[onEvent] = this.handleTouchEvent; }
       );
     }
     // if the device is mouseOnly or hybrid, then set mouse listeners
@@ -361,9 +363,9 @@ class ReactInteractive extends React.Component {
       const handler = (detectIt.hasTouchEventsApi && detectIt.deviceType === 'hybrid') ?
         this.handleHybridMouseEvent : this.handleMouseEvent;
       ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp']
-      .forEach((onEvent) => { listeners[onEvent] = handler; });
+      .forEach((onEvent) => { eventHandlers[onEvent] = handler; });
     }
-    return listeners;
+    return eventHandlers;
   }
 
   // determine the handler to use for click events based on the deviceType
@@ -524,6 +526,9 @@ class ReactInteractive extends React.Component {
           return;
         }
         break;
+
+      // for enter keydown events sent from handleKeyEvent via this.clickHandler
+      case 'keydown':
       case 'click':
         this.p.props.onMouseClick && this.p.props.onMouseClick(e);
         this.p.props.onClick && this.p.props.onClick(e);
@@ -533,7 +538,7 @@ class ReactInteractive extends React.Component {
         return;
     }
 
-    // compute the new state object and pass it as argument to updateState,
+    // compute the new state object and pass it as an argument to updateState,
     // which calls setState and state change callbacks if needed
     this.updateState(this.computeState(), this.p.props, e);
   }
@@ -682,11 +687,16 @@ class ReactInteractive extends React.Component {
         }
         return;
       }
+      // for enter keydown events sent from handleKeyEvent via this.clickHandler
+      case 'keydown':
+        this.p.props.onTap && this.p.props.onTap(e);
+        this.p.props.onClick && this.p.props.onClick(e);
+        return;
       default:
         return;
     }
 
-    // compute the new state object and pass it as argument to updateState,
+    // compute the new state object and pass it as an argument to updateState,
     // which calls setState and state change callbacks if needed
     this.updateState(this.computeState(), this.p.props, e);
   }
@@ -727,10 +737,25 @@ class ReactInteractive extends React.Component {
         this.p.props.onBlur && this.p.props.onBlur(e);
         this.track.focus = false;
         break;
+      default:
+        return;
+    }
+
+    // compute the new state object and pass it as an argument to updateState,
+    // which calls setState and state change callbacks if needed
+    this.updateState(this.computeState(), this.p.props, e);
+  }
+
+  handleKeyEvent = (e) => {
+    switch (e.type) {
       case 'keydown':
         this.p.props.onKeyDown && this.p.props.onKeyDown(e);
         if (e.key === ' ') this.track.spaceKeyDown = true;
-        else if (e.key === 'Enter') this.track.enterKeyDown = true;
+        else if (e.key === 'Enter') {
+          this.track.enterKeyDown = true;
+          // call the click handler on enter key down events
+          this.clickHandler(e);
+        }
         break;
       case 'keyup':
         this.p.props.onKeyUp && this.p.props.onKeyUp(e);
@@ -740,8 +765,7 @@ class ReactInteractive extends React.Component {
       default:
         return;
     }
-
-    // compute the new state object and pass it as argument to updateState,
+    // compute the new state object and pass it as an argument to updateState,
     // which calls setState and state change callbacks if needed
     this.updateState(this.computeState(), this.p.props, e);
   }
@@ -773,18 +797,18 @@ class ReactInteractive extends React.Component {
       this.state.focus ? this.p.focusStyle.className : '');
 
     // props to pass down:
-    // listeners
+    // eventHandlers
     // style
     // className
     // passThroughProps
-    const props = objectAssign({}, this.p.passThroughProps, this.listeners);
+    const props = objectAssign({}, this.p.passThroughProps, this.eventHandlers);
     props.style = style;
     if (className) props.className = className;
 
     // only set onClick listener if it's required
     if (this.p.props.onClick || this.p.props.onTap || this.p.props.onMouseClick ||
     this.p.props.focus || this.p.props.tabIndex) {
-      props.onClick = this.clickListener;
+      props.onClick = this.clickHandler;
     }
 
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
