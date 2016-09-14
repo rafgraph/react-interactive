@@ -82,7 +82,7 @@ import { Link } from 'react-router';
   // keyboard interactions: normal -> normal with focus -> keyActive with focus
   focus={{
     outline: '2px solid yellow',
-    // so the focus state is not entered during mouse or touch interactions
+    // so the focus state is not entered as a result of mouse or touch interactions
     tabOnlyFocus: true,
   }}
   keyActive={{ color: 'yellow' }}
