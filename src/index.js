@@ -788,7 +788,7 @@ class ReactInteractive extends React.Component {
   }
 
   render() {
-    // build style object, priority order: focus style (if in focus state), iState style, style prop
+    // build style object, priority order: state styles, style prop, default styles
     const style = {};
     // make the cursor a pointer by default if `as` is not an input or textarea and
     // there is a click handler or the element can receive focus
@@ -798,8 +798,17 @@ class ReactInteractive extends React.Component {
     this.p.props.focus || this.p.props.tabIndex)) {
       style.cursor = 'pointer';
     }
-    objectAssign(style, this.p.props.style, this.p[`${this.state.iState}Style`].style,
-      this.state.focus ? this.p.focusStyle.style : null);
+    // merge iState and focus state styles:
+    // focus has priority over normal iState, all other iStates have priority over focus
+    const stateStyles = {};
+    if (this.state.iState === 'normal' && this.state.focus) {
+      objectAssign(stateStyles, this.p.normalStyle.style, this.p.focusStyle.style);
+    } else if (this.state.focus) {
+      objectAssign(stateStyles, this.p.focusStyle.style, this.p[`${this.state.iState}Style`].style);
+    } else {
+      objectAssign(stateStyles, this.p[`${this.state.iState}Style`].style);
+    }
+    objectAssign(style, this.p.props.style, stateStyles);
     if (style.tabOnlyFocus) delete style.tabOnlyFocus;
 
     // build className string, union of class names from className prop, iState className,
