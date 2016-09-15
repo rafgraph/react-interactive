@@ -246,9 +246,11 @@ class ReactInteractive extends React.Component {
         if (propsB[keysB[i]] !== propsA[keysB[i]]) {
           if (keysB[i] === 'as') {
             if (React.isValidElement(propsA.as) && React.isValidElement(propsB.as)) {
-              // If `as` is JSX/ReactElement, shallowly compare it's props
-              // with a recursive call to sameProps - this should only recurse one time
-              // because the JSX/ReactElement shouldn't have the `as` prop.
+              // If `as` is JSX/ReactElement, first check to see if `as.type` is the same,
+              // e.g. 'div', 'span', ReactClass, ReactFunctionalComponent, and then shallowly
+              // compare it's props with a recursive call to sameProps - this should only recurse
+              // one time because the JSX/ReactElement shouldn't have the `as` prop.
+              if (propsA.as.type !== propsB.as.type) return false;
               if (!this.sameProps(propsA.as.props, propsB.as.props)) return false;
             } else {
               return false;
