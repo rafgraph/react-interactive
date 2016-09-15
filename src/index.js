@@ -215,11 +215,25 @@ class ReactInteractive extends React.Component {
     if ((keysB.length + nextPOffset) !== (Object.keys(propsA).length + pOffset)) return false;
 
     // shallow compare of state props => check style, className, onEnter, onLeave
-    const sameStateProp = (iState) => {
-      const iStateKeys = ['style', 'className', 'onEnter', 'onLeave'];
-      if (!iStateKeys.some(key => propsB[iState][key])) return false;
-      if (iStateKeys.some(key => propsB[iState][key] !== propsA[iState][key])) return false;
+    const sameStateProp = (stateProp) => {
+      const statePropKeys = ['style', 'className', 'onEnter', 'onLeave'];
+      if (!statePropKeys.some(key => propsB[stateProp][key])) return false;
+      // if comparing focus state props, also check for `tabOnlyFocus` equality
+      if (stateProp === 'focus') statePropKeys.push('tabOnlyFocus');
+      if (statePropKeys.some(key => propsB[stateProp][key] !== propsA[stateProp][key])) {
+        return false;
+      }
       return true;
+    };
+    // list of state props to compare one level deeper
+    const stateProps = {
+      normal: true,
+      hover: true,
+      active: true,
+      hoverActive: true,
+      touchActive: true,
+      keyActive: true,
+      focus: true,
     };
 
     // loop through props
@@ -230,16 +244,6 @@ class ReactInteractive extends React.Component {
         if (!Object.prototype.hasOwnProperty.call(propsA, keysB[i])) return false;
         // if the two props aren't equal, do some additional checks before returning false
         if (propsB[keysB[i]] !== propsA[keysB[i]]) {
-          // list of state props to compare one level deeper
-          const stateProps = {
-            normal: true,
-            hover: true,
-            active: true,
-            hoverActive: true,
-            touchActive: true,
-            keyActive: true,
-            focus: true,
-          };
           if (keysB[i] === 'as') {
             if (React.isValidElement(propsA.as) && React.isValidElement(propsB.as)) {
               // If `as` is JSX/ReactElement, shallowly compare it's props
