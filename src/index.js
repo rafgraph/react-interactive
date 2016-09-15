@@ -825,13 +825,15 @@ class ReactInteractive extends React.Component {
     // and focus className (if in the focus state)
     function joinClasses(className, iStateClass, focusClass) {
       let joined = className;
-      joined += joined && iStateClass ? ` ${iStateClass}` : `${iStateClass}`;
-      joined += joined && focusClass ? ` ${focusClass}` : `${focusClass}`;
+      joined += (joined && iStateClass) ? ` ${iStateClass}` : `${iStateClass}`;
+      joined += (joined && focusClass) ? ` ${focusClass}` : `${focusClass}`;
       return joined;
     }
-    const className =
-    joinClasses(this.p.props.className || '', this.p[`${this.state.iState}Style`].className,
-      this.state.focus ? this.p.focusStyle.className : '');
+    const className = joinClasses(
+      this.p.props.className || '',
+      this.p[`${this.state.iState}Style`].className,
+      this.state.focus ? this.p.focusStyle.className : ''
+    );
 
     // props to pass down:
     // eventHandlers
