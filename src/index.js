@@ -67,6 +67,7 @@ class ReactInteractive extends React.Component {
     onKeyUp: PropTypes.func,
 
     mutableProps: PropTypes.bool,
+    refDOMNode: PropTypes.func,
     tabIndex: PropTypes.string,
   }
 
@@ -195,6 +196,8 @@ class ReactInteractive extends React.Component {
       // node should maintain focus state when mutated
       if (prevTopNode !== this.topNode) {
         this.manageFocus('refCallback');
+        // if refDOMNode prop, pass along new DOM node
+        this.p.props.refDOMNode && this.p.props.refDOMNode(this.topNode);
       }
     }
   }
@@ -293,7 +296,7 @@ class ReactInteractive extends React.Component {
       onTapTwo:true, onTapThree:true, onTapFour:true, onMouseEnter:true, onMouseLeave:true,
       onMouseMove:true, onMouseDown:true, onMouseUp:true, onTouchStart:true, onTouchEnd:true,
       onTouchCancel:true, onFocus:true, onBlur:true, onKeyDown:true, onKeyUp:true,
-      mutableProps:true,
+      refDOMNode:true, mutableProps:true,
     }
     /* eslint-enable */
     const mergedProps = {};
