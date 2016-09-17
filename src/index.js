@@ -965,8 +965,7 @@ class ReactInteractive extends React.Component {
     if (className) props.className = className;
 
     // only set onClick listener if it's required
-    if (this.p.props.onClick || this.p.props.onTap || this.p.props.onMouseClick ||
-    this.p.props.focus || this.p.props.tabIndex) {
+    if (this.p.props.onClick || this.p.props.onMouseClick || this.p.props.onTap) {
       props.onClick = this.clickHandler;
     }
 
