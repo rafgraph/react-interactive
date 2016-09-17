@@ -900,16 +900,33 @@ class ReactInteractive extends React.Component {
   render() {
     // build style object, priority order: state styles, style prop, default styles
     const style = {};
-    // add default styles
-    // make the cursor a pointer by default if `as` is not an input or textarea and
-    // there is a click handler or the element can receive focus
-    if ((typeof this.p.props.as !== 'string' ||
-    (this.p.props.as.toLowerCase() !== 'input' && this.p.props.as.toLowerCase() !== 'textarea')) &&
-    (this.p.props.onClick || this.p.props.onMouseClick ||
-    this.p.props.focus || this.p.props.tabIndex)) {
+    // add default styles:
+    // if focus style provided, then reset browser focus style
+    if (this.p.focusStyle.style) {
+      style.outline = '0';
+      style.outlineOffset = '0';
+    }
+    // if touchActive or active style provided, then reset webkit tap highlight style
+    if (this.p.touchActiveStyle.style) {
+      style.WebkitTapHighlightColor = 'rgba(0, 0, 0, 0)';
+    }
+    // set cursor to pointer if mousedown/up/clicking does something
+    const lowerAs = typeof this.p.props.as === 'string' && this.p.props.as.toLowerCase();
+    if (
+      (this.p.props.onClick || this.p.props.onMouseClick ||
+        (
+          (this.p.props.focus || this.p.props.tabIndex) && lowerAs !== 'input' &&
+          !(this.p.props.focus && this.p.props.focus.tabOnlyFocus)
+        ) || (
+          (lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
+          this.p.props.type === 'radio' || this.p.props.type === 'submit')) ||
+          lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'select' || lowerAs === 'option'
+      )) && !(
+        this.p.props.disabled
+    )) {
       style.cursor = 'pointer';
     }
-    // add style prop styles
+    // add style prop styles:
     objectAssign(style, this.p.props.style);
     // add iState and focus state styles:
     // focus has priority over normal iState, all other iStates have priority over focus
