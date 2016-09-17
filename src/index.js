@@ -42,6 +42,10 @@ class ReactInteractive extends React.Component {
       iState: PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive']),
       focus: PropTypes.bool,
     }),
+    initialState: PropTypes.shape({
+      iState: PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive']),
+      focus: PropTypes.bool,
+    }),
     style: PropTypes.object,
     className: PropTypes.string,
     onStateChange: PropTypes.func,
@@ -119,19 +123,19 @@ class ReactInteractive extends React.Component {
     this.p = { sameProps: false };
     // set properties of `this.p`
     this.propsSetup(props);
-    // if forceState prop, update state.iState for initial render, state.focus
+    // if initialState prop, update state.iState for initial render, state.focus
     // will be updated in componentDidMount b/c can't call focus until have ref to DOM node
-    if (this.p.props.forceState && this.p.props.forceState.iState) {
-      this.forceTrackIState(this.p.props.forceState.iState);
+    if (this.p.props.initialState && this.p.props.initialState.iState) {
+      this.forceTrackIState(this.p.props.initialState.iState);
       this.state = this.computeState();
     }
   }
 
   componentDidMount() {
-    // enter focus state if forceState.focus - called here instead of constructor
+    // enter focus state if initialState.focus - called here instead of constructor
     // because can't call focus until have ref to DOM node
-    if (this.p.props.forceState && this.p.props.forceState.focus) {
-      this.forceState({ focus: this.p.props.forceState.focus });
+    if (this.p.props.initialState && typeof this.p.props.initialState.focus === 'boolean') {
+      this.forceState({ focus: this.p.props.initialState.focus });
     }
   }
 
@@ -291,12 +295,12 @@ class ReactInteractive extends React.Component {
     // known props to not pass through, every prop not on this list is passed through
     const knownProps = {
       children:true, as:true, normal:true, hover:true, active:true, hoverActive:true,
-      touchActive:true, keyActive:true, focus:true, forceState:true, style:true, className:true,
+      touchActive:true, keyActive:true, focus:true, style:true, className:true,
       onStateChange:true, setStateCallback:true, onClick:true, onMouseClick:true, onTap:true,
       onTapTwo:true, onTapThree:true, onTapFour:true, onMouseEnter:true, onMouseLeave:true,
       onMouseMove:true, onMouseDown:true, onMouseUp:true, onTouchStart:true, onTouchEnd:true,
       onTouchCancel:true, onFocus:true, onBlur:true, onKeyDown:true, onKeyUp:true,
-      refDOMNode:true, mutableProps:true,
+      forceState:true, initialState:true, refDOMNode:true, mutableProps:true,
     }
     /* eslint-enable */
     const mergedProps = {};
@@ -410,7 +414,7 @@ class ReactInteractive extends React.Component {
     if (newState.iState) this.forceTrackIState(newState.iState);
 
     // if new focus state, call manageFocus and return b/c focus calls updateState
-    if (newState.focus !== undefined && newState.focus !== this.track.state.focus) {
+    if (typeof newState.focus === 'boolean' && newState.focus !== this.track.state.focus) {
       this.manageFocus(newState.focus ? 'forceStateFocusTrue' : 'forceStateFocusFalse');
       return;
     }
