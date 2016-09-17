@@ -185,6 +185,42 @@ class ReactInteractive extends React.Component {
     }
   }
 
+  // determine event handlers to use based on the device type - only determined once in constructor
+  determineHandlers() {
+    const eventHandlers = {
+      onFocus: this.handleFocusEvent,
+      onBlur: this.handleFocusEvent,
+      onKeyDown: this.handleKeyEvent,
+      onKeyUp: this.handleKeyEvent,
+    };
+
+    if (detectIt.hasTouchEventsApi) {
+      ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
+        (onEvent) => { eventHandlers[onEvent] = this.handleTouchEvent; }
+      );
+    }
+    // if the device is mouseOnly or hybrid, then set mouse listeners
+    if (detectIt.deviceType !== 'touchOnly') {
+      // if the device is a hybrid with the touch events api, then use the hybrid mouse handler,
+      // note that a device can be a hybrid with touch capabilities only accessed through
+      // the pointer events api, but in that case RI treats it as a mouseOnly device
+      // because React doesn't support pointer events
+      const handler = (detectIt.hasTouchEventsApi && detectIt.deviceType === 'hybrid') ?
+        this.handleHybridMouseEvent : this.handleMouseEvent;
+      ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp']
+      .forEach((onEvent) => { eventHandlers[onEvent] = handler; });
+    }
+    return eventHandlers;
+  }
+
+  // determine the handler to use for click events based on the deviceType
+  determineClickHandler() {
+    const dIt = detectIt;
+    if (dIt.deviceType === 'touchOnly') return this.handleTouchEvent;
+    if (dIt.deviceType === 'hybrid' && dIt.hasTouchEventsApi) return this.handleHybridMouseEvent;
+    return this.handleMouseEvent;
+  }
+
   // find and set the top DOM node of `as`
   refCallback = (node) => {
     this.refNode = node;
@@ -359,42 +395,6 @@ class ReactInteractive extends React.Component {
       extract.className = '';
     }
     return extract;
-  }
-
-  // determine event handlers to set based on the device type - only determined once in constructor
-  determineHandlers() {
-    const eventHandlers = {
-      onFocus: this.handleFocusEvent,
-      onBlur: this.handleFocusEvent,
-      onKeyDown: this.handleKeyEvent,
-      onKeyUp: this.handleKeyEvent,
-    };
-
-    if (detectIt.hasTouchEventsApi) {
-      ['onTouchStart', 'onTouchEnd', 'onTouchCancel'].forEach(
-        (onEvent) => { eventHandlers[onEvent] = this.handleTouchEvent; }
-      );
-    }
-    // if the device is mouseOnly or hybrid, then set mouse listeners
-    if (detectIt.deviceType !== 'touchOnly') {
-      // if the device is a hybrid with the touch events api, then use the hybrid mouse handler,
-      // note that a device can be a hybrid with touch capabilities only accessed through
-      // the pointer events api, but in that case RI treats it as a mouseOnly device
-      // because React doesn't support pointer events
-      const handler = (detectIt.hasTouchEventsApi && detectIt.deviceType === 'hybrid') ?
-        this.handleHybridMouseEvent : this.handleMouseEvent;
-      ['onMouseEnter', 'onMouseLeave', 'onMouseMove', 'onMouseDown', 'onMouseUp']
-      .forEach((onEvent) => { eventHandlers[onEvent] = handler; });
-    }
-    return eventHandlers;
-  }
-
-  // determine the handler to use for click events based on the deviceType
-  determineClickHandler() {
-    const dIt = detectIt;
-    if (dIt.deviceType === 'touchOnly') return this.handleTouchEvent;
-    if (dIt.deviceType === 'hybrid' && dIt.hasTouchEventsApi) return this.handleHybridMouseEvent;
-    return this.handleMouseEvent;
   }
 
   // force set this.track properties based on iState
