@@ -716,29 +716,6 @@ class ReactInteractive extends React.Component {
     !this.track.touchDown && Date.now() - this.track.touchEndTime > 600 && this.handleMouseEvent(e);
   }
 
-  // determine if the touch interaction resulted in a tap, returns the number of
-  // touch points that resulted in a tap, or false if no tap occurred
-  hasTaps() {
-    if (this.track.touches.canceled) return false;
-    const touches = this.track.touches;
-    const touchKeys = Object.keys(touches);
-    const touchCount = touchKeys.length;
-
-    // max 500ms between start and end of touch interaction to be a tap
-    const tapWithinTime = () => ((this.track.touchEndTime - this.track.touchStartTime) < 500);
-
-    // make sure each touch point hasn't moved more than the allowed tolerance
-    const touchesNotMoved = () => (
-      touchKeys.every((touch) => (
-        Math.abs(touches[touch].endX - touches[touch].startX) < 15 + (3 * touchCount) &&
-        Math.abs(touches[touch].endY - touches[touch].startY) < 15 + (3 * touchCount)
-      ))
-    );
-
-    if (tapWithinTime() && touchesNotMoved()) return touchCount;
-    return false;
-  }
-
   handleTouchEvent = (e) => {
     // reset mouse trackers
     this.track.mouseOn = false;
@@ -788,7 +765,23 @@ class ReactInteractive extends React.Component {
           // track the touch interaction end time
           this.track.touchEndTime = Date.now();
           // determine if there was a tap and number of touch points for the tap
-          const tapTouchPoints = this.hasTaps();
+          const tapTouchPoints = (() => {
+            // max 500ms between start and end of touch interaction to be a tap
+            const tapWithinTime = (this.track.touchEndTime - this.track.touchStartTime) < 500;
+            if (this.track.touches.canceled || !tapWithinTime) return 0;
+            const touches = this.track.touches;
+            const touchKeys = Object.keys(touches);
+            const touchCount = touchKeys.length;
+            // make sure each touch point hasn't moved more than the allowed tolerance
+            if (touchKeys.every((touch) => (
+              Math.abs(touches[touch].endX - touches[touch].startX) < 15 + (3 * touchCount) &&
+              Math.abs(touches[touch].endY - touches[touch].startY) < 15 + (3 * touchCount)
+            ))) {
+              return touchCount;
+            }
+            return 0;
+          })();
+
           // reset touch interaction tracking object
           this.track.touches = {};
 
