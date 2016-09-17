@@ -227,3 +227,8 @@ Note that you could achieve mutually exclusive hover and active states if you ap
   - `keyActive` with `focus`
 - The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
 - The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
+
+#### Default styles:
+- If a `focus` state style is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
+- If a `touchActive` or `active` state style is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
+- If clicking the mouse does something then the cursor will default to a pointer.
