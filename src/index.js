@@ -367,7 +367,8 @@ class ReactInteractive extends React.Component {
       if (!mergedProps.keyActive) mergedProps.keyActive = mergedProps.active;
     }
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
-    if (mergedProps.focus && !mergedProps.tabIndex) passThroughProps.tabIndex = '0';
+    if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
+    else if (mergedProps.focus && !passThroughProps.tabIndex) passThroughProps.tabIndex = '0';
     return { mergedProps, passThroughProps };
   }
 

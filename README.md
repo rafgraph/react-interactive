@@ -207,7 +207,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 
 #### Focus state:
 - React Interactive's focus state is always kept in sync with the browser's focus state. Added focus functionality like focus toggle and `tabOnlyFocus` is implemented by controlling the browser's focus state.
-- If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser.
+- If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
 - All elements will toggle focus except if the element's tag name is `input`, `textarea`, `button`, `select`, or `option`.
 - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
 - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 touch point tap. Also, on touchOnly devices, a click event not preceded by a touch event will toggle focus on/off.
