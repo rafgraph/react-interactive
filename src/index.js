@@ -75,6 +75,9 @@ class ReactInteractive extends React.Component {
     mutableProps: PropTypes.bool,
     refDOMNode: PropTypes.func,
     tabIndex: PropTypes.string,
+    useBrowserWebkitTapHighlightColor: PropTypes.bool,
+    useBrowserOutlineFocus: PropTypes.bool,
+    useBrowserCursor: PropTypes.bool,
   }
 
   constructor(props) {
@@ -351,6 +354,7 @@ class ReactInteractive extends React.Component {
       onMouseMove:true, onMouseDown:true, onMouseUp:true, onTouchStart:true, onTouchEnd:true,
       onTouchCancel:true, onFocus:true, onBlur:true, onKeyDown:true, onKeyUp:true,
       forceState:true, initialState:true, refDOMNode:true, mutableProps:true,
+      useBrowserWebkitTapHighlightColor:true, useBrowserOutlineFocus:true, useBrowserCursor:true,
     }
     /* eslint-enable */
     const mergedProps = {};
@@ -979,18 +983,19 @@ class ReactInteractive extends React.Component {
     const style = {};
     // add default styles first:
     // if focus style provided, then reset browser focus style
-    if (this.state.focus &&
+    if (this.state.focus && !this.p.props.useBrowserOutlineFocus &&
     (this.p.tabFocusStyle.style || this.p.mouseFocusStyle.style || this.p.touchFocusStyle)) {
       style.outline = '0';
       style.outlineOffset = '0';
     }
     // if touchActive or active style provided, then reset webkit tap highlight style
-    if (this.p.touchActiveStyle.style && detectIt.hasTouchEventsApi) {
+    if (this.p.touchActiveStyle.style && !this.p.props.useBrowserWebkitTapHighlightColor
+    && detectIt.hasTouchEventsApi) {
       style.WebkitTapHighlightColor = 'rgba(0, 0, 0, 0)';
     }
     // set cursor to pointer if clicking does something
     const lowerAs = typeof this.p.props.as === 'string' && this.p.props.as.toLowerCase();
-    if (
+    if (!this.p.props.useBrowserCursor && (
       (this.p.props.onClick || this.p.props.onMouseClick ||
         (
           lowerAs !== 'input' && (this.p.props.focus || this.p.props.tabIndex) &&
@@ -1001,7 +1006,7 @@ class ReactInteractive extends React.Component {
         ) || lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'select' || lowerAs === 'option'
       ) && !(
         this.p.props.disabled
-    )) {
+    ))) {
       style.cursor = 'pointer';
     }
 
