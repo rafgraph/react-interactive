@@ -21,7 +21,8 @@
     "touch",
     "hover",
     "active",
-    "click"
+    "focus",
+    "keyboard"
   ],
   "author": "Rafael Pedicini <code@rafrex.com>",
   "license": "MIT",
