@@ -232,3 +232,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 - If a `focus` state style is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
 - If a `touchActive` or `active` state style is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
 - If clicking the mouse does something then the cursor will default to a pointer.
+- You can prevent these default styles from being applied by adding the below props:
+  - `useBrowserOutlineFocus`
+  - `useBrowserWebkitTapHighlightColor`
+  - `useBrowserCursor`
