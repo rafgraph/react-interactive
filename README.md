@@ -52,21 +52,7 @@ import { Link } from 'react-router';
 >This is an interactive link with hover state change hooks</Interactive>
 ```
 ```javascript
-// Interactive div with separate active states
-<Interactive
-  as="div"
-  normal={{ color: 'black' }}
-  hover={{ color: 'green' }}
-  hoverActive={{ color: 'red' }}
-  touchActive={{ color: 'blue' }}
-  keyActive={{ color: 'yellow' }}
-  focus={{ border: '2px solid yellow' }}
-  style={{ fontSize: '16px', padding: '3px', border: '2px dotted black' }}
-  onClick={handleClick}
->This is an interactive div with separate active states</Interactive>
-```
-```javascript
-// Interactive link with separate states for mouse, touch, and keyboard interactions
+// Interactive link with separate styles for mouse, touch, and keyboard interactions
 <Interactive
   as="a"
   href="https://example.tld"
@@ -80,14 +66,22 @@ import { Link } from 'react-router';
   touchActive={{ color: 'blue' }}
 
   // keyboard interactions: normal -> normal with focus -> keyActive with focus
-  focus={{
-    outline: '2px solid yellow',
-    // so the focus state is not entered as a result of mouse or touch interactions
-    tabOnlyFocus: true,
-  }}
+  // use tabFocusStyle to only apply the style when focus comes from the keyboard
+  focus={{ tabFocusStyle: { outline: '2px solid yellow' }}}
   keyActive={{ color: 'yellow' }}
 
 >Interactive link with separate styles for each type of interaction</Interactive>
+```
+```javascript
+// Interactive div with class names instead of styles
+<Interactive
+  as="div"
+  hover={ className: 'hover-class' }
+  hoverActive={ className: 'hover-active-class' }
+  touchActive={ className: 'touch-active-class' }
+  keyActive={ className: 'key-active-class' }
+  className="some-class"
+>Interactive div with different classes for hover and active states</Interactive>
 ```
 
 #### Installing `react-interactive`
