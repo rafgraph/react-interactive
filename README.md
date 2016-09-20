@@ -92,6 +92,23 @@ $ npm install react-interactive
 import Interactive from 'react-interactive';
 ```
 
+## Table of Contents
+- [React Interactive](#react-interactive)
+  - [Basic Examples](#basic-examples)
+  - [Installing `react-interactive`](#installing-react-interactive)
+- Table of Contents <= you are here
+- [API](#api)
+  - [API for `<Interactive />`](#api-for-interactive-)
+  - [Order That Callbacks Are Called In](#order-that-callbacks-are-called-in)
+  - [Merging Styles and Classes](#merging-styles-and-classes)
+  - [`as` Prop](#as-prop)
+  - [`focus` State and Prop](#focus-state-and-prop)
+  - [Default Styles](#default-styles)
+- [Interactive State Machine Comparison](#interactive-state-machine-comparison)
+  - [React Interactive State Machine](#react-interactive-state-machine)
+  - [CSS Interactive State Machine](#css-interactive-state-machine)
+- [State Machine Notes](#state-machine-notes)
+
 ## API
 
 ### API for `<Interactive />`
@@ -122,7 +139,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `mutableProps` |  | `mutableProps` | By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you are passing in mutable props, add the `mutableProps` prop, and the component will always update. If you're not sure and notice buggy behavior, then add this property. |
 | `...` | anything | `id="some-id"`, `tabIndex="1"`, etc... | All additional props received are passed through. |
 
-#### Order that callbacks are called in:
+#### Order That Callbacks Are Called In
 1. Event callbacks are called first in the following order (higher specificity first):
   1. `onMouseClick` or `onTap` (they are mutually exclusive)
   * `onClick`
@@ -132,7 +149,7 @@ For the definition of when each state is entered, see the [state machine definit
 
 Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`, etc..., they will be called before React Interactive changes its state and calls any of its callbacks.
 
-#### Merging styles and classes
+#### Merging Styles and Classes
 - Styles have the following precedence when merged:
   1. Non-normal iState style (`hover` or `active`) if not in the `normal` state
   2. `focus` state style if in the `focus` state
@@ -143,46 +160,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
   - iState classes (`normal`, `hover`, or `active`)
   - The `className` prop
 
-## Interactive state machine comparison
-Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and on enter/leave state hooks.
-- Let's define some basic mouse, touch, and keyboard states:
-  - `mouseOn`: the mouse is on the element
-  - `buttonDown`: the mouse button is down while the mouse is on the element
-  - `touchDown`: at least one touch point is in contact with the screen and started on the element
-  - `focusKeyDown`:
-    - For React Interactive, this is if the element has focus and the enter key is down, or the element is a button and the space bar or enter key is down, or the element is a checkbox or radio button and the space bar is down (convention is buttons are activated by both the space bar and enter key, and radio buttons and checkboxes are only activated by the space bar).
-    - For CSS, this is something like, if the element is a button, checkbox, or radio button, has focus, and the space bar is down, then it is in the active state (i.e. the `foucsKeyDown` state for the purposes of this abstraction), but is not consistent across browsers. Note that even though the enter key triggers links and buttons, on most browsers pressing the enter key won't cause an element to enter the active state, which means there is zero visual feedback when triggering an element with the enter key, which doesn't make sense to me.
-
-### React Interactive state machine
-| Interactive state | Mouse, touch and keyboard states |
-|:------------------|:---------------------------------|
-| *base styles* | *Not an interactive state, always applied, everything merges with them* |
-| `normal` | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
-| `hover` | `mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
-| `active` | `hoverActive` &#124;&#124; `keyActive` &#124;&#124; `touchActive` |
-| `hoverActive` | `mouseOn && buttonDown && !touchDown && !focusKeyDown` |
-| `keyActive` | `focusKeyDown && !touchDown` |
-| `touchActive` | `touchDown` |
-The focus state boolean can be combined with any of the above states, except for `keyActive`, which is only available while in the `focus` state.
-
-### CSS interactive state machine
-Note that since a state machine can only be in one state at a time, to view interactive CSS as a state machine it has to be thought of as a combination of pseudo class selectors that match based on the mouse, keyboard and touch states.
-
-| Interactive state | Note | Mouse, touch and keyboard states | CSS Selector(s) |
-|:------------------|:-----|:---------------------------------|:----------------|
-| *base styles* | *Always applied, everything merges with them* | *Not an interactive state* | *`.class`* |
-| `normal` | Not commonly used in CSS (zeroing out/overriding base styles is used instead)  | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` | `.class:not(:hover):not(:active)` |
-| `hover` | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` &#124;&#124; `(after touchDown and sticks until you tap someplace else - the sticky hover CSS bug on touch devices)` | `.class:hover` |
-| `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` &#124;&#124; `(mouseOn && focusKeyDown)` &#124;&#124; `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
-| `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` &#124;&#124; `(focusKeyDown && !mouseOn)` &#124;&#124; `(touchDown && and not on element currently, but not consistent across browsers)` | `.class:active` |
-
-The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
-
-Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and on touch devices interactive CSS is not well supported. Also, there are no state change hooks with interactive CSS.
-
-
-## Notes
-#### `as` prop:
+#### `as` Prop
 - If `as` is a ReactComponent:
   - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html#classes-and-components).
   - In order for React Interactive to work `as` a ReactComponent, the component must pass down the props it receives from React Interactive to the top DOM node that it renders, and it cannot override any of the passed down event handlers, e.g. `onMouseEnter`. Also, the component cannot change its top DOM node once it's rendered unless the change is the result of new props. This is because React Interactive keeps a reference to the component's top DOM node so it can do things like call `focus()`, and if the top DOM node changes without React Interactive's knowledge, then things start to break. Note that React Router's Link component meets these requirements.
@@ -199,7 +177,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
   ```
   - This will create a `div` with text that reads 'Some jsxElement text' and will be blue on hover and red on active. When the props are merged, `jsxElement`'s `hover` prop and `children` take precedence over `Interactive`'s `hover` prop and `children`, but since `jsxElement` didn't specify an `active` prop, `Interactive`'s `active` prop is still valid.
 
-#### Focus state:
+#### `focus` State and Prop
 - React Interactive's focus state is always kept in sync with the browser's focus state. Added focus functionality like focus toggle and `tabOnlyFocus` is implemented by controlling the browser's focus state.
 - If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
 - All elements will toggle focus except if the element's tag name is `input`, `textarea`, `button`, `select`, or `option`.
@@ -207,7 +185,53 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 touch point tap. Also, on touchOnly devices, a click event not preceded by a touch event will toggle focus on/off.
 - The focus state change occurs in the same render as the mutually exclusive state changes. For example, on mouse down enters the `focus` state and the `hoverActive` state on the same render. The is achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls, one to enter the `hoverActive` state and one to enter the `focus` state (while two `setState` calls don't always mean two renders, in this situation it usually ends up that way because the two calls are not in the same synchronously executed code block).
 
-#### React Interactive state machine:
+#### Default Styles
+- If a `focus` state style is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
+- If a `touchActive` or `active` state style is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
+- If clicking the mouse does something then the cursor will default to a pointer.
+- You can prevent these default styles from being applied by adding the below props:
+  - `useBrowserOutlineFocus`
+  - `useBrowserWebkitTapHighlightColor`
+  - `useBrowserCursor`
+
+## Interactive State Machine Comparison
+Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and on enter/leave state hooks.
+- Let's define some basic mouse, touch, and keyboard states:
+  - `mouseOn`: the mouse is on the element
+  - `buttonDown`: the mouse button is down while the mouse is on the element
+  - `touchDown`: at least one touch point is in contact with the screen and started on the element
+  - `focusKeyDown`:
+    - For React Interactive, this is if the element has focus and the enter key is down, or the element is a button and the space bar or enter key is down, or the element is a checkbox or radio button and the space bar is down (convention is buttons are activated by both the space bar and enter key, and radio buttons and checkboxes are only activated by the space bar).
+    - For CSS, this is something like, if the element is a button, checkbox, or radio button, has focus, and the space bar is down, then it is in the active state (i.e. the `foucsKeyDown` state for the purposes of this abstraction), but is not consistent across browsers. Note that even though the enter key triggers links and buttons, on most browsers pressing the enter key won't cause an element to enter the active state, which means there is zero visual feedback when triggering an element with the enter key, which doesn't make sense to me.
+
+### React Interactive State Machine
+| Interactive state | Mouse, touch and keyboard states |
+|:------------------|:---------------------------------|
+| *base styles* | *Not an interactive state, always applied, everything merges with them* |
+| `normal` | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
+| `hover` | `mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
+| `active` | `hoverActive` &#124;&#124; `keyActive` &#124;&#124; `touchActive` |
+| `hoverActive` | `mouseOn && buttonDown && !touchDown && !focusKeyDown` |
+| `keyActive` | `focusKeyDown && !touchDown` |
+| `touchActive` | `touchDown` |
+The focus state boolean can be combined with any of the above states, except for `keyActive`, which is only available while in the `focus` state.
+
+### CSS Interactive State Machine
+Note that since a state machine can only be in one state at a time, to view interactive CSS as a state machine it has to be thought of as a combination of pseudo class selectors that match based on the mouse, keyboard and touch states.
+
+| Interactive state | Note | Mouse, touch and keyboard states | CSS Selector(s) |
+|:------------------|:-----|:---------------------------------|:----------------|
+| *base styles* | *Always applied, everything merges with them* | *Not an interactive state* | *`.class`* |
+| `normal` | Not commonly used in CSS (zeroing out/overriding base styles is used instead)  | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` | `.class:not(:hover):not(:active)` |
+| `hover` | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` &#124;&#124; `(after touchDown and sticks until you tap someplace else - the sticky hover CSS bug on touch devices)` | `.class:hover` |
+| `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` &#124;&#124; `(mouseOn && focusKeyDown)` &#124;&#124; `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
+| `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` &#124;&#124; `(focusKeyDown && !mouseOn)` &#124;&#124; `(touchDown && and not on element currently, but not consistent across browsers)` | `.class:active` |
+
+The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
+
+Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and on touch devices interactive CSS is not well supported. Also, there are no state change hooks with interactive CSS.
+
+## State Machine Notes
 - The total number of states that the React Interactive state machine can be is 9.
 - There are 5 mutually exclusive and comprehensive states: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 1 boolean state: `focus`, with the exception of `keyActive`, which is only available while in the `focus` state, for a total of 9 states:
   - `normal`
@@ -221,12 +245,3 @@ Note that you could achieve mutually exclusive hover and active states if you ap
   - `keyActive` with `focus`
 - The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
 - The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
-
-#### Default styles:
-- If a `focus` state style is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
-- If a `touchActive` or `active` state style is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
-- If clicking the mouse does something then the cursor will default to a pointer.
-- You can prevent these default styles from being applied by adding the below props:
-  - `useBrowserOutlineFocus`
-  - `useBrowserWebkitTapHighlightColor`
-  - `useBrowserCursor`
