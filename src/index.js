@@ -985,7 +985,7 @@ class ReactInteractive extends React.Component {
     const style = {};
     // add default styles first:
     // if focus style provided, then reset browser focus style
-    if (this.state.focus && !this.p.props.useBrowserOutlineFocus &&
+    if (!this.p.props.useBrowserOutlineFocus &&
     (this.p.tabFocusStyle.style || this.p.mouseFocusStyle.style || this.p.touchFocusStyle)) {
       style.outline = '0';
       style.outlineOffset = '0';
