@@ -110,6 +110,7 @@ class ReactInteractive extends React.Component {
       focusFrom: 'reset',
       spaceKeyDown: false,
       enterKeyDown: false,
+      drag: false,
       updateTopNode: false,
       state: this.state,
     };
@@ -209,6 +210,8 @@ class ReactInteractive extends React.Component {
       onBlur: this.handleFocusEvent,
       onKeyDown: this.handleKeyEvent,
       onKeyUp: this.handleKeyEvent,
+      onDragStart: this.handleDragEvent,
+      onDragEnd: this.handleDragEvent,
     };
 
     if (detectIt.hasTouchEventsApi) {
@@ -454,6 +457,7 @@ class ReactInteractive extends React.Component {
       this.track.touchDown = iState === 'touchActive';
       this.track.spaceKeyDown = iState === 'keyActive';
       this.track.enterKeyDown = iState === 'keyActive';
+      this.track.drag = false;
     }
   }
 
@@ -482,8 +486,9 @@ class ReactInteractive extends React.Component {
   }
 
   // compute the state based on what's set in `this.track`, returns a new state object
+  // note: use the respective active state when drag is true (i.e. dragging the element)
   computeState() {
-    const { mouseOn, buttonDown, touchDown, focus, focusFrom } = this.track;
+    const { mouseOn, buttonDown, touchDown, focus, focusFrom, drag } = this.track;
     const focusKeyDown = focus && (() => {
       const tag = this.tagName;
       const type = this.type;
@@ -498,11 +503,13 @@ class ReactInteractive extends React.Component {
       return false;
     })();
     const newState = { focus, focusFrom: focus ? focusFrom : undefined };
-    if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown) newState.iState = 'normal';
-    else if (mouseOn && !buttonDown && !touchDown && !focusKeyDown) newState.iState = 'hover';
-    else if (mouseOn && buttonDown && !touchDown && !focusKeyDown) newState.iState = 'hoverActive';
-    else if (focusKeyDown && !touchDown) newState.iState = 'keyActive';
-    else if (touchDown) newState.iState = 'touchActive';
+    if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag) newState.iState = 'normal';
+    else if (mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag) {
+      newState.iState = 'hover';
+    } else if ((mouseOn && buttonDown && !touchDown && !focusKeyDown) || (drag && !touchDown)) {
+      newState.iState = 'hoverActive';
+    } else if (focusKeyDown && !touchDown) newState.iState = 'keyActive';
+    else if (touchDown || drag) newState.iState = 'touchActive';
     return newState;
   }
 
@@ -977,6 +984,22 @@ class ReactInteractive extends React.Component {
     }
     // compute the new state object and pass it as an argument to updateState,
     // which calls setState and state change callbacks if needed
+    this.updateState(this.computeState(), this.p.props, e);
+  }
+
+  handleDragEvent = (e) => {
+    switch (e.type) {
+      case 'dragstart':
+        this.p.props.onDragStart && this.p.props.onDragStart(e);
+        this.track.drag = true;
+        break;
+      case 'dragend':
+        this.p.props.onDragEnd && this.p.props.onDragEnd(e);
+        this.forceTrackIState('normal');
+        break;
+      default:
+        return;
+    }
     this.updateState(this.computeState(), this.p.props, e);
   }
 
