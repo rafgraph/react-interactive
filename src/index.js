@@ -182,11 +182,13 @@ class ReactInteractive extends React.Component {
       this.p[`${this.state.iState}Style`].className))
       ||
       // if `focus` state changed, AND `focus` state has `style` or `className` associiated with it
-      ((nextState.focus !== this.state.focus || nextState.focusFrom !== this.state.focusFrom) &&
+      ((nextState.focus !== this.state.focus) &&
       (this.p[`${nextState.focus ? nextState.focusFrom : this.state.focusFrom}FocusStyle`].style
         !== null ||
       this.p[`${nextState.focus ? nextState.focusFrom : this.state.focusFrom}FocusStyle`].className
         !== ''))
+      ||
+      nextState.focusFrom !== this.state.focusFrom
     );
   }
 
