@@ -190,7 +190,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 ## Notes
 #### `as` prop:
 - If `as` is a ReactComponent:
-  - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html).
+  - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html#classes-and-components).
   - In order for React Interactive to work `as` a ReactComponent, the component must pass down the props it receives from React Interactive to the top DOM node that it renders, and it cannot override any of the passed down event handlers, e.g. `onMouseEnter`. Also, the component cannot change its top DOM node once it's rendered unless the change is the result of new props. This is because React Interactive keeps a reference to the component's top DOM node so it can do things like call `focus()`, and if the top DOM node changes without React Interactive's knowledge, then things start to break. Note that React Router's Link component meets these requirements.
   - When `as` is a ReactComponent it is wrapped in a `<span>` in order for React Interactive to maintain a reference to the top DOM node without breaking encapsulation. Without the span wrapper the only way to access the top DOM node would be through using `ReactDOM.findDOMNode(component)`, which breaks encapsulation and is discouraged, and also doesn't work with stateless functional components.
 - If `as` is a JSX/ReactElement:
