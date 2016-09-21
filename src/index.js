@@ -54,6 +54,7 @@ class ReactInteractive extends React.Component {
     setStateCallback: PropTypes.func,
     onClick: PropTypes.func,
     onMouseClick: PropTypes.func,
+    onEnterKey: PropTypes.func,
     onTap: PropTypes.func,
     onTapTwo: PropTypes.func,
     onTapThree: PropTypes.func,
@@ -354,8 +355,8 @@ class ReactInteractive extends React.Component {
     const knownProps = {
       children:true, as:true, normal:true, hover:true, active:true, hoverActive:true,
       touchActive:true, keyActive:true, focus:true, style:true, className:true,
-      onStateChange:true, setStateCallback:true, onClick:true, onMouseClick:true, onTap:true,
-      onTapTwo:true, onTapThree:true, onTapFour:true, onMouseEnter:true, onMouseLeave:true,
+      onStateChange:true, setStateCallback:true, onClick:true, onMouseClick:true, onEnterKey:true,
+      onTap:true, onTapTwo:true, onTapThree:true, onTapFour:true, onMouseEnter:true, onMouseLeave:true,
       onMouseMove:true, onMouseDown:true, onMouseUp:true, onTouchStart:true, onTouchEnd:true,
       onTouchCancel:true, onFocus:true, onBlur:true, onKeyDown:true, onKeyUp:true,
       forceState:true, initialState:true, refDOMNode:true, mutableProps:true,
@@ -781,9 +782,6 @@ class ReactInteractive extends React.Component {
         // attempt to end focus, if successful return b/c blur called updateState
         if (this.manageFocus('mouseup')) return;
         break;
-
-      // for enter keydown events sent from handleKeyEvent via this.clickHandler
-      case 'keydown':
       case 'click':
         this.p.props.onMouseClick && this.p.props.onMouseClick(e);
         this.p.props.onClick && this.p.props.onClick(e);
@@ -928,11 +926,6 @@ class ReactInteractive extends React.Component {
           this.p.props.onClick && this.p.props.onClick(e);
         }
         return;
-      // for enter keydown events sent from handleKeyEvent via this.clickHandler
-      case 'keydown':
-        this.p.props.onTap && this.p.props.onTap(e);
-        this.p.props.onClick && this.p.props.onClick(e);
-        return;
       default:
         return;
     }
@@ -970,8 +963,8 @@ class ReactInteractive extends React.Component {
         if (e.key === ' ') this.track.spaceKeyDown = true;
         else if (e.key === 'Enter') {
           this.track.enterKeyDown = true;
-          // call the click handler on enter key down events
-          this.clickHandler(e);
+          this.p.props.onEnterKey && this.p.props.onEnterKey(e);
+          this.p.props.onClick && this.p.props.onClick(e);
         }
         break;
       case 'keyup':
