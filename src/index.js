@@ -84,7 +84,7 @@ class ReactInteractive extends React.Component {
   constructor(props) {
     super(props);
 
-    // state is always an object with two keys, `iState` and `focus`
+    // state is always an object with three keys, `iState`, `focus`, and `focusFrom`
     this.state = {
       // iState is always 1 of 5 strings:
       // 'normal', 'hover', 'hoverActive', 'touchActive', 'keyActive'
@@ -285,8 +285,9 @@ class ReactInteractive extends React.Component {
     // shallow compare of state props => check style, className, onEnter, onLeave
     const sameStateProp = (stateProp) => {
       const statePropKeys = (stateProp !== 'focus') ? ['style', 'className', 'onEnter', 'onLeave'] :
-      ['style', 'className', 'onEnter', 'onLeave', 'tabOnlyFocusState', 'tabFocusStyle',
-      'mouseFocusStyle', 'touchFocusStyle', 'tabFocusClass', 'mouseFocusClass', 'touchFocusClass'];
+      ['style', 'className', 'onEnter', 'onLeave', 'focusFromTabOnly', 'focusFromTabStyle',
+      'focusFromMouseStyle', 'focusFromTouchStyle', 'focusFromTabClassName',
+      'focusFromMouseClassName', 'focusFromTouchClassName'];
       if (!statePropKeys.some(key => propsB[stateProp][key])) return false;
       if (statePropKeys.some(key => propsB[stateProp][key] !== propsA[stateProp][key])) {
         return false;
@@ -341,9 +342,9 @@ class ReactInteractive extends React.Component {
     this.p.hoverActiveStyle = this.extractStyle(mergedProps, 'hoverActive');
     this.p.touchActiveStyle = this.extractStyle(mergedProps, 'touchActive');
     this.p.keyActiveStyle = this.extractStyle(mergedProps, 'keyActive');
-    this.p.tabFocusStyle = this.extractFocusStyle(mergedProps, 'tabFocus');
-    this.p.mouseFocusStyle = this.extractFocusStyle(mergedProps, 'mouseFocus');
-    this.p.touchFocusStyle = this.extractFocusStyle(mergedProps, 'touchFocus');
+    this.p.tabFocusStyle = this.extractFocusStyle(mergedProps, 'focusFromTab');
+    this.p.mouseFocusStyle = this.extractFocusStyle(mergedProps, 'focusFromMouse');
+    this.p.touchFocusStyle = this.extractFocusStyle(mergedProps, 'focusFromTouch');
     this.p.passThroughProps = passThroughProps;
     this.p.props = mergedProps;
   }
@@ -438,11 +439,11 @@ class ReactInteractive extends React.Component {
     // if the focus prop object has any of these keys then it's an options object,
     // otherwise it's a style object
     if (focusProp.style || focusProp.className || focusProp.onEnter || focusProp.onLeave ||
-    focusProp.tabFocusStyle || focusProp.mouseFocusStyle || focusProp.touchFocusStyle ||
-    focusProp.tabFocusClass || focusProp.mouseFocusClass || focusProp.touchFocusClass ||
-    focusProp.tabOnlyFocusState) {
+    focusProp.focusFromTabStyle || focusProp.focusFromMouseStyle || focusProp.focusFromTouchStyle ||
+    focusProp.focusFromTabClassName || focusProp.focusFromMouseClassName ||
+    focusProp.focusFromTouchClassName || focusProp.focusFromTabOnly) {
       extract.style = focusProp[`${focusFrom}Style`] || focusProp.style || null;
-      extract.className = focusProp[`${focusFrom}Class`] || focusProp.className || '';
+      extract.className = focusProp[`${focusFrom}ClassName`] || focusProp.className || '';
     } else {
       extract.style = focusProp;
       extract.className = '';
@@ -593,13 +594,13 @@ class ReactInteractive extends React.Component {
   //     (don't reset touchTapBlur focusTransition because focus event handler uses it to detect an
   //     errant focus event sent by the browser)
   manageFocus(type) {
-    // keep track of timing for tabOnlyFocusState option
+    // keep track of timing for focusFromTabOnly option
     const prevTransitionTime = this.track.focusTransitionTime;
     const dateNow = this.track.focusTransitionTime = Date.now();
 
-    // is the tabOnlyFocusState option enabled
-    const tabOnlyFocusState =
-      typeof this.p.props.focus === 'object' && this.p.props.focus.tabOnlyFocusState;
+    // is the focusFromTabOnly option enabled
+    const focusFromTabOnly =
+      typeof this.p.props.focus === 'object' && this.p.props.focus.focusFromTabOnly;
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
       ({ INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1 })[this.tagName] === undefined;
@@ -611,7 +612,7 @@ class ReactInteractive extends React.Component {
     // returns false if not allowed to make specified transition
     const focusTransition = (event, transitionAs, force) => {
       if (force === 'force' ||
-      (event === 'focus' && tagIsFocusable && !tabOnlyFocusState && !this.track.state.focus) ||
+      (event === 'focus' && tagIsFocusable && !focusFromTabOnly && !this.track.state.focus) ||
       (event === 'blur' && tagIsBlurable && this.track.state.focus)) {
         this.track.focusTransition = transitionAs;
         this.topNode[event]();
@@ -641,8 +642,8 @@ class ReactInteractive extends React.Component {
         // if the browser called focus immediatly prior to an edge/synthetic click event
         // on a touchOnly device
         if (this.track.state.focus && dateNow - prevTransitionTime < 600) {
-          // tabOnlyFocusState force blur to correct the focus state for both RI and the browser
-          if (tabOnlyFocusState) {
+          // focusFromTabOnly force blur to correct the focus state for both RI and the browser
+          if (focusFromTabOnly) {
             return focusTransition('blur', 'focusForceBlur', 'force');
           }
           // set focusFrom to 'touch' - prior focus event sets focusFrom to 'tab' becasue no way
@@ -701,8 +702,8 @@ class ReactInteractive extends React.Component {
           // https://github.com/rafrex/react-interactive/commit/b5358e8789267b75590e7d0f295e58fc1c3a0c1f
           this.track.focusTransition === 'touchTapBlur'
           ||
-          // tabOnlyFocusState force blur when browser calls focus b/c of a touch/mouse interaction
-          (tabOnlyFocusState && this.track.focusTransition !== 'forceStateFocus' && (
+          // focusFromTabOnly force blur when browser calls focus b/c of a touch/mouse interaction
+          (focusFromTabOnly && this.track.focusTransition !== 'forceStateFocus' && (
             dateNow - prevTransitionTime < 600 ||
             this.track.touchDown || dateNow - this.track.touchEndTime < 600
           ))
@@ -861,7 +862,7 @@ class ReactInteractive extends React.Component {
             const touchKeys = Object.keys(touches);
             const touchCount = touchKeys.length;
             // make sure each touch point hasn't moved more than the allowed tolerance
-            if (touchKeys.every((touch) => (
+            if (touchKeys.every(touch => (
               Math.abs(touches[touch].endX - touches[touch].startX) < 15 + (3 * touchCount) &&
               Math.abs(touches[touch].endY - touches[touch].startY) < 15 + (3 * touchCount)
             ))) {
@@ -1001,8 +1002,8 @@ class ReactInteractive extends React.Component {
     const style = {};
     // add default styles first:
     // if focus style provided, then reset browser focus style
-    if (!this.p.props.useBrowserOutlineFocus &&
-    (this.p.tabFocusStyle.style || this.p.mouseFocusStyle.style || this.p.touchFocusStyle.style)) {
+    if (!this.p.props.useBrowserOutlineFocus && (this.p.tabFocusStyle.style ||
+    this.p.mouseFocusStyle.style || this.p.touchFocusStyle.style)) {
       style.outline = '0';
       style.outlineOffset = '0';
     }
@@ -1017,7 +1018,7 @@ class ReactInteractive extends React.Component {
       (this.p.props.onClick || this.p.props.onMouseClick ||
         (
           lowerAs !== 'input' && (this.p.props.focus || this.p.props.tabIndex) &&
-          !(this.p.props.focus && this.p.props.focus.tabOnlyFocusState)
+          !(this.p.props.focus && this.p.props.focus.focusFromTabOnly)
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
           this.p.props.type === 'radio' || this.p.props.type === 'submit')
