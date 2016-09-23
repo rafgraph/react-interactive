@@ -494,11 +494,11 @@ class ReactInteractive extends React.Component {
     const focusKeyDown = focus && (() => {
       const tag = this.tagName;
       const type = this.type;
-      if (this.track.enterKeyDown &&
+      if (this.track.enterKeyDown && tag !== 'SELECT' &&
       (tag !== 'INPUT' || (type !== 'checkbox' && type !== 'radio'))) {
         return true;
       }
-      if (this.track.spaceKeyDown && (tag === 'BUTTON' ||
+      if (this.track.spaceKeyDown && (tag === 'BUTTON' || tag === 'SELECT' ||
       (tag === 'INPUT' && (type === 'checkbox' || type === 'radio' || type === 'submit')))) {
         return true;
       }

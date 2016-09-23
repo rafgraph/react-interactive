@@ -270,10 +270,10 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
   - `touchDown`: at least one touch point is in contact with the screen and started on the element
   - `focusKeyDown`:
     - For React Interactive, this is if:
-      - The element is not a checkbox or radio input and the enter key is down
+      - The element is not a checkbox, radio, or select, and the enter key is down
       - The element is a button and the space bar or enter key is down
-      - The element is a checkbox or radio input and the space bar is down
-      - Convention is buttons are activated by both the space bar and enter key, and radio buttons and checkboxes are only activated by the space bar
+      - The element is a checkbox, radio, or select and the space bar is down
+      - Convention is buttons are activated by both the space bar and enter key, and checkboxes, radio buttons and selects are only activated by the space bar
     - For CSS, this is something like, if the element is a button, checkbox, or radio button, and the space bar is down, then it is in the active state (i.e. the `foucsKeyDown` state for the purposes of this abstraction), but is not consistent across browsers. Note that even though the enter key triggers links and buttons, pressing the enter key won't cause an element to enter the active state, which means that with CSS there is no way to give visual feedback when triggering an element with the enter key.
 
 ### React Interactive State Machine
