@@ -118,7 +118,7 @@ import Interactive from 'react-interactive';
 
 ### API for `<Interactive />`
 Note that there are no default values for any prop, and the only required prop is `as`.  
-For the definition of when each state is entered, see the [state machine definition](https://github.com/rafrex/react-interactive#react-interactive-state-machine) below.
+For the definition of when each state is entered, see the [state machine definition](#react-interactive-state-machine) below.
 
 | Prop | Type | Example | Description |
 |:-----|:-----|:--------|:------------|
@@ -205,12 +205,12 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 - In Interactive's API, the `forceState` and `initialState` props pass in a state object to the Interactive component, and the `onStateChange` and `setStateCallback` hooks receive the previous and next state objects when they are called.
 
 #### `focusFrom` API
-- The `focusFrom` API allows for separate styles and class names based on how the `focus` state was entered (tab key, mouse, or touch).
+- The `focusFrom` API allows for separate styles and class names based on how the `focus` state is entered (tab key, mouse, or touch).
 - The API is accessed in the `focus` prop options object by adding keys for  `focusFrom[input]Style`, and `focusFrom[input]ClassName`.
-  - `focusFromTabStyle`, `focusFromTabClassName`: use this `style` and `className` for the `focus` state if focus did not come from a mouse or touch interaction, usually by tabbing through the focusable elements on the page, but any non-mouse/touch focus calls will match with `focusFromTab`.
+  - `focusFromTabStyle`, `focusFromTabClassName`: use this `style` and `className` for the `focus` state if focus is from the tab key (i.e. tabbing through the focusable elements on the page). Also, any focus calls not from a mouse or touch interaction (e.g. from assistive tech) will match with `focusFromTab`.
   - `focusFromMouseStyle`, `focusFromMouseClassName`: use this `style` and `className` for the `focus` state when focus is from a mouse interaction.
   - `focusFromTouchStyle`, `focusFromTouchClassName`: use this `style` and `className` for the `focus` state when focus is from a touch interaction.
-- There is also a `focusFromTabOnly` boolean option, that when set to `true` means the element only enters the focus state when not the result of a mouse or touch interaction, usually by tabbing through the focusable elements on the page, but any non-mouse/touch focus calls will enter the focus state when using `focusFromTabOnly`. Note that preventing the browser from entering the focus state will make the element not draggable in some browsers.
+- There is also a `focusFromTabOnly` boolean option that when set to `true` only lets the element enter the focus state when not the result of a mouse or touch interaction, usually by tabbing through the focusable elements on the page, but any non-mouse/touch focus call will enter the focus state when using `focusFromTabOnly`. Note that preventing the browser from entering the focus state will make the element not draggable in some browsers.
 - `focus` options object with the complete `focusFrom` API:
 ```javascript
   <Interactive
@@ -226,7 +226,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
       // when `focusFrom[input]Style` is not present for an input type,
       // the `style` key will be used instead, for example:
       // style: { outline: '2px solid yellow' },
-      // but since all 3 focusFrom styles are present in this example, this style key does nothing
+      // but since all 3 focusFrom styles are present in this example, the style key does nothing
 
       // same as style, but for class names (as a space separated string)
       focusFromTabClassName: 'tab-focus-class',
