@@ -1,5 +1,7 @@
 # React Interactive
 
+[Live example](http://react-interactive.rafrex.com)
+
 Interactive state machine as a React component. There are 3 mutually exclusive states, plus 1 boolean state that can be combined with any of the other 3.
 - The 3 mutually exclusive states are:
   - `normal`
