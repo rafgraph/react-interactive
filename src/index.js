@@ -603,7 +603,7 @@ class ReactInteractive extends React.Component {
       typeof this.p.props.focus === 'object' && this.p.props.focus.focusFromOnly === 'tab';
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
-      ({ INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1 })[this.tagName] === undefined;
+      ({ INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1 })[this.tagName] === undefined;
     // is the node focusable, if there is a foucs or tabIndex prop, or it's non-blurable, then it is
     const tagIsFocusable = this.p.props.focus || this.p.props.tabIndex ||
     this.tagName === 'a' || !tagIsBlurable;
@@ -1022,7 +1022,7 @@ class ReactInteractive extends React.Component {
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
           this.p.props.type === 'radio' || this.p.props.type === 'submit')
-        ) || lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'select' || lowerAs === 'option'
+        ) || lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'select'
       ) && !(
         this.p.props.disabled
     ))) {
