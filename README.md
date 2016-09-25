@@ -210,7 +210,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
   - `focusFromTabStyle`, `focusFromTabClassName`: use this `style` and `className` for the `focus` state if focus is from the tab key (i.e. tabbing through the focusable elements on the page). Also, any focus calls not from a mouse or touch interaction (e.g. from assistive tech) will match with `focusFromTab`.
   - `focusFromMouseStyle`, `focusFromMouseClassName`: use this `style` and `className` for the `focus` state when focus is from a mouse interaction.
   - `focusFromTouchStyle`, `focusFromTouchClassName`: use this `style` and `className` for the `focus` state when focus is from a touch interaction.
-- There is also a `focusFromTabOnly` boolean option that when set to `true` only lets the element enter the focus state when not the result of a mouse or touch interaction, usually by tabbing through the focusable elements on the page, but any non-mouse/touch focus call will enter the focus state when using `focusFromTabOnly`. Note that preventing the browser from entering the focus state will make the element not draggable in some browsers.
+- There is also a `focusFromOnly` option that when set to `'tab'` only lets the element enter the focus state when not the result of a mouse or touch interaction, usually by tabbing through the focusable elements on the page, but any non-mouse/touch focus call will enter the focus state when using `focusFromOnly: 'tab'`. Note that preventing the browser from entering the focus state will make the element not draggable in some browsers, and may have other browser specific side effects (using `focusFrom` to determine style and class names is a safer option).
 - `focus` options object with the complete `focusFrom` API:
 ```javascript
   <Interactive
@@ -234,7 +234,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
       focusFromTouchClassName: 'touch-focus-class',
 
       // only enter the focus state when focus comes from the keyboard (i.e. the tab key)
-      focusFromTabOnly: true / false, // only need to add the key if the value is true
+      focusFromOnly: 'tab', // only need to add the key if the value is 'tab'
 
       // enter/leave state hooks receive the string 'focus' (the state) as the first
       // argument, and focusFrom ('tab', 'mouse', or 'touch') as the second argument
@@ -245,7 +245,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 ```
 
 #### `focus` State
-- React Interactive's focus state is always kept in sync with the browser's focus state. Added functionality like focus toggle and `focusFromTabOnly` are implemented by controlling the browser's focus state.
+- React Interactive's focus state is always kept in sync with the browser's focus state. Added functionality like focus toggle and `focusFromOnly` are implemented by controlling the browser's focus state.
 - Focus toggle
   - All elements will toggle focus except if the element if for user input, that is, the element's tag name is `input`, `textarea`, `button`, `select`, or `option`.
   - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
@@ -308,7 +308,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 - Enter/leave state hooks
 - Separate active states for each type of interaction - `hoverActive`, `touchActive`, and `keyActive`
 - Separate styles for the focus state based on how it was entered (see the [`focusFrom` API](#focusfrom-api)) - `focusFromTab`, `focusFromMouse`, and `focusFromTouch`
-- `focusFromTabOnly` option to only enter the focus state when focus comes from the keyboard
+- `focusFromOnly` option to only enter the focus state when focus comes from the keyboard
 - Toggle focus on click/tap (unless the element is for user input)
 - Click, tap, and enter key triggers for the `onClick` handler
 

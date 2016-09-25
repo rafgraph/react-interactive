@@ -285,7 +285,7 @@ class ReactInteractive extends React.Component {
     // shallow compare of state props => check style, className, onEnter, onLeave
     const sameStateProp = (stateProp) => {
       const statePropKeys = (stateProp !== 'focus') ? ['style', 'className', 'onEnter', 'onLeave'] :
-      ['style', 'className', 'onEnter', 'onLeave', 'focusFromTabOnly', 'focusFromTabStyle',
+      ['style', 'className', 'onEnter', 'onLeave', 'focusFromOnly', 'focusFromTabStyle',
       'focusFromMouseStyle', 'focusFromTouchStyle', 'focusFromTabClassName',
       'focusFromMouseClassName', 'focusFromTouchClassName'];
       if (!statePropKeys.some(key => propsB[stateProp][key])) return false;
@@ -441,7 +441,7 @@ class ReactInteractive extends React.Component {
     if (focusProp.style || focusProp.className || focusProp.onEnter || focusProp.onLeave ||
     focusProp.focusFromTabStyle || focusProp.focusFromMouseStyle || focusProp.focusFromTouchStyle ||
     focusProp.focusFromTabClassName || focusProp.focusFromMouseClassName ||
-    focusProp.focusFromTouchClassName || focusProp.focusFromTabOnly) {
+    focusProp.focusFromTouchClassName || focusProp.focusFromOnly) {
       extract.style = focusProp[`${focusFrom}Style`] || focusProp.style || null;
       extract.className = focusProp[`${focusFrom}ClassName`] || focusProp.className || '';
     } else {
@@ -600,7 +600,7 @@ class ReactInteractive extends React.Component {
 
     // is the focusFromTabOnly option enabled
     const focusFromTabOnly =
-      typeof this.p.props.focus === 'object' && this.p.props.focus.focusFromTabOnly;
+      typeof this.p.props.focus === 'object' && this.p.props.focus.focusFromOnly === 'tab';
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
       ({ INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1 })[this.tagName] === undefined;
@@ -1018,7 +1018,7 @@ class ReactInteractive extends React.Component {
       (this.p.props.onClick || this.p.props.onMouseClick ||
         (
           lowerAs !== 'input' && (this.p.props.focus || this.p.props.tabIndex) &&
-          !(this.p.props.focus && this.p.props.focus.focusFromTabOnly)
+          !(this.p.props.focus && this.p.props.focus.focusFromTab === 'tab')
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
           this.p.props.type === 'radio' || this.p.props.type === 'submit')
