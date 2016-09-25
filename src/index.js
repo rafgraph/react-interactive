@@ -250,8 +250,8 @@ class ReactInteractive extends React.Component {
       // if `as` is a component, then the `refNode` is the span wrapper, so get its firstChild
       if (typeof this.p.props.as !== 'string') this.topNode = node.firstChild;
       else this.topNode = node;
-      this.tagName = this.topNode.tagName;
-      this.type = this.topNode.type;
+      this.tagName = this.topNode.tagName.toLowerCase();
+      this.type = this.topNode.type && this.topNode.type.toLowerCase();
       // if node is a new node then call manageFocus to keep browser in sync with RI,
       // note: above assignments can't be in this if statement b/c node could have mutated,
       // node should maintain focus state when mutated
@@ -494,12 +494,12 @@ class ReactInteractive extends React.Component {
     const focusKeyDown = focus && (() => {
       const tag = this.tagName;
       const type = this.type;
-      if (this.track.enterKeyDown && tag !== 'SELECT' &&
-      (tag !== 'INPUT' || (type !== 'checkbox' && type !== 'radio'))) {
+      if (this.track.enterKeyDown && tag !== 'select' &&
+      (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'))) {
         return true;
       }
-      if (this.track.spaceKeyDown && (tag === 'BUTTON' || tag === 'SELECT' ||
-      (tag === 'INPUT' && (type === 'checkbox' || type === 'radio' || type === 'submit')))) {
+      if (this.track.spaceKeyDown && (tag === 'button' || tag === 'select' ||
+      (tag === 'input' && (type === 'checkbox' || type === 'radio' || type === 'submit')))) {
         return true;
       }
       return false;
@@ -603,7 +603,7 @@ class ReactInteractive extends React.Component {
       typeof this.p.props.focus === 'object' && this.p.props.focus.focusFromOnly === 'tab';
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
-      ({ INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1 })[this.tagName] === undefined;
+      ({ input: 1, button: 1, textarea: 1, select: 1 })[this.tagName] === undefined;
     // is the node focusable, if there is a foucs or tabIndex prop, or it's non-blurable, then it is
     const tagIsFocusable = this.p.props.focus || this.p.props.tabIndex ||
     this.tagName === 'a' || !tagIsBlurable;
