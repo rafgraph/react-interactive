@@ -947,6 +947,8 @@ class ReactInteractive extends React.Component {
         if (this.manageFocus('blur')) return;
         this.p.props.onBlur && this.p.props.onBlur(e);
         this.track.focus = false;
+        this.track.spaceKeyDown = false;
+        this.track.enterKeyDown = false;
         break;
       default:
         return;
