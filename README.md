@@ -249,10 +249,10 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 #### `focus` State
 - React Interactive's focus state is always kept in sync with the browser's focus state. Added functionality like focus toggle and `focusFromOnly` are implemented by controlling the browser's focus state.
 - Focus toggle
-  - All elements will toggle focus except if the element if for user input, that is, the element's tag name is `input`, `textarea`, `button`, or `select`.
+  - All elements will toggle focus except if the element is for user input, that is, the element's tag name is `input`, `textarea`, `button`, or `select`.
   - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
   - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 finger tap. Also, on touchOnly devices, a click event not preceded by a touch event (e.g. a synthetic click event) will toggle focus on/off.
-- If you add a `focus` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
+- If you add a `focus`, `onClick`, or `onEnterKey` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
 - The focus state change occurs in the same `setState` call as the iState change, so the `onStateChange` hook is only called once. For example, `onMouseDown` enters the `focus` state and the `hoverActive` state in a single state change (and render). This achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls (and two `onStateChange` calls), one to enter the `hoverActive` state and one to enter the `focus` state.
 
 #### Default Styles
