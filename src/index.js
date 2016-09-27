@@ -100,6 +100,7 @@ class ReactInteractive extends React.Component {
     this.track = {
       touchStartTime: Date.now() - 2000,
       touchEndTime: Date.now() - 1000,
+      touchEndClick: false,
       touchDown: false,
       touches: {},
       mouseOn: false,
@@ -801,6 +802,12 @@ class ReactInteractive extends React.Component {
   }
 
   handleHybridMouseEvent = (e) => {
+    // early return if it's a click event that's preceded by a touch end click
+    if (this.track.touchEndClick && e.type === 'click') {
+      this.track.touchEndClick = false;
+      return;
+    }
+
     // Call the mouse handler if not touchDown and the event occurred after 600ms
     // from the last touchend event to prevent calling mouse handlers as a result
     // of touch interactions. On some devices (notably Android) during a long press the mouse
@@ -812,6 +819,8 @@ class ReactInteractive extends React.Component {
     // reset mouse trackers
     this.track.mouseOn = false;
     this.track.buttonDown = false;
+    // reset touch end click tracker unless this is a click event
+    if (e.type !== 'click') this.track.touchEndClick = false;
 
     switch (e.type) {
       case 'touchstart':
@@ -881,6 +890,7 @@ class ReactInteractive extends React.Component {
             case 1:
               this.p.props.onTap && this.p.props.onTap(e);
               this.p.props.onClick && this.p.props.onClick(e);
+              this.track.touchEndClick = true;
               // attempt to toggle focus, if successful, return b/c focus/blur called updateState
               if (this.manageFocus('touchtap')) return;
               break;
@@ -913,6 +923,12 @@ class ReactInteractive extends React.Component {
       // for click events fired on touchOnly devices, listen for because synthetic
       // click events won't fire touchend event
       case 'click':
+        // early return if preceded by a touch end click
+        if (this.track.touchEndClick) {
+          this.track.touchEndClick = false;
+          return;
+        }
+
         // check to see if the click event is the result of a touch interaction
         // if > 600ms since last touch, then not the result of a touch interaction
         if (!this.track.touchDown && Date.now() - this.track.touchEndTime > 600) {
