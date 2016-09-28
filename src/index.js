@@ -1039,7 +1039,8 @@ class ReactInteractive extends React.Component {
       (this.p.props.onClick || this.p.props.onMouseClick ||
         (
           lowerAs !== 'input' && (this.p.props.focus || this.p.props.tabIndex) &&
-          !(this.p.props.focus && this.p.props.focus.focusFromTab === 'tab')
+          !(this.p.props.focus && this.p.props.focus.focusFromOnly === 'tab') &&
+          (this.p.mouseFocusStyle.style || this.p.mouseFocusStyle.className)
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
           this.p.props.type === 'radio' || this.p.props.type === 'submit')
