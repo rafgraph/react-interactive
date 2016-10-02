@@ -556,18 +556,8 @@ class ReactInteractive extends React.Component {
 
     // call onEnter and onLeave callbacks
     if (iChange) {
-      if (prevIState !== 'hover') {
-        props[prevIState] && props[prevIState].onLeave && props[prevIState].onLeave(prevIState);
-      }
-      if (/hover/.test(prevIState.toLowerCase()) && !/hover/.test(nextIState.toLowerCase())) {
-        props.hover && props.hover.onLeave && props.hover.onLeave('hover');
-      }
-      if (/hover/.test(nextIState.toLowerCase()) && !/hover/.test(prevIState.toLowerCase())) {
-        props.hover && props.hover.onEnter && props.hover.onEnter('hover');
-      }
-      if (nextIState !== 'hover') {
-        props[nextIState] && props[nextIState].onEnter && props[nextIState].onEnter(nextIState);
-      }
+      props[prevIState] && props[prevIState].onLeave && props[prevIState].onLeave(prevIState);
+      props[nextIState] && props[nextIState].onEnter && props[nextIState].onEnter(nextIState);
     }
     if (fChange) {
       const transition = newState.focus ? 'onEnter' : 'onLeave';
