@@ -708,7 +708,8 @@ class ReactInteractive extends React.Component {
         // set focusFrom based on the type of focusTransition
         if (/mouse/.test(this.track.focusTransition.toLowerCase())) {
           this.track.focusFrom = 'mouse';
-        } else if (/touch/.test(this.track.focusTransition.toLowerCase()) || this.track.touchDown) {
+        } else if (/touch/.test(this.track.focusTransition.toLowerCase()) || this.track.touchDown ||
+        Date.now() - this.track.touchEndTime < 600) {
           this.track.focusFrom = 'touch';
         } else if (!/forcestate/.test(this.track.focusTransition.toLowerCase())) {
           this.track.focusFrom = 'tab';
