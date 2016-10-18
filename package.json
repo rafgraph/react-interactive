@@ -1,7 +1,7 @@
 {
   "name": "react-interactive",
   "version": "0.1.0",
-  "description": "React interactive component",
+  "description": "React Interactive",
   "main": "lib/index.js",
   "scripts": {
     "build": "rm -rf lib && babel src -d lib",
