@@ -23,10 +23,10 @@ Compared to CSS, React Interactive is a simpler state machine with better touch 
   as="div"
   normal={{ color: 'black' }}
   hover={{ color: 'green' }}
-  active={{ color: 'blue' }}
-  focus={{ border: '2px solid yellow' }}
+  active={{ color: 'blue' }} // style to use for the hoverActive, touchActive and keyActive states
+  focus={{ outline: '2px solid green' }}
   style={{ fontSize: '16px', padding: '3px', border: '2px dotted black' }}
-  onClick={handleClick}
+  onClick={this.handleClick}
 >This is an interactive and focusable div</Interactive>
 ```
 ```javascript
@@ -46,14 +46,17 @@ import { Link } from 'react-router';
 <Interactive
   as="a"
   href="https://example.tld"
+  // hook called on every state change, receives prevState and nextState objects
+  onStateChange{this.handleInteractiveStateChange}
   hover={{
     style: { color: 'green' },
+    // hooks called on enter/leave of the hover state
     onEnter: this.handleEnterHover,
     onLeave: this.handleLeaveHover,
   }}
   active="hover" // use the hover state style for the active state
   style={{ color: 'black', padding: '3px' }}
->This is an interactive link with hover state change hooks</Interactive>
+>This is an interactive link with state change hooks</Interactive>
 ```
 ```javascript
 // Interactive link with separate styles for mouse, touch, and keyboard interactions
@@ -71,10 +74,10 @@ import { Link } from 'react-router';
 
   // keyboard interactions: normal -> normal with focus -> keyActive with focus
   // use focusFromTabStyle to only apply the style when focus comes from the keyboard
-  focus={{ focusFromTabStyle: { outline: '2px solid yellow' }}}
-  keyActive={{ color: 'yellow' }}
+  focus={{ focusFromTabStyle: { outline: '2px solid orange' }}}
+  keyActive={{ color: 'orange' }}
 
->Interactive link with separate styles for each type of interaction</Interactive>
+>This is an interactive link with separate styles for each type of interaction</Interactive>
 ```
 ```javascript
 // Interactive div with class names instead of styles
@@ -87,7 +90,7 @@ import { Link } from 'react-router';
   // use focusFromTabClassName to only apply the class when focus comes from the keyboard
   focus={{ focusFromTabClassName: 'tab-focus-class' }}
   className="some-class"
->Interactive div with different classes for hover and active states</Interactive>
+>This is an interactive div with CSS classes instead of inline styles</Interactive>
 ```
 
 #### Installing `react-interactive`
