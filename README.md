@@ -170,15 +170,16 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 
 #### `as` Prop Type
 - If `as` is a string:
-  - `as="div"`
+  - E.g. `as="div"`
   - The string must be an html tag name, for example, `div`, `span`, `a`, `h1`, `p`, `ul`, `li`, `input`, `select`, `button`, etc...
+  - Note that for SVG images, `as="svg"` works fine except that in general SVGs are not focusable by the browser, so if you need `focus` then wrap the `svg` element in a Interactive `span`. Also with SVGs you can make a specific path interactive, e.g. `as="path"` to create interactions within the SVG.
 - If `as` is a ReactComponent:
-  - `as={MyComponent}`
+  - E.g. `as={MyComponent}`
   - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html#classes-and-components).
   - In order for React Interactive to work `as` a ReactComponent, the component must pass down the props it receives from React Interactive to the top DOM node that it renders, and it cannot override any of the passed down event handlers, e.g. `onMouseEnter`. Also, the component cannot replace its top DOM node once it's rendered unless the replacement is the result of new props (note that mutations are okay, e.g. changing style, classes, children, etc is fine). This is because React Interactive keeps a reference to the component's top DOM node so it can do things like call `focus()`, and if the top DOM node is replaced without React Interactive's knowledge, then things start to break. Note that React Router's Link component meets these requirements.
   - When `as` is a ReactComponent it is wrapped in a `<span>` in order for React Interactive to maintain a reference to the top DOM node without breaking encapsulation. Without the span wrapper the only way to access the top DOM node would be through using `ReactDOM.findDOMNode(component)`, which breaks encapsulation and is discouraged, and also doesn't work with stateless functional components.
 - If `as` is a JSX/ReactElement:
-  - `as={<div>...</div>}` or `as={<MyComponent />}`
+  - E.g. `as={<div>...</div>}` or `as={<MyComponent />}`
   - The props of the top ReactElement are merged with, and have priority over, Interactive's props. For example:
   ```javascript
   const jsxElement = <div hover={{ color: 'blue' }}>Some jsxElement text</div>;
