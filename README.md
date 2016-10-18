@@ -121,7 +121,7 @@ import Interactive from 'react-interactive';
   - [React Interactive Advantages Over CSS](#react-interactive-advantages-over-css)
 - [State Machine Notes](#state-machine-notes)
 - [Complex Examples](#complex-examples)
-  - [Use RI Component State to Render Your Component](#use-ri-component-state-to-render-your-component)
+  - [Using Interactive's State in Parent Component](#using-interactives-state-in-parent-component)
   - [Show On `hover` and `active`](#show-on-hover-and-active)
   - [Show On `hover`, `touchActive` and `focusFromTab`](#show-on-hover-touchactive-and-focusfromtab)
   - [Hot Swappable `as`](#hot-swappable-as)
@@ -299,7 +299,7 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
 | `hoverActive` | `mouseOn && buttonDown && !touchDown && !focusKeyDown` |
 | `keyActive` | `focusKeyDown && !touchDown` |
 | `touchActive` | `touchDown` |
-The focus state boolean can be combined with any of the above states, and the `keyActive` state is only available while in the `focus` state.
+The `focus` state boolean can be combined with any of the above states, and the `keyActive` state is only available while in the `focus` state.
 
 ### CSS Interactive State Machine
 Note that since a state machine can only be in one state at a time, to view interactive CSS as a state machine it has to be thought of as a combination of pseudo class selectors that match based on the mouse, keyboard and touch states.
@@ -312,7 +312,7 @@ Note that since a state machine can only be in one state at a time, to view inte
 | `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` &#124;&#124; `(mouseOn && focusKeyDown)` &#124;&#124; `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
 | `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` &#124;&#124; `(focusKeyDown && !mouseOn)` &#124;&#124; `(touchDown but not on the element currently, but not consistent across browsers)` | `.class:active` |
 
-The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
+The `focus` state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
 
 Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted to using CSS selectors. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and in CSS touch and keyboard interactions are not well supported.
 
@@ -343,7 +343,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 
 ## Complex Examples
 
-#### Use RI Component State to Render Your Component
+#### Using Interactive's State in Parent Component
 ```javascript
 import React from 'react';
 import Interactive from 'react-interactive';
