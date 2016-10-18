@@ -2,17 +2,19 @@
 
 [Live example](http://react-interactive.rafrex.com)
 
-Interactive state machine as a React component. There are 3 mutually exclusive states, plus 1 boolean state that can be combined with any of the other 3.
-- The 3 mutually exclusive states are:
+Interactive state machine as a React component. There are 5 mutually exclusive states, plus 1 boolean state that can be combined with the other 5.
+- The 5 mutually exclusive states are:
   - `normal`
   - `hover`
-  - `active`
+  - \*`hoverActive`
+  - \*`touchActive`
+  - \*`keyActive`
 - The 1 boolean state is:
   - `focus`
 
-Additionally, the `active` state can be broken up into 3 mutually exclusive states for finer control if needed - `hoverActive` (mouse on and button down), `touchActive` (touch on screen), and `keyActive` (has focus and enter key down).
+\*The 3 separate `[type]Active` states can be treated as a single `active` state if desired. `hoverActive` (mouse on and button down), `touchActive` (touch on screen), `keyActive` (has focus and enter key down).
 
-Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and on enter/leave state hooks. See [comparison below](#interactive-state-machine-comparison).
+Compared to CSS, React Interactive is a simpler state machine with better touch device and keyboard support, and on enter/leave state hooks. See [comparison below](#interactive-state-machine-comparison).
 
 #### Basic Examples
 ```javascript
