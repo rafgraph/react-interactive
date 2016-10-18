@@ -119,7 +119,7 @@ class ReactInteractive extends React.Component {
 
     // the node returned by the ref callback
     this.refNode = null;
-    // the actual top DOM node of `as`, needed when `as` is wrapped in a span
+    // the actual top DOM node of `as`, needed when `as` is wrapped in a span (is ReactComponent)
     this.topNode = null;
     // tagName and type properties of topNode
     this.tagName = '';
@@ -129,13 +129,13 @@ class ReactInteractive extends React.Component {
     this.eventHandlers = this.determineHandlers();
     this.clickHandler = this.determineClickHandler();
 
-    // this.p is used store things that are a deterministic function of props
+    // this.p is used to store things that are a deterministic function of props
     // to avoid recalculating every time they are needed, it can be thought of as a pure
     // extension to props and is only updated in the constructor and componentWillReceiveProps
     this.p = { sameProps: false };
     // set properties of `this.p`
     this.propsSetup(props);
-    // if initialState prop, update state.iState for initial render, state.focus
+    // if initialState prop, update state.iState for initial render, note that state.focus
     // will be updated in componentDidMount b/c can't call focus until have ref to DOM node
     if (this.p.props.initialState && this.p.props.initialState.iState) {
       this.forceTrackIState(this.p.props.initialState.iState);
@@ -268,7 +268,7 @@ class ReactInteractive extends React.Component {
   sameProps(propsA, propsB) {
     // If children are ReactElements, e.g. JSX as opposed to strings,
     // they will not be equal even if they are the same because React.createElement(...)
-    // returns a new instance every time and is called on every render,
+    // returns a new instance every time and is usually called on every render,
     // so unless there is a deep compare of the ReactElement tree of children,
     // it doesn't make sense to continue checking other props.
     // Note, that when nothing has changed in props,
@@ -576,7 +576,7 @@ class ReactInteractive extends React.Component {
   // - RI calls focus -> set track.focusTransition to transition type -> onFocus listener triggered
   // - RI focus event handler uses track.focusTransition to determine if the focus event is:
   //   - sent from RI to keep browser focus in sync with RI -> reset focusTransition -> end
-  //   - errant -> call blur and set focusTransition to focusForceBlur
+  //   - errant -> call blur to keep browser in sync, set focusTransition to focusForceBlur -> end
   //   - sent from RI -> reset focusTransition -> RI enters the focus state
   //   - sent from browser -> set focusTransition to browserFocus -> RI enters the focus state
   // - browser calls blur -> onBlur listener triggered
@@ -585,8 +585,8 @@ class ReactInteractive extends React.Component {
   //   - a force blur to keep the browser focus state in sync -> reset focusTransition -> end
   //     (if it's a force blur meant for both RI and the browser, then it proceeds normally)
   //   - eveything else -> reset focusTransition (unless it's touchTapBlur) -> RI leaves focus state
-  //     (don't reset touchTapBlur focusTransition because focus event handler uses it to detect an
-  //     errant focus event sent by the browser)
+  //     (don't reset touchTapBlur focusTransition because focus event handler uses it to detect a
+  //     subsequent errant focus event sent by the browser)
   manageFocus(type) {
     // keep track of timing for focusFromTabOnly option
     const prevTransitionTime = this.track.focusTransitionTime;
