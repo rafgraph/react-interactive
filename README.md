@@ -117,6 +117,11 @@ import Interactive from 'react-interactive';
   - [CSS Interactive State Machine](#css-interactive-state-machine)
   - [React Interactive Advantages Over CSS](#react-interactive-advantages-over-css)
 - [State Machine Notes](#state-machine-notes)
+- [Complex Examples](#complex-examples)
+  - [Use RI Component State to Render Your Component](#use-ri-component-state-to-render-your-component)
+  - [Show On `hover` and `active`](#show-on-hover-and-active)
+  - [Show On `hover`, `touchActive` and `focusFromTab`](#show-on-hover-touchactive-and-focusfromtab)
+  - [Hot Swappable `as`](#hot-swappable-as)
 
 ## API
 
@@ -332,3 +337,188 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 - The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
 - The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
 - The `focus` state's `focusFrom` API allows for separate styles and class names based on how the `focus` state was entered (tab, mouse, or touch), but are not considered separate states within the state machine.
+
+## Complex Examples
+
+#### Use RI Component State to Render Your Component
+```javascript
+import React from 'react';
+import Interactive from 'react-interactive';
+
+class MyComponent extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      iState: 'normal',
+      focus: false,
+      focusFrom: undefined,
+    };
+  }
+
+  handleOnStateChange = ({ nextState }) => {
+    this.setState=(nextState);
+    // equivalent to the line above:
+    // this.setState({
+    //   iState: nextState.iState,
+    //   focus: nextState.focus,
+    //   focusFrom: nextState.focusFrom,
+    // });
+  }
+
+  render() {
+    return (
+      <div>
+        <Interactive
+          as="div"
+          onStateChange={this.handleOnStateChange}
+          // ...and any other props as needed
+        >RI component</Interactive>
+        {
+          // create your component using:
+          // this.state.iState === 'normal' / 'hover' / 'hoverActive' / 'touchActive' / 'keyActive'
+          // this.state.focus === true / false
+          // this.state.focusFrom === undefined / 'tab' / 'mouse' / 'touch'
+        }
+      </div>
+    );
+  }
+}
+```
+
+#### Show On `hover` and `active`
+- Show Div1 if the mouse is on the React Interactive element, that is, RI is in the `hover` or `hoverActive` state.
+- Show Div2 if RI is in an `active` state, one of `hoverActive`, `touchActive`, or `keyActive`.
+- Note that both Div1 and Div2 will be shown when RI is in the `hoverActive` state.
+
+```javascript
+import React from 'react';
+import Interactive from 'react-interactive';
+
+class MyComponent extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      hover: false,
+      active: false,
+    };
+  }
+
+  handleOnStateChange = ({ nextState }) => {
+    this.setState({
+      // hover and hoverActive both contain hover, so check nextState for hover
+      hover: /hover/.test(nextState.iState),
+      // hoverActive, touchActive, and keyActive all contain Active, note the capitalization
+      active: /Active/.test(nextState.iState),
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <Interactive
+          as="div"
+          onStateChange={this.handleOnStateChange}
+          // ...and any other props as needed
+        >RI element</Interactive>
+
+        {this.state.hover && <div>Div1 shown if RI is in the hover or hoverActive state</div>}
+
+        {this.state.active && <div>Div2 shown if RI is in one of the active states</div>}
+      </div>
+    );
+  }
+}
+```
+
+#### Show On `hover`, `touchActive` and `focusFromTab`
+```javascript
+import React from 'react';
+import Interactive from 'react-interactive';
+
+class MyComponent extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      showInfo: false,
+    };
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.state.showInfo !== nextState.showInfo;
+  }
+
+  handleOnStateChange = ({ nextState }) => {
+    this.setState({
+      showInfo:
+        nextState.iState === 'hover' ||
+        nextState.iState === 'touchActive' ||
+        nextState.focusFrom === 'tab'
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.showInfo && <div>Some info about something</div>}
+        <Interactive
+          as="div"
+          onStateChange={this.handleOnStateChange}
+          // ...and any other props as needed
+        >Show info</Interactive>
+      </div>
+    );
+  }
+}
+```
+
+#### Hot Swappable `as`
+- Hot-swap JSX/ReactElements while loading something.
+- Seamlessly maintains the current interactive state while allowing for separate interactive styling of the two JSX elements.
+- Note that the `onClick` prop is only present on the `clickToLoad` JSX element and not on the `currentlyLoading` element, so any clicks that come through while loading will be ignored.
+
+```javascript
+import React, { PropTypes } from 'react';
+import Interactive from 'react-interactive';
+
+class MyComponent extends React.Component {
+  static propTypes = {
+    load: PropTypes.func.isRequired,
+  }
+  constructor() {
+    super();
+    this.state = {
+      loading: false,
+    };
+  }
+
+  loadSomething = () => {
+    this.setState({ loading: true });
+    this.props.load(() => {
+      this.setState({ loading: false });
+    });
+  }
+
+  render() {
+    const clickToLoad = (
+      <span
+        onClick={this.loadSomething}
+        hover={{ color: 'green' }}
+        active={{ color: 'blue' }}
+        focus={{ outline: '2px solid green' }}
+      >Load Something</span>
+    );
+    const currentlyLoading = (
+      <span
+        hover={{ color: 'gray' }}
+        active={{ color: 'lightgray' }}
+        focus={{ outline: '2px solid gray' }}
+      >Loading...</span>
+    );
+    return (
+      <Interactive
+        as={this.state.loading ? currentlyLoading : clickToLoad}
+      />
+    );
+  }
+}
+```
