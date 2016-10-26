@@ -164,9 +164,12 @@ class ReactInteractive extends React.Component {
 
     // check if nextProps are the same as this.props
     this.p.sameProps = false;
-    if (!nextProps.mutableProps && compareProps(this.props, nextProps)) this.p.sameProps = true;
-    // if not same props, do props setup => set properties of `this.p`
-    else this.propsSetup(nextProps);
+    if (!nextProps.mutableProps && compareProps(this.props, nextProps)) {
+      this.p.sameProps = true;
+    } else {
+      // if not same props, do props setup => set properties of `this.p`
+      this.propsSetup(nextProps);
+    }
 
     // if `forceState` prop, then force update state
     if (this.p.props.forceState) this.forceState(this.p.props.forceState);

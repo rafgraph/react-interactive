@@ -1,7 +1,8 @@
 import React from 'react';
+import { stateProps, focusOptionsKeys, iStateOptionsKeys } from './constants';
 
 // shallow compare of two sets of props, can be called recursivly,
-// returns true in the props are the same, and false if they are not the same
+// returns true if the props are the same, and false if they are not the same
 export default function compareProps(propsA, propsB) {
   // If children are ReactElements, e.g. JSX as opposed to strings,
   // they will not be equal even if they are the same because React.createElement(...)
@@ -20,27 +21,13 @@ export default function compareProps(propsA, propsB) {
   const pOffset = propsA.forceState ? -1 : 0;
   if ((keysB.length + nextPOffset) !== (Object.keys(propsA).length + pOffset)) return false;
 
-  // shallow compare of state props => check style, className, onEnter, onLeave
+  // if it's an options object, then shallow compare the options for equality
   const sameStateProp = (stateProp) => {
-    const statePropKeys = (stateProp !== 'focus') ? ['style', 'className', 'onEnter', 'onLeave'] :
-    ['style', 'className', 'onEnter', 'onLeave', 'focusFromOnly', 'focusFromTabStyle',
-    'focusFromMouseStyle', 'focusFromTouchStyle', 'focusFromTabClassName',
-    'focusFromMouseClassName', 'focusFromTouchClassName'];
+    const statePropKeys = stateProp === 'focus' ? focusOptionsKeys : iStateOptionsKeys;
+    // if propsB doesn't have any of the options object keys, then return false b/c not options obj
     if (!statePropKeys.some(key => propsB[stateProp][key])) return false;
-    if (statePropKeys.some(key => propsB[stateProp][key] !== propsA[stateProp][key])) {
-      return false;
-    }
-    return true;
-  };
-  // list of state props to compare one level deeper
-  const stateProps = {
-    normal: true,
-    hover: true,
-    active: true,
-    hoverActive: true,
-    touchActive: true,
-    keyActive: true,
-    focus: true,
+    // shallow compare the options for equality
+    return statePropKeys.every(key => propsB[stateProp][key] === propsA[stateProp][key]);
   };
 
   // loop through props
