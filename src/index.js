@@ -1,86 +1,11 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 import detectIt from 'detect-it';
 import objectAssign from 'object-assign';
+import propTypes from './propTypes';
 import compareProps from './compareProps';
 
 class ReactInteractive extends React.Component {
-  static propTypes = {
-    as: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func,
-      PropTypes.element,
-    ]).isRequired,
-    children: PropTypes.node,
-    normal: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['hover', 'active', 'hoverActive', 'touchActive', 'keyActive', 'focus']),
-    ]),
-    hover: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['normal', 'active', 'hoverActive', 'touchActive', 'keyActive', 'focus']),
-    ]),
-    active: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive', 'focus']),
-    ]),
-    hoverActive: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'active', 'touchActive', 'keyActive', 'focus']),
-    ]),
-    touchActive: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'active', 'hoverActive', 'keyActive', 'focus']),
-    ]),
-    keyActive: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'active', 'hoverActive', 'touchActive', 'focus']),
-    ]),
-    focus: PropTypes.oneOfType([
-      PropTypes.object,
-      PropTypes.oneOf(['normal', 'hover', 'active', 'hoverActive', 'touchActive', 'keyActive']),
-    ]),
-    forceState: PropTypes.shape({
-      iState: PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive']),
-      focus: PropTypes.bool,
-      focusFrom: PropTypes.oneOf(['tab', 'mouse', 'touch']),
-    }),
-    initialState: PropTypes.shape({
-      iState: PropTypes.oneOf(['normal', 'hover', 'hoverActive', 'touchActive', 'keyActive']),
-      focus: PropTypes.bool,
-      focusFrom: PropTypes.oneOf(['tab', 'mouse', 'touch']),
-    }),
-    style: PropTypes.object,
-    className: PropTypes.string,
-    onStateChange: PropTypes.func,
-    setStateCallback: PropTypes.func,
-    onClick: PropTypes.func,
-    onMouseClick: PropTypes.func,
-    onEnterKey: PropTypes.func,
-    onTap: PropTypes.func,
-    onTapTwo: PropTypes.func,
-    onTapThree: PropTypes.func,
-    onTapFour: PropTypes.func,
-
-    onMouseEnter: PropTypes.func,
-    onMouseLeave: PropTypes.func,
-    onMouseMove: PropTypes.func,
-    onMouseDown: PropTypes.func,
-    onMouseUp: PropTypes.func,
-    onTouchStart: PropTypes.func,
-    onTouchEnd: PropTypes.func,
-    onTouchCancel: PropTypes.func,
-    onFocus: PropTypes.func,
-    onBlur: PropTypes.func,
-    onKeyDown: PropTypes.func,
-    onKeyUp: PropTypes.func,
-
-    mutableProps: PropTypes.bool,
-    refDOMNode: PropTypes.func,
-    tabIndex: PropTypes.string,
-    useBrowserWebkitTapHighlightColor: PropTypes.bool,
-    useBrowserOutlineFocus: PropTypes.bool,
-    useBrowserCursor: PropTypes.bool,
-  }
+  static propTypes = propTypes;
 
   constructor(props) {
     super(props);
