@@ -201,6 +201,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
   ```
   - This will create a `div` with text that reads 'Some jsxElement text' and will be blue on hover and red on active. When the props are merged, `jsxElement`'s `hover` prop and `children` have priority over `Interactive`'s `hover` prop and `children`, but since `jsxElement` didn't specify an `active` prop, `Interactive`'s `active` prop is still valid.
   - After the props are merged, the JSX/ReactElement's type (html tag name or ReactComponent) determines how `as` is processed - either like a string or like a ReactComponent.
+  - Note that this is not a very practical example of using a JSX/ReactElement for `as`. For a more practical example see, [Hot Swappable `as`](#hot-swappable-as).
 
 #### `state` Object
 - The React Interactive state object looks like this:
