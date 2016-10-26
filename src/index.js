@@ -3,6 +3,9 @@ import detectIt from 'detect-it';
 import objectAssign from 'object-assign';
 import propTypes from './propTypes';
 import compareProps from './compareProps';
+import mergeAndExtractProps from './mergeAndExtractProps';
+import extractStyle from './extractStyle';
+import { knownProps } from './constants';
 
 class ReactInteractive extends React.Component {
   static propTypes = propTypes;
@@ -195,122 +198,32 @@ class ReactInteractive extends React.Component {
 
   // setup `this.p`, only called from constructor and componentWillReceiveProps
   propsSetup(props) {
-    const { mergedProps, passThroughProps } = this.mergeAndExtractProps(props);
-    this.p.normalStyle = this.extractStyle(mergedProps, 'normal');
-    this.p.hoverStyle = this.extractStyle(mergedProps, 'hover');
-    this.p.hoverActiveStyle = this.extractStyle(mergedProps, 'hoverActive');
-    this.p.touchActiveStyle = this.extractStyle(mergedProps, 'touchActive');
-    this.p.keyActiveStyle = this.extractStyle(mergedProps, 'keyActive');
-    this.p.tabFocusStyle = this.extractFocusStyle(mergedProps, 'focusFromTab');
-    this.p.mouseFocusStyle = this.extractFocusStyle(mergedProps, 'focusFromMouse');
-    this.p.touchFocusStyle = this.extractFocusStyle(mergedProps, 'focusFromTouch');
-    this.p.passThroughProps = passThroughProps;
-    this.p.props = mergedProps;
-  }
+    const { mergedProps, passThroughProps } = mergeAndExtractProps(props, knownProps);
 
-  // extract passThroughProps and merge RI's props with `as`'s props if `as` is a JSX/ReactElement
-  mergeAndExtractProps(props) {
-    /* eslint-disable */
-    // known props to not pass through, every prop not on this list is passed through
-    const knownProps = {
-      children:true, as:true, normal:true, hover:true, active:true, hoverActive:true,
-      touchActive:true, keyActive:true, focus:true, style:true, className:true,
-      onStateChange:true, setStateCallback:true, onClick:true, onMouseClick:true, onEnterKey:true,
-      onTap:true, onTapTwo:true, onTapThree:true, onTapFour:true, onMouseEnter:true, onMouseLeave:true,
-      onMouseMove:true, onMouseDown:true, onMouseUp:true, onTouchStart:true, onTouchEnd:true,
-      onTouchCancel:true, onFocus:true, onBlur:true, onKeyDown:true, onKeyUp:true,
-      forceState:true, initialState:true, refDOMNode:true, mutableProps:true,
-      useBrowserWebkitTapHighlightColor:true, useBrowserOutlineFocus:true, useBrowserCursor:true,
-    }
-    /* eslint-enable */
-    const mergedProps = {};
-    const passThroughProps = {};
-    Object.keys(props).forEach((key) => {
-      mergedProps[key] = props[key];
-      if (!knownProps[key]) passThroughProps[key] = props[key];
-    });
-    if (React.isValidElement(props.as)) {
-      // if `as` is JSX/ReactElement, then merge in it's props
-      Object.keys(props.as.props).forEach((key) => {
-        mergedProps[key] = props.as.props[key];
-        if (!knownProps[key]) passThroughProps[key] = props.as.props[key];
-      });
-      // set `as` to the JSX/ReactElement's `type`:
-      // if the ReactElement is a ReactDOMElement then `type` will be a string, e.g. 'div', 'span'
-      // if the ReactElement is a ReactComponentElement, then `type` will be
-      // either a ReactClass or a ReactFunctionalComponent, e.g. as={<MyComponent />}
-      // https://facebook.github.io/react/docs/glossary.html
-      mergedProps.as = props.as.type;
-    } else {
-      mergedProps.as = props.as;
-    }
     // use the `active` prop for `[type]Active` if no `[type]Active` prop
     if (mergedProps.active) {
       if (!mergedProps.hoverActive) mergedProps.hoverActive = mergedProps.active;
       if (!mergedProps.touchActive) mergedProps.touchActive = mergedProps.active;
       if (!mergedProps.keyActive) mergedProps.keyActive = mergedProps.active;
     }
+
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
     if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
     else if (!passThroughProps.tabIndex &&
     (mergedProps.focus || mergedProps.onClick || mergedProps.onEnterKey)) {
       passThroughProps.tabIndex = '0';
     }
-    return { mergedProps, passThroughProps };
-  }
 
-  // extract and return the style object and className string for the state given
-  extractStyle(props, state) {
-    // if no hoverActive prop, then use hover prop for style and classes
-    let stateProps = (state === 'hoverActive' && !props.hoverActive) ? 'hover' : state;
-    // loop until the state prop to use is found (i.e. it's not a string)
-    let times = 0;
-    while (typeof stateProps === 'string' && times < 6) {
-      stateProps = props[stateProps];
-      times++;
-    }
-    // if the state prop to use wasn't found, then return a blank style and className object
-    if (typeof stateProps !== 'object') return { style: null, className: '' };
-
-    const extract = {};
-    // if the state prop object has one of these 4 keys then it's an options object,
-    // otherwise it's a style object
-    if (stateProps.style || stateProps.className || stateProps.onEnter || stateProps.onLeave) {
-      extract.style = stateProps.style || null;
-      extract.className = stateProps.className || '';
-    } else {
-      extract.style = stateProps;
-      extract.className = '';
-    }
-    return extract;
-  }
-
-  // extract and return the style object and className string for the focus state
-  extractFocusStyle(props, focusFrom) {
-    let focusProp = props.focus;
-    // loop until the focus prop to use is found (i.e. it's not a string)
-    let times = 0;
-    while (typeof focusProp === 'string' && times < 5) {
-      focusProp = props[focusProp];
-      times++;
-    }
-    // if the focus prop to use wasn't found, then return a blank style and className object
-    if (typeof focusProp !== 'object') return { style: null, className: '' };
-
-    const extract = {};
-    // if the focus prop object has any of these keys then it's an options object,
-    // otherwise it's a style object
-    if (focusProp.style || focusProp.className || focusProp.onEnter || focusProp.onLeave ||
-    focusProp.focusFromTabStyle || focusProp.focusFromMouseStyle || focusProp.focusFromTouchStyle ||
-    focusProp.focusFromTabClassName || focusProp.focusFromMouseClassName ||
-    focusProp.focusFromTouchClassName || focusProp.focusFromOnly) {
-      extract.style = focusProp[`${focusFrom}Style`] || focusProp.style || null;
-      extract.className = focusProp[`${focusFrom}ClassName`] || focusProp.className || '';
-    } else {
-      extract.style = focusProp;
-      extract.className = '';
-    }
-    return extract;
+    this.p.normalStyle = extractStyle(mergedProps, 'normal');
+    this.p.hoverStyle = extractStyle(mergedProps, 'hover');
+    this.p.hoverActiveStyle = extractStyle(mergedProps, 'hoverActive');
+    this.p.touchActiveStyle = extractStyle(mergedProps, 'touchActive');
+    this.p.keyActiveStyle = extractStyle(mergedProps, 'keyActive');
+    this.p.tabFocusStyle = extractStyle(mergedProps, 'focus', 'focusFromTab');
+    this.p.mouseFocusStyle = extractStyle(mergedProps, 'focus', 'focusFromMouse');
+    this.p.touchFocusStyle = extractStyle(mergedProps, 'focus', 'focusFromTouch');
+    this.p.passThroughProps = passThroughProps;
+    this.p.props = mergedProps;
   }
 
   // force set this.track properties based on iState
