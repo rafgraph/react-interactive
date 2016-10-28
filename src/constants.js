@@ -1,3 +1,26 @@
+export const mouseEvents = {
+  mouseenter: 'onMouseEnter',
+  mouseleave: 'onMouseLeave',
+  mousemove: 'onMouseMove',
+  mousedown: 'onMouseDown',
+  mouseup: 'onMouseUp',
+};
+
+export const touchEvents = {
+  touchstart: 'onTouchStart',
+  touchend: 'onTouchEnd',
+  touchcancel: 'onTouchCancel',
+};
+
+export const otherEvents = {
+  focus: 'onFocus',
+  blur: 'onBlur',
+  keydown: 'onKeyDown',
+  keyup: 'onKeyUp',
+  dragstart: 'onDragStart',
+  dragend: 'onDragEnd',
+};
+
 export const iStates = {
   normal: true,
   hover: true,
