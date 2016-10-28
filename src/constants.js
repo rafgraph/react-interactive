@@ -12,13 +12,9 @@ export const focusFromStates = {
   touch: true,
 };
 
-const iStateProps = {
+export const stateProps = {
   ...iStates,
   active: true,
-};
-
-export const stateProps = {
-  ...iStateProps,
   focus: true,
 };
 
