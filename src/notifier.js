@@ -1,3 +1,4 @@
+import detectIt from 'detect-it';
 import passiveEventSupport from './detectPassiveEventSupport';
 
 const notifyOfAllSubs = {};
@@ -67,24 +68,26 @@ const listenerOptions = passiveEventSupport ? {
   passive: true,
 } : true;
 
-
-const eventList = [
-  'mouseenter',
-  'mouseleave',
-  'mousemove',
-  'mousedown',
-  'mouseup',
-  'touchstart',
-  'touchend',
-  'touchcancel',
-  'scroll',
-  'dragstart',
-];
-
-eventList.forEach((event) => {
+function setupEvent(event) {
   notifyOfNextSubs[event] = [];
   subsIDs[event] = {};
   document.addEventListener(event, eventHandler, listenerOptions);
+}
+
+if (detectIt.hasTouchEventsApi) {
+  ['touchstart', 'touchend', 'touchcancel'].forEach((event) => {
+    setupEvent(event);
+  });
+}
+
+if (detectIt.deviceType !== 'touchOnly') {
+  ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'].forEach((event) => {
+    setupEvent(event);
+  });
+}
+
+['scroll', 'dragstart'].forEach((event) => {
+  setupEvent(event);
 });
 
 notifyOfNextSubs.mutation = [];
