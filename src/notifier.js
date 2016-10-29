@@ -86,3 +86,9 @@ eventList.forEach((event) => {
   subsIDs[event] = {};
   document.addEventListener(event, eventHandler, listenerOptions);
 });
+
+notifyOfNextSubs.mutation = [];
+subsIDs.mutation = {};
+
+const observer = new MutationObserver(eventHandler.bind(null, { type: 'mutation' }));
+observer.observe(document, { childList: true, attributes: true, subtree: true });
