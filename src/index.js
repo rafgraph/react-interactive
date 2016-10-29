@@ -35,10 +35,9 @@ class ReactInteractive extends React.Component {
       mouseOn: false,
       buttonDown: false,
       focus: false,
-      focusTransition: 'reset',
-      focusTransitionTime: Date.now() - 1000,
-      focusStateOnMouseDown: false,
       focusFrom: 'reset',
+      focusTransition: 'reset',
+      focusStateOnMouseDown: false,
       spaceKeyDown: false,
       enterKeyDown: false,
       drag: false,
@@ -123,9 +122,8 @@ class ReactInteractive extends React.Component {
       (this.p[`${nextState.focus ? nextState.focusFrom : this.state.focusFrom}FocusStyle`].style
         !== null ||
       this.p[`${nextState.focus ? nextState.focusFrom : this.state.focusFrom}FocusStyle`].className
-        !== ''))
-      ||
-      nextState.focusFrom !== this.state.focusFrom
+        !== '')
+      )
     );
   }
 
@@ -281,12 +279,11 @@ class ReactInteractive extends React.Component {
   updateState(newState, props, event) {
     const prevIState = this.track.state.iState;
     const nextIState = newState.iState;
-    const iChange = (nextIState !== prevIState);
-    const fChange = (newState.focus !== this.track.state.focus);
-    const focusFromChange = (newState.focus && newState.focusFrom !== this.track.state.focusFrom);
+    const iStateChange = (nextIState !== prevIState);
+    const focusChange = (newState.focus !== this.track.state.focus);
 
     // early return if state doesn't need to change
-    if (!iChange && !fChange && !focusFromChange) return;
+    if (!iStateChange && !focusChange) return;
 
     // create new prev and next state objects with immutable values
     const prevState = {
@@ -313,17 +310,15 @@ class ReactInteractive extends React.Component {
     props.onStateChange && props.onStateChange({ prevState, nextState, event });
 
     // call onEnter and onLeave callbacks
-    if (iChange) {
+    if (iStateChange) {
       props[prevIState] && props[prevIState].onLeave && props[prevIState].onLeave(prevIState);
       props[nextIState] && props[nextIState].onEnter && props[nextIState].onEnter(nextIState);
     }
-    if (fChange) {
+    if (focusChange) {
       const transition = newState.focus ? 'onEnter' : 'onLeave';
       const focusFrom = newState.focus ? newState.focusFrom : prevState.focusFrom;
       props.focus && props.focus[transition] &&
       props.focus[transition]('focus', focusFrom);
-    } else if (newState.focus && focusFromChange) {
-      props.focus && props.focus.onEnter && props.focus.onEnter('focus', newState.focusFrom);
     }
   }
 
@@ -387,13 +382,6 @@ class ReactInteractive extends React.Component {
   //     (don't reset touchTapBlur focusTransition because focus event handler uses it to detect a
   //     subsequent errant focus event sent by the browser)
   manageFocus(type) {
-    // keep track of timing for focusFromTabOnly option
-    const prevTransitionTime = this.track.focusTransitionTime;
-    const dateNow = this.track.focusTransitionTime = Date.now();
-
-    // is the focusFromTabOnly option enabled
-    const focusFromTabOnly =
-      typeof this.p.props.focus === 'object' && this.p.props.focus.focusFromOnly === 'tab';
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
       ({ input: 1, button: 1, textarea: 1, select: 1 })[this.tagName] === undefined;
@@ -407,7 +395,7 @@ class ReactInteractive extends React.Component {
     // to updateState this time through handleEvent
     const focusTransition = (event, transitionAs, force) => {
       if (force === 'force' ||
-      (event === 'focus' && tagIsFocusable && !focusFromTabOnly && !this.track.state.focus) ||
+      (event === 'focus' && tagIsFocusable && !this.track.state.focus) ||
       (event === 'blur' && tagIsBlurable && this.track.state.focus)) {
         this.track.focusTransition = transitionAs;
         this.topNode[event]();
@@ -434,22 +422,6 @@ class ReactInteractive extends React.Component {
       case 'touchtap':
         return toggleFocus('touchTap');
       case 'touchclick':
-        // if the browser called focus immediatly prior to an edge/synthetic click event
-        // on a touchOnly device
-        if (this.track.state.focus && dateNow - prevTransitionTime < 600) {
-          // focusFromTabOnly force blur to correct the focus state for both RI and the browser
-          if (focusFromTabOnly) {
-            return focusTransition('blur', 'focusForceBlur', 'force');
-          }
-          // set focusFrom to 'touch' - prior focus event sets focusFrom to 'tab' becasue no way
-          // to tell the focus call came from a touch interaction until this click event happens
-          if (this.track.state.focusFrom !== 'touch') {
-            this.track.focusFrom = 'touch';
-            this.track.focusTransition = 'reset';
-            return 'updateState';
-          }
-        }
-
         // toggle focus unless the browser just initiated focus, for more info see:
         // https://github.com/rafrex/react-interactive/commit/b5358e8789267b75590e7d0f295e58fc1c3a0c1f
         if (!this.track.state.focus || this.track.focusTransition !== 'browserFocus') {
@@ -491,21 +463,13 @@ class ReactInteractive extends React.Component {
           return 'terminate';
         }
 
-        const forceBlur = (
-          // if focus was just toggled off on touch tap, then this is an errant focus event fired
-          // by the browser, so fire a blur event to put the browser in the correct focus state
-          // and then return because RI is already in the correct focus state, for more info see:
-          // https://github.com/rafrex/react-interactive/commit/b5358e8789267b75590e7d0f295e58fc1c3a0c1f
-          this.track.focusTransition === 'touchTapBlur'
-          ||
-          // focusFromTabOnly force blur when browser calls focus b/c of a touch/mouse interaction
-          (focusFromTabOnly && this.track.focusTransition !== 'forceStateFocus' && (
-            dateNow - prevTransitionTime < 600 ||
-            this.track.touchDown || dateNow - this.track.touchEndTime < 600
-          ))
-        );
-
-        if (forceBlur) return focusTransition('blur', 'focusForceBlur', 'force');
+        // if focus was just toggled off on touch tap, then this is an errant focus event fired
+        // by the browser, so fire a blur event to put the browser in the correct focus state
+        // and then return because RI is already in the correct focus state, for more info see:
+        // https://github.com/rafrex/react-interactive/commit/b5358e8789267b75590e7d0f295e58fc1c3a0c1f
+        if (this.track.focusTransition === 'touchTapBlur') {
+          return focusTransition('blur', 'focusForceBlur', 'force');
+        }
 
         // set focusFrom based on the type of focusTransition
         if (/mouse/.test(this.track.focusTransition.toLowerCase())) {
@@ -786,8 +750,8 @@ class ReactInteractive extends React.Component {
     if (!this.p.props.useBrowserCursor && (
       (this.p.props.onClick || this.p.props.onMouseClick ||
         (
-          lowerAs !== 'input' && (this.p.props.focus || this.p.props.tabIndex) &&
-          !(this.p.props.focus && this.p.props.focus.focusFromOnly === 'tab') &&
+          lowerAs !== 'input' &&
+          (this.p.props.focus || this.p.props.tabIndex) &&
           (this.p.mouseFocusStyle.style || this.p.mouseFocusStyle.className)
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||

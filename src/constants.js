@@ -45,7 +45,6 @@ export const iStateOptionsKeys = ['style', 'className', 'onEnter', 'onLeave'];
 
 export const focusOptionsKeys = [
   ...iStateOptionsKeys,
-  'focusFromOnly',
   'focusFromTabStyle',
   'focusFromMouseStyle',
   'focusFromTouchStyle',

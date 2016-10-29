@@ -18,7 +18,6 @@ const iStateOptionsObjectShape = {
 
 const focusOptionsObjectShape = {
   ...iStateOptionsObjectShape,
-  focusFromOnly: PropTypes.oneOf(['tab']),
   focusFromTabStyle: PropTypes.object,
   focusFromMouseStyle: PropTypes.object,
   focusFromTouchStyle: PropTypes.object,
