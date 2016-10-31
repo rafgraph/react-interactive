@@ -347,7 +347,9 @@ class ReactInteractive extends React.Component {
   mangageNotifyOfNext(newState) {
     if (newState.iState !== 'normal' && !this.track.drag) {
       ['scroll', 'dragstart'].forEach((eType) => {
-        if (!this.track.notifyOfNext[eType]) {
+        if (!this.track.notifyOfNext[eType] &&
+        !(eType === 'scroll' && newState.iState === 'touchActive' &&
+        this.p.props.touchActiveScroll)) {
           this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
         }
       });

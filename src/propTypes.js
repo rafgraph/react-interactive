@@ -102,6 +102,7 @@ const propTypes = {
   useBrowserWebkitTapHighlightColor: PropTypes.bool,
   useBrowserOutlineFocus: PropTypes.bool,
   useBrowserCursor: PropTypes.bool,
+  touchActiveScroll: PropTypes.bool,
 };
 
 export default propTypes;

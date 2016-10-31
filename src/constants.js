@@ -89,4 +89,5 @@ export const knownProps = {
   useBrowserWebkitTapHighlightColor: true,
   useBrowserOutlineFocus: true,
   useBrowserCursor: true,
+  touchActiveScroll: true,
 };
