@@ -5,19 +5,24 @@ const notifyOfAllSubs = {};
 const notifyOfNextSubs = {};
 const subsIDs = {};
 
-let nextID = 0;
-function setNotifyOfNext(event, callback) {
-  if (nextID === 1000000) nextID = 0;
-  const ID = nextID;
-  nextID++;
-  subsIDs[event][ID] = notifyOfNextSubs[event].push({ ID, callback }) - 1;
-  return ID;
+let idPlace = 0;
+function nextID(eType) {
+  if (idPlace === Number.MAX_SAFE_INTEGER) idPlace = 0;
+  idPlace++;
+  if (subsIDs[eType][idPlace] === undefined) return idPlace;
+  return nextID(eType);
 }
 
-function removeFromNotifyOfNext(event, id) {
-  if (subsIDs[event][id] !== 'undefined') {
-    notifyOfNextSubs[event].splice([subsIDs[event][id]], 1);
-    delete subsIDs[event][id];
+function setNotifyOfNext(eType, callback) {
+  const id = nextID(eType);
+  subsIDs[eType][id] = notifyOfNextSubs[eType].push({ id, callback }) - 1;
+  return id;
+}
+
+function removeFromNotifyOfNext(eType, id) {
+  if (subsIDs[eType][id] !== 'undefined') {
+    notifyOfNextSubs[eType].splice([subsIDs[eType][id]], 1);
+    delete subsIDs[eType][id];
   }
 }
 
