@@ -74,5 +74,12 @@ if (detectIt.deviceType !== 'touchOnly') {
 notifyOfNextSubs.mutation = [];
 subsIDs.mutation = {};
 
-const observer = new MutationObserver(eventHandler.bind(null, { type: 'mutation' }));
+const mutationEvent = {
+  type: 'mutation',
+  persist: () => {},
+  preventDefault: () => {},
+  stopPropagation: () => {},
+};
+
+const observer = new MutationObserver(eventHandler.bind(null, mutationEvent));
 observer.observe(document, { childList: true, attributes: true, subtree: true });

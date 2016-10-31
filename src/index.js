@@ -5,6 +5,8 @@ import propTypes from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
 import extractStyle from './extractStyle';
+import input from './input-tracker';
+import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import { knownProps, mouseEvents, touchEvents, otherEvents } from './constants';
 
 class ReactInteractive extends React.Component {
@@ -42,6 +44,7 @@ class ReactInteractive extends React.Component {
       enterKeyDown: false,
       drag: false,
       updateTopNode: false,
+      notifyOfNext: {},
       state: this.state,
     };
 
@@ -54,7 +57,7 @@ class ReactInteractive extends React.Component {
     this.type = '';
 
     // keep track of what event handlers are set, updated in setupEventHandlers
-    this.mouseEventsListeners = false;
+    this.mouseEventListeners = false;
     this.touchEventListeners = false;
     // the event handlers to pass down as props to the element/component
     this.eventHandlers = this.setupEventHandlers();
@@ -74,6 +77,8 @@ class ReactInteractive extends React.Component {
   }
 
   componentDidMount() {
+    const mouse = this.checkMousePosition('cdm');
+
     // enter focus state if initialState.focus - called here instead of constructor
     // because can't call focus until have ref to DOM node
     if (this.p.props.initialState && typeof this.p.props.initialState.focus === 'boolean') {
@@ -81,6 +86,19 @@ class ReactInteractive extends React.Component {
         focus: this.p.props.initialState.focus,
         focusFrom: this.p.props.initialState.focusFrom,
       });
+      return;
+    }
+
+    if (mouse === 'mouseOn') {
+      this.updateState(
+        this.computeState(),
+        this.p.props,
+        // create dummy 'event' object that caused the state change, will be passed to onStateChange
+        { type: 'forcestate',
+          persist: () => {},
+          preventDefault: () => {},
+          stopPropagation: () => {} }
+      );
     }
   }
 
@@ -275,8 +293,84 @@ class ReactInteractive extends React.Component {
     return newState;
   }
 
+  checkMousePosition() {
+    if (!this.mouseEventListeners) return null;
+    const rect = this.topNode.getBoundingClientRect();
+    const mX = input.mouse.event.clientX;
+    const mY = input.mouse.event.clientY;
+    if (mX >= rect.left && mX <= rect.right && mY >= rect.top && mY <= rect.bottom) {
+      this.track.mouseOn = true;
+      this.track.buttonDown = input.mouse.event.buttons === 1;
+      return 'mouseOn';
+    }
+    this.track.mouseOn = false;
+    this.track.buttonDown = false;
+    return 'mouseOff';
+  }
+
+  handleNotifyOfNext = (e) => {
+    switch (e.type) {
+      case 'scroll':
+        if (this.track.state.iState === 'touchActive') {
+          this.forceState({ iState: 'normal' });
+          delete this.track.notifyOfNext[e.type];
+          return null;
+        } else if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
+          return 'reNotifyOfNext';
+        }
+        break;
+      case 'dragstart':
+        // use setTimeout because notifier drag event will fire before the drag event on RI,
+        // so w/o out timeout it would go:
+        // active -> force normal from notifier drag -> active from RI drag,
+        // but the timeout will allow time for RI's drag event to fire before force normal
+        setTimeout(() => {
+          if (!this.track.drag) this.forceState({ iState: 'normal' });
+        }, 30);
+        delete this.track.notifyOfNext[e.type];
+        return null;
+      case 'mutation':
+        if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
+          return 'reNotifyOfNext';
+        }
+        break;
+      default:
+        delete this.track.notifyOfNext[e.type];
+        return null;
+    }
+
+    this.updateState(this.computeState(), this.p.props, e);
+    delete this.track.notifyOfNext[e.type];
+    return null;
+  }
+
+  mangageNotifyOfNext(newState) {
+    if (newState.iState !== 'normal' && !this.track.drag) {
+      ['scroll', 'dragstart'].forEach((eType) => {
+        if (!this.track.notifyOfNext[eType]) {
+          this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
+        }
+      });
+    } else {
+      ['scroll', 'dragstart'].forEach((eType) => {
+        if (this.track.notifyOfNext[eType]) {
+          cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
+          delete this.track.notifyOfNext[eType];
+        }
+      });
+    }
+
+    if (this.track.mouseOn && !this.track.notifyOfNext.mutation) {
+      this.track.notifyOfNext.mutation = notifyOfNext('mutation', this.handleNotifyOfNext);
+    } else if (!this.track.mouseOn && this.track.notifyOfNext.mutation) {
+      cancelNotifyOfNext('mutation', this.track.notifyOfNext.mutation);
+      delete this.track.notifyOfNext.mutation;
+    }
+  }
+
   // takes a new state, calls setState and the state change callbacks
   updateState(newState, props, event) {
+    this.mangageNotifyOfNext(newState);
     const prevIState = this.track.state.iState;
     const nextIState = newState.iState;
     const iStateChange = (nextIState !== prevIState);
