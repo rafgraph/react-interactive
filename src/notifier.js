@@ -13,40 +13,18 @@ function nextID(eType) {
   return nextID(eType);
 }
 
-function setNotifyOfNext(eType, callback) {
+export function notifyOfNext(eType, callback) {
   const id = nextID(eType);
   subsIDs[eType][id] = notifyOfNextSubs[eType].push({ id, callback }) - 1;
   return id;
 }
 
-function removeFromNotifyOfNext(eType, id) {
+export function cancelNotifyOfNext(eType, id) {
   if (subsIDs[eType][id] !== 'undefined') {
     notifyOfNextSubs[eType].splice([subsIDs[eType][id]], 1);
     delete subsIDs[eType][id];
   }
 }
-
-export function notifyOfNext(events, callback) {
-  if (typeof events === 'string') {
-    return setNotifyOfNext(events, callback);
-  }
-  const ids = [];
-  events.forEach((event) => {
-    ids.push(setNotifyOfNext(event, callback));
-  });
-  return ids;
-}
-
-export function cancelNotifyOfNext(events, ids) {
-  if (typeof events === 'string') {
-    removeFromNotifyOfNext(events, ids);
-  } else {
-    events.forEach((event, idx) => {
-      removeFromNotifyOfNext(event, ids[idx]);
-    });
-  }
-}
-
 
 export function notifyOfAll(events, callback) {
   events.forEach((event) => {
