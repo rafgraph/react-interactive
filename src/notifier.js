@@ -26,9 +26,9 @@ export function cancelNotifyOfNext(eType, id) {
   }
 }
 
-export function notifyOfAll(events, callback) {
-  events.forEach((event) => {
-    notifyOfAllSubs[event] = callback;
+export function notifyOfAll(eTypes, callback) {
+  eTypes.forEach((eType) => {
+    notifyOfAllSubs[eType] = callback;
   });
 }
 
@@ -51,26 +51,26 @@ const listenerOptions = passiveEventSupport ? {
   passive: true,
 } : true;
 
-function setupEvent(event) {
-  notifyOfNextSubs[event] = [];
-  subsIDs[event] = {};
-  document.addEventListener(event, eventHandler, listenerOptions);
+function setupEvent(eType) {
+  notifyOfNextSubs[eType] = [];
+  subsIDs[eType] = {};
+  document.addEventListener(eType, eventHandler, listenerOptions);
 }
 
 if (detectIt.hasTouchEventsApi) {
-  ['touchstart', 'touchend', 'touchcancel'].forEach((event) => {
-    setupEvent(event);
+  ['touchstart', 'touchend', 'touchcancel'].forEach((eType) => {
+    setupEvent(eType);
   });
 }
 
 if (detectIt.deviceType !== 'touchOnly') {
-  ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'].forEach((event) => {
-    setupEvent(event);
+  ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'].forEach((eType) => {
+    setupEvent(eType);
   });
 }
 
-['scroll', 'dragstart'].forEach((event) => {
-  setupEvent(event);
+['scroll', 'dragstart'].forEach((eType) => {
+  setupEvent(eType);
 });
 
 notifyOfNextSubs.mutation = [];
