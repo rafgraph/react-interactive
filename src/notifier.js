@@ -46,15 +46,13 @@ function eventHandler(e) {
   subsIDs[e.type] = reNotifyOfNextIDs;
 }
 
-const listenerOptions = passiveEventSupport ? {
-  capture: true,
-  passive: true,
-} : true;
-
 function setupEvent(eType) {
   notifyOfNextSubs[eType] = [];
   subsIDs[eType] = {};
-  document.addEventListener(eType, eventHandler, listenerOptions);
+  document.addEventListener(eType, eventHandler, passiveEventSupport ? {
+    capture: true,
+    passive: true,
+  } : true);
 }
 
 if (detectIt.hasTouchEventsApi) {
