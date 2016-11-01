@@ -295,10 +295,10 @@ class ReactInteractive extends React.Component {
 
   checkMousePosition() {
     if (!this.mouseEventListeners) return null;
-    const rect = this.topNode.getBoundingClientRect();
+    const r = this.topNode.getBoundingClientRect();
     const mX = input.mouse.event.clientX;
     const mY = input.mouse.event.clientY;
-    if (mX >= rect.left && mX <= rect.right && mY >= rect.top && mY <= rect.bottom) {
+    if (mX >= (r.left - 1) && mX <= (r.right + 1) && mY >= (r.top - 1) && mY <= (r.bottom + 1)) {
       this.track.mouseOn = true;
       this.track.buttonDown = input.mouse.event.buttons === 1;
       return 'mouseOn';
