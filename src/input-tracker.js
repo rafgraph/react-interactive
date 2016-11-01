@@ -27,6 +27,11 @@ function updateMouse(e) {
   else input.mouse.mouseOnDocument = true;
 }
 
+export function updateMouseFromRI(e) {
+  input.mouse.mouseOnDocument = true;
+  input.mouse.event = e.nativeEvent;
+}
+
 if (detectIt.hasTouchEventsApi) {
   input.touch = {
     recentTouch: false,

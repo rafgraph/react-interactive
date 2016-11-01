@@ -5,7 +5,7 @@ import propTypes from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
 import extractStyle from './extractStyle';
-import input from './input-tracker';
+import input, { updateMouseFromRI } from './input-tracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import { knownProps, mouseEvents, touchEvents, otherEvents } from './constants';
 
@@ -610,11 +610,13 @@ class ReactInteractive extends React.Component {
   handleMouseEvent(e) {
     switch (e.type) {
       case 'mouseenter':
+        updateMouseFromRI(e);
         this.p.props.onMouseEnter && this.p.props.onMouseEnter(e);
         this.track.mouseOn = true;
         this.track.buttonDown = e.buttons === 1;
         return 'updateState';
       case 'mouseleave':
+        updateMouseFromRI(e);
         this.p.props.onMouseLeave && this.p.props.onMouseLeave(e);
         this.track.mouseOn = false;
         this.track.buttonDown = false;
