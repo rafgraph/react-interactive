@@ -155,6 +155,12 @@ class ReactInteractive extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    Object.keys(this.track.notifyOfNext).forEach((eType) => {
+      cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
+    });
+  }
+
   // determine event handlers to use based on the device type - only determined once in constructor
   setupEventHandlers() {
     const eventHandlers = {};
