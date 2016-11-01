@@ -295,6 +295,7 @@ class ReactInteractive extends React.Component {
 
   checkMousePosition() {
     if (!this.mouseEventListeners) return null;
+    if (!input.mouse.mouseOnDocument) return null;
     const r = this.topNode.getBoundingClientRect();
     const mX = input.mouse.event.clientX;
     const mY = input.mouse.event.clientY;

@@ -22,6 +22,7 @@ function updateTouch(e) {
 }
 
 function updateMouse(e) {
+  if (input.touch && (input.touch.recentTouch || input.touch.touchOnScreen)) return;
   input.mouse.event = e;
   if (e.type === 'mouseleave') input.mouse.mouseOnDocument = false;
   else input.mouse.mouseOnDocument = true;
