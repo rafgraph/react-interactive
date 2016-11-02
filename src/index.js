@@ -45,6 +45,7 @@ class ReactInteractive extends React.Component {
       updateTopNode: false,
       notifyOfNext: {},
       boundingRect: {},
+      timeoutIDs: {},
       state: this.state,
     };
 
@@ -159,6 +160,9 @@ class ReactInteractive extends React.Component {
     Object.keys(this.track.notifyOfNext).forEach((eType) => {
       cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
     });
+    Object.keys(this.track.timeoutIDs).forEach((timer) => {
+      window.clearTimeout(this.track.timeoutIDs[timer]);
+    });
   }
 
   // determine event handlers to use based on the device type - only determined once in constructor
@@ -234,6 +238,17 @@ class ReactInteractive extends React.Component {
     this.p.touchFocusStyle = extractStyle(mergedProps, 'focus', 'focusFromTouch');
     this.p.passThroughProps = passThroughProps;
     this.p.props = mergedProps;
+  }
+
+  // keep track of running timeouts so can clear in componentWillUnmount
+  manageSetTimeout(type, cb, delay) {
+    if (this.track.timeoutIDs[type] !== undefined) {
+      window.clearTimeout(this.track.timeoutIDs[type]);
+    }
+    this.track.timeoutIDs[type] = window.setTimeout(() => {
+      delete this.track.timeoutIDs[type];
+      cb();
+    }, delay);
   }
 
   // force set this.track properties based on iState
@@ -336,15 +351,19 @@ class ReactInteractive extends React.Component {
         break;
       case 'dragstart':
         // use setTimeout because notifier drag event will fire before the drag event on RI,
-        // so w/o out timeout it would go:
-        // active -> force normal from notifier drag -> active from RI drag,
+        // so w/o timeout when this intance of RI is dragged it would go:
+        // active -> force normal from notifier drag -> active from RI's drag event,
         // but the timeout will allow time for RI's drag event to fire before force normal
-        setTimeout(() => {
-          if (!this.track.drag) {
-            this.forceTrackIState('normal');
-            this.updateState(this.computeState(), this.p.props, e, true);
-          }
-        }, 30);
+        this.manageSetTimeout(
+          'dragstart',
+          () => {
+            if (!this.track.drag) {
+              this.forceTrackIState('normal');
+              this.updateState(this.computeState(), this.p.props, e, true);
+            }
+          },
+          30
+        );
         delete this.track.notifyOfNext[e.type];
         return null;
       case 'mutation':
@@ -582,15 +601,19 @@ class ReactInteractive extends React.Component {
         // setTimeout because React misses focus calls made during componentWillReceiveProps,
         // which is where forceState calls come from (the browser receives the focus call
         // but not React), so have to call focus asyncrounsly so React receives it
-        setTimeout(() => {
-          !this.track.state.focus && focusTransition('focus', 'forceStateFocus', 'force');
-        }, 0);
+        this.manageSetTimeout(
+          'forceStateFocusTrue',
+          () => { !this.track.state.focus && focusTransition('focus', 'forceStateFocus', 'force'); },
+          0
+        );
         return 'terminate';
       case 'forceStateFocusFalse':
         // same as forceStateFocusTrue, but for focus false
-        setTimeout(() => {
-          this.track.state.focus && focusTransition('blur', 'forceStateBlur', 'force');
-        }, 0);
+        this.manageSetTimeout(
+          'forceStateFocusFalse',
+          () => { this.track.state.focus && focusTransition('blur', 'forceStateBlur', 'force'); },
+          0
+        );
         return 'terminate';
       case 'refCallback':
         // if in the focus state and RI has a new topDOMNode, then call focus() on `this.topNode`
