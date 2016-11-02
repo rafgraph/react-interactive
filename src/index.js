@@ -319,7 +319,8 @@ class ReactInteractive extends React.Component {
     switch (e.type) {
       case 'scroll':
         if (this.track.state.iState === 'touchActive') {
-          this.forceState({ iState: 'normal' });
+          this.forceTrackIState('normal');
+          this.updateState(this.computeState(), this.p.props, e, true);
           delete this.track.notifyOfNext[e.type];
           return null;
         } else if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
@@ -332,7 +333,10 @@ class ReactInteractive extends React.Component {
         // active -> force normal from notifier drag -> active from RI drag,
         // but the timeout will allow time for RI's drag event to fire before force normal
         setTimeout(() => {
-          if (!this.track.drag) this.forceState({ iState: 'normal' });
+          if (!this.track.drag) {
+            this.forceTrackIState('normal');
+            this.updateState(this.computeState(), this.p.props, e, true);
+          }
         }, 30);
         delete this.track.notifyOfNext[e.type];
         return null;
@@ -346,7 +350,7 @@ class ReactInteractive extends React.Component {
         return null;
     }
 
-    this.updateState(this.computeState(), this.p.props, e);
+    this.updateState(this.computeState(), this.p.props, e, true);
     delete this.track.notifyOfNext[e.type];
     return null;
   }
@@ -378,8 +382,8 @@ class ReactInteractive extends React.Component {
   }
 
   // takes a new state, calls setState and the state change callbacks
-  updateState(newState, props, event) {
-    this.mangageNotifyOfNext(newState);
+  updateState(newState, props, event, dontMangageNotifyOfNext) {
+    if (!dontMangageNotifyOfNext) this.mangageNotifyOfNext(newState);
     const prevIState = this.track.state.iState;
     const nextIState = newState.iState;
     const iStateChange = (nextIState !== prevIState);
