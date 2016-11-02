@@ -31,7 +31,6 @@ class ReactInteractive extends React.Component {
     this.track = {
       touchStartTime: Date.now() - 2000,
       touchEndTime: Date.now() - 1000,
-      touchEndClick: false,
       touchDown: false,
       touches: {},
       mouseOn: false,
@@ -221,6 +220,7 @@ class ReactInteractive extends React.Component {
     if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
     else if (!passThroughProps.tabIndex &&
     (mergedProps.focus || mergedProps.onClick || mergedProps.onEnterKey)) {
+      mergedProps.tabIndex = '0';
       passThroughProps.tabIndex = '0';
     }
 
@@ -450,7 +450,7 @@ class ReactInteractive extends React.Component {
     } else if (touchEvents[e.type]) {
       if (this.handleTouchEvent(e) === 'terminate') return;
     } else if (e.type === 'click') {
-      if (this.touchEventListeners) {
+      if (this.touchEventListeners && !this.mouseEventListeners) {
         if (this.handleTouchEvent(e) === 'terminate') return;
       } else if (this.handleMouseEvent(e) === 'terminate') return;
     } else if (this.handleOtherEvent(e) === 'terminate') return;
@@ -462,19 +462,54 @@ class ReactInteractive extends React.Component {
 
   // checks if the event is a valid event or not, returns true / false respectivly
   isValidEvent(e) {
-    // if this is a mouseEvent on a hybrid device
-    if (this.touchEventListeners && (mouseEvents[e.type] || e.type === 'click')) {
-      // early return if it's a click event that's preceded by a touch end click
-      if (this.track.touchEndClick && e.type === 'click') {
-        this.track.touchEndClick = false;
+    // refCallbackFocus calls focus when there is a new top DOM node and RI is already in the
+    // focus state to keep the browser's focus state in sync with RI's,
+    // so reset and return 'terminate'
+    if (e.type === 'focus' && this.track.focusTransition === 'refCallbackFocus') {
+      e.stopPropagation();
+      this.track.focusTransition = 'reset';
+      return false;
+    }
+
+    // if the focusTransition is a force blur and RI is not currently in the focus state,
+    // then the force blur is to keep the browser focus state in sync with RI's focus state,
+    // so reset the focusTransition and return 'terminate', no need to do anything
+    // else because the blur event was only for the benefit of the browser, not RI
+    if (e.type === 'blur' && this.track.focusTransition === 'focusForceBlur' && !this.track.state.focus) {
+      e.stopPropagation();
+      this.track.focusTransition = 'reset';
+      return false;
+    }
+
+    // touchOnly device
+    if (this.touchEventListeners && !this.mouseEventListeners) {
+      if (e.type === 'click' && input.touch.recentTouch) {
+        e.stopPropagation();
         return false;
       }
+      if (e.type === 'focus') {
+        if (this.track.focusTransition === 'reset' && input.touch.recentTouch) {
+          e.stopPropagation();
+          this.manageFocus('focusForceBlur');
+          return false;
+        }
+      }
+    }
 
-      // Call the mouse handler if not touchDown and the event occurred after 600ms
-      // from the last touchend event to prevent calling mouse handlers as a result
-      // of touch interactions. On some devices (notably Android) during a long press the mouse
-      // events will fire before touchend while touchDown is true, so also need to check for that.
-      if (!this.track.touchDown && Date.now() - this.track.touchEndTime > 600) return true;
+    // hybrid device
+    if (this.touchEventListeners && this.mouseEventListeners) {
+      if ((e.type === 'click' || /mouse/.test(e.type)) &&
+      (input.touch.touchOnScreen || input.touch.recentTouch)) {
+        e.stopPropagation();
+        return false;
+      }
+      if (e.type === 'focus') {
+        if (this.track.focusTransition === 'reset' && input.touch.recentTouch) {
+          e.stopPropagation();
+          this.manageFocus('focusForceBlur');
+          return false;
+        }
+      }
     }
     return true;
   }
@@ -539,15 +574,9 @@ class ReactInteractive extends React.Component {
       case 'touchtap':
         return toggleFocus('touchTap');
       case 'touchclick':
-        // toggle focus unless the browser just initiated focus, for more info see:
-        // https://github.com/rafrex/react-interactive/commit/b5358e8789267b75590e7d0f295e58fc1c3a0c1f
-        if (!this.track.state.focus || this.track.focusTransition !== 'browserFocus') {
-          toggleFocus('touchClick');
-          // always return 'terminate' becasue no need for the caller to continue
-          // and call updateState if can't toggle focus
-          return 'terminate';
-        }
-        this.track.focusTransition = 'reset';
+        // always return 'terminate' becasue no need for the caller to continue
+        // and call updateState if can't toggle focus
+        toggleFocus('touchClick');
         return 'terminate';
       case 'forceStateFocusTrue':
         // setTimeout because React misses focus calls made during componentWillReceiveProps,
@@ -569,59 +598,8 @@ class ReactInteractive extends React.Component {
         if (this.track.state.focus) return focusTransition('focus', 'refCallbackFocus', 'force');
         this.track.focusTransition = 'reset';
         return 'terminate';
-
-      // focus event called from onFocus listener (via handleFocusEvent)
-      case 'focus': {
-        // refCallbackFocus calls focus when there is a new top DOM node and RI is already in the
-        // focus state to keep the browser's focus state in sync with RI's,
-        // so reset and return 'terminate'
-        if (this.track.focusTransition === 'refCallbackFocus') {
-          this.track.focusTransition = 'reset';
-          return 'terminate';
-        }
-
-        // if focus was just toggled off on touch tap, then this is an errant focus event fired
-        // by the browser, so fire a blur event to put the browser in the correct focus state
-        // and then return because RI is already in the correct focus state, for more info see:
-        // https://github.com/rafrex/react-interactive/commit/b5358e8789267b75590e7d0f295e58fc1c3a0c1f
-        if (this.track.focusTransition === 'touchTapBlur') {
-          return focusTransition('blur', 'focusForceBlur', 'force');
-        }
-
-        // set focusFrom based on the type of focusTransition
-        if (/mouse/.test(this.track.focusTransition.toLowerCase())) {
-          this.track.focusFrom = 'mouse';
-        } else if (/touch/.test(this.track.focusTransition.toLowerCase()) || this.track.touchDown ||
-        Date.now() - this.track.touchEndTime < 600) {
-          this.track.focusFrom = 'touch';
-        } else if (!/forcestate/.test(this.track.focusTransition.toLowerCase())) {
-          this.track.focusFrom = 'tab';
-        }
-
-        // if focusTransition is 'reset', or 'browserFocus', then the focus event must
-        // be from the browser, so set focusTransition to 'browserFocus', otherwise reset it
-        this.track.focusTransition =
-        (this.track.focusTransition === 'reset' || this.track.focusTransition === 'browserFocus') ?
-        'browserFocus' : 'reset';
-        return 'updateState';
-      }
-
-      // blur event called from onBlur listener (via handleFocusEvent)
-      case 'blur':
-        // if the focusTransition is a force blur and RI is not currently in the focus state,
-        // then the force blur is to keep the browser focus state in sync with RI's focus state,
-        // so reset the focusTransition and return 'terminate', no need to do anything
-        // else because the blur event was only for the benefit of the browser, not RI
-        if (this.track.focusTransition === 'focusForceBlur' && !this.track.state.focus) {
-          this.track.focusTransition = 'reset';
-          return 'terminate';
-        }
-        // reset focusFrom because this blur event will exit the focus state
-        this.track.focusFrom = 'reset';
-        // reset focus transition unless it's touchTapBlur, which is kept b/c the browser calls
-        // focus after touchTapBlur and the focus handler uses it to know it's an errant focus event
-        if (this.track.focusTransition !== 'touchTapBlur') this.track.focusTransition = 'reset';
-        return 'updateState';
+      case 'focusForceBlur':
+        return focusTransition('blur', 'focusForceBlur', 'force');
       default:
         return 'updateState';
     }
@@ -677,8 +655,6 @@ class ReactInteractive extends React.Component {
     // reset mouse trackers
     this.track.mouseOn = false;
     this.track.buttonDown = false;
-    // reset touch end click tracker unless this is a click event
-    if (e.type !== 'click') this.track.touchEndClick = false;
 
     switch (e.type) {
       case 'touchstart':
@@ -745,11 +721,12 @@ class ReactInteractive extends React.Component {
           this.track.touches = {};
 
           switch (tapTouchPoints) {
-            case 1:
+            case 1: {
+              const manageFocusReturn = this.manageFocus('touchtap');
               this.p.props.onTap && this.p.props.onTap(e);
               this.p.props.onClick && this.p.props.onClick(e);
-              this.track.touchEndClick = true;
-              return this.manageFocus('touchtap');
+              return manageFocusReturn;
+            }
             case 2:
               this.p.props.onTapTwo && this.p.props.onTapTwo(e);
               break;
@@ -778,29 +755,12 @@ class ReactInteractive extends React.Component {
 
       // for click events fired on touchOnly devices, listen for because synthetic
       // click events won't fire touchend event
-      case 'click':
-        // early return if preceded by a touch end click
-        if (this.track.touchEndClick) {
-          this.track.touchEndClick = false;
-          return 'terminate';
-        }
-
-        // check to see if the click event is the result of a touch interaction
-        // if > 600ms since last touch, then not the result of a touch interaction
-        if (!this.track.touchDown && Date.now() - this.track.touchEndTime > 600) {
-          this.p.props.onTap && this.p.props.onTap(e);
-          this.p.props.onClick && this.p.props.onClick(e);
-          return this.manageFocus('touchclick');
-
-        // if the browser just initiated focus, then it is a legitimate click event even
-        // if 600ms hasn't passed since the last touch event (e.g. repeatedly tap the screen),
-        // so call tap and click handlers, this helps keep the entering and exiting of focus
-        // in sync with the firing of click and tap events.
-        } else if (this.track.state.focus && this.track.focusTransition === 'browserFocus') {
-          this.p.props.onTap && this.p.props.onTap(e);
-          this.p.props.onClick && this.p.props.onClick(e);
-        }
-        return 'terminate';
+      case 'click': {
+        const manageFocusReturn = this.manageFocus('touchclick');
+        this.p.props.onTap && this.p.props.onTap(e);
+        this.p.props.onClick && this.p.props.onClick(e);
+        return manageFocusReturn;
+      }
       default:
         return 'terminate';
     }
@@ -810,12 +770,22 @@ class ReactInteractive extends React.Component {
   handleOtherEvent(e) {
     switch (e.type) {
       case 'focus':
-        if (this.manageFocus('focus') === 'terminate') return 'terminate';
+        // set focusFrom based on the type of focusTransition
+        if (/mouse/.test(this.track.focusTransition.toLowerCase())) {
+          this.track.focusFrom = 'mouse';
+        } else if (/touch/.test(this.track.focusTransition.toLowerCase()) || this.track.touchDown) {
+          this.track.focusFrom = 'touch';
+        } else if (!/forcestate/.test(this.track.focusTransition.toLowerCase())) {
+          this.track.focusFrom = 'tab';
+        }
+
+        this.track.focusTransition = 'reset';
         this.p.props.onFocus && this.p.props.onFocus(e);
         this.track.focus = true;
         return 'updateState';
       case 'blur':
-        if (this.manageFocus('blur') === 'terminate') return 'terminate';
+        this.track.focusFrom = 'reset';
+        this.track.focusTransition = 'reset';
         this.p.props.onBlur && this.p.props.onBlur(e);
         this.track.focus = false;
         this.track.spaceKeyDown = false;
