@@ -342,6 +342,7 @@ class ReactInteractive extends React.Component {
             return 'reNotifyOfNext';
           }
           this.forceTrackIState('normal');
+          this.track.touches.canceled = true;
           this.updateState(this.computeState(), this.p.props, e, true);
           delete this.track.notifyOfNext[e.type];
           return null;
