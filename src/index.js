@@ -45,6 +45,7 @@ class ReactInteractive extends React.Component {
       drag: false,
       updateTopNode: false,
       notifyOfNext: {},
+      boundingRect: {},
       state: this.state,
     };
 
@@ -319,6 +320,12 @@ class ReactInteractive extends React.Component {
     switch (e.type) {
       case 'scroll':
         if (this.track.state.iState === 'touchActive') {
+          const newR = this.topNode.getBoundingClientRect();
+          const prevR = this.track.boundingRect;
+          if (newR.top === prevR.top && newR.left === prevR.left &&
+          newR.bottom === prevR.bottom && newR.right === prevR.right) {
+            return 'reNotifyOfNext';
+          }
           this.forceTrackIState('normal');
           this.updateState(this.computeState(), this.p.props, e, true);
           delete this.track.notifyOfNext[e.type];
@@ -361,6 +368,9 @@ class ReactInteractive extends React.Component {
         if (!this.track.notifyOfNext[eType] &&
         !(eType === 'scroll' && newState.iState === 'touchActive' &&
         this.p.props.touchActiveScroll)) {
+          if (newState.iState === 'touchActive') {
+            this.track.boundingRect = this.topNode.getBoundingClientRect();
+          }
           this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
         }
       });
