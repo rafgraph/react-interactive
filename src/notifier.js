@@ -35,6 +35,7 @@ export function notifyOfAll(eTypes, callback) {
 function eventHandler(e) {
   notifyOfAllSubs[e.type] && notifyOfAllSubs[e.type](e);
   if (notifyOfNextSubs[e.type].length === 0) return;
+  e.persist = () => {};
   const reNotifyOfNext = [];
   const reNotifyOfNextIDs = {};
   notifyOfNextSubs[e.type].forEach((sub) => {
