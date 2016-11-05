@@ -69,7 +69,7 @@ if (detectIt.deviceType !== 'touchOnly') {
   });
 }
 
-['scroll', 'dragstart'].forEach((eType) => {
+['scroll', 'dragstart', 'focus'].forEach((eType) => {
   setupEvent(eType);
 });
 

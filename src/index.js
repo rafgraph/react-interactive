@@ -44,6 +44,7 @@ class ReactInteractive extends React.Component {
       drag: false,
       updateTopNode: false,
       notifyOfNext: {},
+      documentFocusEvent: null,
       boundingRect: {},
       timeoutIDs: {},
       state: this.state,
@@ -373,6 +374,16 @@ class ReactInteractive extends React.Component {
           return 'reNotifyOfNext';
         }
         break;
+      case 'focus':
+        this.track.documentFocusEvent = e;
+        this.manageSetTimeout('expireNotifyOfNextFocus', () => {
+          if (this.track.notifyOfNext.focus) {
+            cancelNotifyOfNext('focus', this.track.notifyOfNext.focus);
+            delete this.track.notifyOfNext.focus;
+          }
+          this.track.documentFocusEvent = null;
+        }, 34);
+        return 'reNotifyOfNext';
       default:
         delete this.track.notifyOfNext[e.type];
         return null;
@@ -406,6 +417,17 @@ class ReactInteractive extends React.Component {
           }
         }
       });
+    }
+
+    // notify of next setup for maintaining correct focusFrom when switching apps/windows
+    if (newState.focus) {
+      if (this.track.timeoutIDs.expireNotifyOfNextFocus) {
+        window.clearTimeout(this.track.timeoutIDs.expireNotifyOfNextFocus);
+        delete this.track.timeoutIDs.expireNotifyOfNextFocus;
+      }
+      if (!this.track.notifyOfNext.focus) {
+        this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+      }
     }
 
     if (this.track.mouseOn && !this.track.notifyOfNext.mutation) {
@@ -805,12 +827,18 @@ class ReactInteractive extends React.Component {
     switch (e.type) {
       case 'focus':
         // set focusFrom based on the type of focusTransition
-        if (/mouse/.test(this.track.focusTransition.toLowerCase())) {
-          this.track.focusFrom = 'mouse';
-        } else if (/touch/.test(this.track.focusTransition.toLowerCase()) || this.track.touchDown) {
-          this.track.focusFrom = 'touch';
-        } else if (!/forcestate/.test(this.track.focusTransition.toLowerCase())) {
-          this.track.focusFrom = 'tab';
+        // if the native focus event is the same as the document focus event from notify of next,
+        // and focusFrom has not been reset, then this is a re-focus after switching apps/windows
+        // so leave focusFrom in its current state.
+        if (e.nativeEvent !== this.track.documentFocusEvent || this.track.focusFrom === 'reset') {
+          const focusTransition = this.track.focusTransition.toLowerCase();
+          if (/mouse/.test(focusTransition)) {
+            this.track.focusFrom = 'mouse';
+          } else if (/touch/.test(focusTransition) || this.track.touchDown) {
+            this.track.focusFrom = 'touch';
+          } else if (!/forcestate/.test(focusTransition)) {
+            this.track.focusFrom = 'tab';
+          }
         }
 
         this.track.focusTransition = 'reset';
@@ -818,7 +846,13 @@ class ReactInteractive extends React.Component {
         this.track.focus = true;
         return 'updateState';
       case 'blur':
-        this.track.focusFrom = 'reset';
+        // only reset focusFrom if this is a known focusTransition or the blur event
+        // is preceeded by a mousedown or touchend event, otherwise it's an unknown
+        // blur source (could be from switching apps), so leave focusFrom as is
+        if (this.track.focusTransition !== 'reset' ||
+        input.mouse.recentMouseDown || input.touch.recentTouchEnd) {
+          this.track.focusFrom = 'reset';
+        }
         this.track.focusTransition = 'reset';
         this.p.props.onBlur && this.p.props.onBlur(e);
         this.track.focus = false;

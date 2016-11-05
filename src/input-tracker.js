@@ -1,9 +1,13 @@
 import detectIt from 'detect-it';
 import { notifyOfAll } from './notifier';
 
-const input = {};
+const input = {
+  mouse: {},
+  touch: {},
+};
 
 let touchTimerID = null;
+let touchEndTimerID = null;
 
 function updateTouch(e) {
   input.touch.event = e;
@@ -18,14 +22,31 @@ function updateTouch(e) {
       input.touch.recentTouch = false;
       touchTimerID = null;
     }, 600);
+    if (e.type === 'touchend') {
+      input.touch.recentTouchEnd = true;
+      if (touchEndTimerID) window.clearTimeout(touchEndTimerID);
+      touchEndTimerID = window.setTimeout(() => {
+        input.touch.recentTouchEnd = false;
+        touchEndTimerID = null;
+      }, 100);
+    }
   }
 }
 
+let mouseDownTimerID = null;
 function updateMouse(e) {
   if (input.touch && (input.touch.recentTouch || input.touch.touchOnScreen)) return;
   input.mouse.event = e;
   if (e.type === 'mouseleave') input.mouse.mouseOnDocument = false;
   else input.mouse.mouseOnDocument = true;
+  if (e.type === 'mousedown') {
+    input.mouse.recentMouseDown = true;
+    if (mouseDownTimerID) window.clearTimeout(mouseDownTimerID);
+    mouseDownTimerID = window.setTimeout(() => {
+      input.mouse.recentMouseDown = false;
+      mouseDownTimerID = null;
+    }, 100);
+  }
 }
 
 export function updateMouseFromRI(e) {
@@ -35,9 +56,10 @@ export function updateMouseFromRI(e) {
 
 if (detectIt.hasTouchEventsApi) {
   input.touch = {
+    recentTouchEnd: false,
     recentTouch: false,
     touchOnScreen: false,
-    event: new TouchEvent('touchend'),
+    event: {},
   };
   notifyOfAll(['touchstart', 'touchend', 'touchcancel'], updateTouch);
 }
@@ -45,7 +67,8 @@ if (detectIt.hasTouchEventsApi) {
 if (detectIt.deviceType !== 'touchOnly') {
   input.mouse = {
     mouseOnDocument: false,
-    event: new MouseEvent('mouseleave'),
+    recentMouseDown: false,
+    event: {},
   };
   notifyOfAll(['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'], updateMouse);
 }
