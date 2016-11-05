@@ -21,7 +21,7 @@ export function notifyOfNext(eType, callback) {
 
 export function cancelNotifyOfNext(eType, id) {
   if (subsIDs[eType][id] !== 'undefined') {
-    notifyOfNextSubs[eType].splice([subsIDs[eType][id]], 1);
+    notifyOfNextSubs[eType][subsIDs[eType][id]].callback = () => {};
     delete subsIDs[eType][id];
   }
 }
