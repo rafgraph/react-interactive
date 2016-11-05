@@ -78,7 +78,7 @@ class ReactInteractive extends React.Component {
   }
 
   componentDidMount() {
-    const mouse = this.checkMousePosition('cdm');
+    const mouse = this.checkMousePosition();
 
     // enter focus state if initialState.focus - called here instead of constructor
     // because can't call focus until have ref to DOM node
