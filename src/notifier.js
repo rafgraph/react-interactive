@@ -50,10 +50,11 @@ function eventHandler(e) {
 function setupEvent(eType) {
   notifyOfNextSubs[eType] = [];
   subsIDs[eType] = {};
+  const useCapture = (eType !== 'mouseenter') && (eType !== 'mouseleave');
   document.addEventListener(eType, eventHandler, passiveEventSupport ? {
-    capture: true,
+    capture: useCapture,
     passive: true,
-  } : true);
+  } : useCapture);
 }
 
 if (detectIt.hasTouchEventsApi) {

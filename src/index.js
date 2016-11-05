@@ -367,6 +367,7 @@ class ReactInteractive extends React.Component {
         );
         delete this.track.notifyOfNext[e.type];
         return null;
+      case 'mouseenter':
       case 'mutation':
         if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
           return 'reNotifyOfNext';
@@ -384,21 +385,25 @@ class ReactInteractive extends React.Component {
 
   mangageNotifyOfNext(newState) {
     if (newState.iState !== 'normal' && !this.track.drag) {
-      ['scroll', 'dragstart'].forEach((eType) => {
-        if (!this.track.notifyOfNext[eType] &&
-        !(eType === 'scroll' && newState.iState === 'touchActive' &&
-        this.p.props.touchActiveScroll)) {
-          if (newState.iState === 'touchActive') {
-            this.track.boundingRect = this.topNode.getBoundingClientRect();
+      ['scroll', 'dragstart', 'mouseenter'].forEach((eType) => {
+        if (eType !== 'mouseenter' || this.mouseEventListeners) { // TODO better way to handle mousenter
+          if (!this.track.notifyOfNext[eType] &&
+          !(eType === 'scroll' && newState.iState === 'touchActive' &&
+          this.p.props.touchActiveScroll)) {
+            if (newState.iState === 'touchActive') {
+              this.track.boundingRect = this.topNode.getBoundingClientRect();
+            }
+            this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
           }
-          this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
         }
       });
     } else {
-      ['scroll', 'dragstart'].forEach((eType) => {
-        if (this.track.notifyOfNext[eType]) {
-          cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
-          delete this.track.notifyOfNext[eType];
+      ['scroll', 'dragstart', 'mouseenter'].forEach((eType) => {
+        if (eType !== 'mouseenter' || this.mouseEventListeners) { // TODO better way to handle mousenter
+          if (this.track.notifyOfNext[eType]) {
+            cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
+            delete this.track.notifyOfNext[eType];
+          }
         }
       });
     }
