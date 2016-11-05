@@ -573,7 +573,10 @@ class ReactInteractive extends React.Component {
       (event === 'blur' && tagIsBlurable && this.track.state.focus)) {
         this.track.focusTransition = transitionAs;
         this.topNode[event]();
-        return 'terminate';
+        // if focusTransition has changed, then the focus/blur call was sucessful so terminate
+        if (this.track.focusTransition !== transitionAs) {
+          return 'terminate';
+        }
       }
       this.track.focusTransition = 'reset';
       return 'updateState';
