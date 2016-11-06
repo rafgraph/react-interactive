@@ -79,8 +79,6 @@ class ReactInteractive extends React.Component {
   }
 
   componentDidMount() {
-    const mouse = this.checkMousePosition();
-
     // enter focus state if initialState.focus - called here instead of constructor
     // because can't call focus until have ref to DOM node
     if (this.p.props.initialState && typeof this.p.props.initialState.focus === 'boolean') {
@@ -89,18 +87,6 @@ class ReactInteractive extends React.Component {
         focusFrom: this.p.props.initialState.focusFrom,
       });
       return;
-    }
-
-    if (mouse === 'mouseOn') {
-      this.updateState(
-        this.computeState(),
-        this.p.props,
-        // create dummy 'event' object that caused the state change, will be passed to onStateChange
-        { type: 'forcestate',
-          persist: () => {},
-          preventDefault: () => {},
-          stopPropagation: () => {} }
-      );
     }
   }
 
