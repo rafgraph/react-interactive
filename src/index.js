@@ -530,7 +530,8 @@ class ReactInteractive extends React.Component {
 
     // touchOnly device
     if (this.touchEventListeners && !this.mouseEventListeners) {
-      if (e.type === 'click' && input.touch.recentTouch) {
+      if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
+      this.p.props.touchActive || Date.now() - this.track.touchEndTime < 600)) {
         e.stopPropagation();
         return false;
       }
@@ -546,8 +547,12 @@ class ReactInteractive extends React.Component {
 
     // hybrid device
     if (this.touchEventListeners && this.mouseEventListeners) {
-      if ((e.type === 'click' || /mouse/.test(e.type)) &&
-      (input.touch.touchOnScreen || input.touch.recentTouch)) {
+      if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
+      this.p.props.touchActive || Date.now() - this.track.touchEndTime < 600)) {
+        e.stopPropagation();
+        return false;
+      }
+      if (/mouse/.test(e.type) && (input.touch.touchOnScreen || input.touch.recentTouch)) {
         e.stopPropagation();
         return false;
       }
@@ -898,9 +903,8 @@ class ReactInteractive extends React.Component {
       style.outline = '0';
       style.outlineOffset = '0';
     }
-    // if touchActive or active style provided, then reset webkit tap highlight style
-    if (this.p.touchActiveStyle.style && !this.p.props.useBrowserWebkitTapHighlightColor
-    && detectIt.hasTouchEventsApi) {
+    // if touchActive or active prop provided, then reset webkit tap highlight style
+    if ((this.p.props.touchActive || this.p.props.active) && detectIt.hasTouchEventsApi) {
       style.WebkitTapHighlightColor = 'rgba(0, 0, 0, 0)';
     }
     // set cursor to pointer if clicking does something

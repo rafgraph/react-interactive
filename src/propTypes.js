@@ -99,7 +99,6 @@ const propTypes = {
   mutableProps: PropTypes.bool,
   refDOMNode: PropTypes.func,
   tabIndex: PropTypes.string,
-  useBrowserWebkitTapHighlightColor: PropTypes.bool,
   useBrowserOutlineFocus: PropTypes.bool,
   useBrowserCursor: PropTypes.bool,
   touchActiveScroll: PropTypes.bool,

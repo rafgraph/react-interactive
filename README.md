@@ -267,12 +267,12 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 
 #### Default Styles
 - If a `focus` state style is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
-- If a `touchActive` or `active` state style is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
 - If clicking the mouse does something, then the cursor will default to a pointer.
 - If you want to use the browser default styles without any interference from RI, then add the below props:
   - `useBrowserOutlineFocus`
-  - `useBrowserWebkitTapHighlightColor`
   - `useBrowserCursor`
+- If a `touchActive` or `active` state prop is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
+  - To use the `WebkitTapHighlightColor` for styling, don't provide a `touchActive` or `active` prop and set the `WebkitTapHighlightColor` style in the main `style` prop.
 
 ## Interactive State Machine Comparison
 Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and on enter/leave state hooks.

@@ -86,7 +86,6 @@ export const knownProps = {
   initialState: true,
   refDOMNode: true,
   mutableProps: true,
-  useBrowserWebkitTapHighlightColor: true,
   useBrowserOutlineFocus: true,
   useBrowserCursor: true,
   touchActiveScroll: true,
