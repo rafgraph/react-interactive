@@ -266,7 +266,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 - The focus state change occurs in the same `setState` call as the iState change, so the `onStateChange` hook is only called once. For example, `onMouseDown` enters the `focus` state and the `hoverActive` state in a single state change (and render). This achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls (and two `onStateChange` calls), one to enter the `hoverActive` state and one to enter the `focus` state.
 
 #### Default Styles
-- If a `focus` state style is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
+- If a `focus` prop is passed to React Interactive, then RI will prevent the browser's default focus outline from being applied.
 - If clicking the mouse does something, then the cursor will default to a pointer.
 - If you want to use the browser default styles without any interference from RI, then add the below props:
   - `useBrowserOutlineFocus`
