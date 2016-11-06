@@ -90,4 +90,5 @@ export const knownProps = {
   useBrowserOutlineFocus: true,
   useBrowserCursor: true,
   touchActiveScroll: true,
+  focusToggleOff: true,
 };

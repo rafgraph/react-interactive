@@ -103,6 +103,7 @@ const propTypes = {
   useBrowserOutlineFocus: PropTypes.bool,
   useBrowserCursor: PropTypes.bool,
   touchActiveScroll: PropTypes.bool,
+  focusToggleOff: PropTypes.bool,
 };
 
 export default propTypes;

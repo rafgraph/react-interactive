@@ -585,7 +585,8 @@ class ReactInteractive extends React.Component {
   manageFocus(type) {
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
-      ({ input: 1, button: 1, textarea: 1, select: 1 })[this.tagName] === undefined;
+      (({ input: 1, button: 1, textarea: 1, select: 1 })[this.tagName] === undefined) &&
+      !this.p.props.focusToggleOff;
     // is the node focusable, if there is a foucs or tabIndex prop, or it's non-blurable, then it is
     const tagIsFocusable = this.p.props.focus || this.p.props.tabIndex ||
     this.tagName === 'a' || !tagIsBlurable;
