@@ -154,6 +154,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `onTap` | function | `function(event) {...}` | Function called for touch taps with 1 touch point, and on touchOnly devices for synthetic click events (e.g. a click event fired by assistive tech). Event passed in is a `touchend` event, or a `click` event. Note that `onMouseClick`, `onEnterKey`, and `onTap` are mutually exclusive and comprehensive for `onClick`, i.e. one and only one will be called every time `onClick` is called. |
 | `onTapTwo` | function | `function(event) {...}` | Function called for taps with 2 touch points, e.g. a 2 finger tap. Event passed in is the `touchend` event from last touch point to leave the surface. |
 | `refDOMNode` | function | `function(node) {...}` | Function is passed in a reference to the DOM node, and is called whenever the node changes. You shouldn't need to use this for anything related to React Interactive, but it's available in case you need to use it for other things. Note that if you need to focus/blur the DOM node, use the `forceState` or `initialState` prop and set the focus to true/false instead of calling focus/blur directly on the DOM node. |
+| `stylePriority` | array | `stylePriority={['hover', 'hoverActive']}` | By default the focus state style takes precedence over the iState style when merged. Use this prop to specify specific iStates whose style should take precedence over the focus state style. Note that for an `active` `iState`, you must specify `[type]Active` and not just `active`. |
 | `touchActiveScroll` | boolean | `touchActiveScroll` | By default the `touchActive` state is canceled on scroll (RI enters the `normal` state). To keep the `touchActive` state while scrolling add the `touchActiveScroll` prop. |
 | `focusToggleOff` | boolean | `focusToggleOff` | Add this prop to prevent focus from toggling on mouseup/tap. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event. |
 | `mutableProps` |  | `mutableProps` | By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you are passing in mutable props, add the `mutableProps` prop, and the component will always update. If you're not sure and notice buggy behavior, then add this property. |
@@ -172,9 +173,9 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
 #### Merging Styles and Classes
 - Styles are merged in the following order (last one takes precedence):
   1. The `style` prop
-  2. `normal` iState style if in the `normal` state
-  3. `focus` state style if in the `focus` state
-  4. `hover` or `active` iState style if not in the `normal` state
+  2. The iState style
+  3. The focus state style if in the focus state
+- If you want an iState style to take precedence over the focus style, then use the `stylePriority` prop and specify which iStates should have priority over focus, e.g. `stylePriority={['hover', 'hoverActive']}`
 - Classes are merged as a union without preference:
   - `focus` state classes if in the focus state
   - iState classes (`normal`, `hover`, or `active`)
