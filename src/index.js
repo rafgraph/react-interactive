@@ -7,7 +7,7 @@ import mergeAndExtractProps from './mergeAndExtractProps';
 import extractStyle from './extractStyle';
 import input, { updateMouseFromRI } from './input-tracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
-import { knownProps, mouseEvents, touchEvents, otherEvents } from './constants';
+import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent } from './constants';
 
 class ReactInteractive extends React.Component {
   static propTypes = propTypes;
@@ -29,10 +29,9 @@ class ReactInteractive extends React.Component {
 
     // things to keep track of so RI knows what to do when
     this.track = {
-      touchStartTime: Date.now() - 2000,
-      touchEndTime: Date.now() - 1000,
       touchDown: false,
-      touches: {},
+      recentTouch: false,
+      touches: { points: {} },
       mouseOn: false,
       buttonDown: false,
       focus: false,
@@ -480,7 +479,7 @@ class ReactInteractive extends React.Component {
 
     if (mouseEvents[e.type]) {
       if (this.handleMouseEvent(e) === 'terminate') return;
-    } else if (touchEvents[e.type]) {
+    } else if (touchEvents[e.type] || e.type === 'touchmove' || e.type === 'touchtapcancel') {
       if (this.handleTouchEvent(e) === 'terminate') return;
     } else if (e.type === 'click') {
       if (this.touchEventListeners && !this.mouseEventListeners) {
@@ -517,7 +516,7 @@ class ReactInteractive extends React.Component {
     // touchOnly device
     if (this.touchEventListeners && !this.mouseEventListeners) {
       if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
-      this.p.props.touchActive || Date.now() - this.track.touchEndTime < 600)) {
+      this.p.props.touchActive || this.track.recentTouch)) {
         e.stopPropagation();
         return false;
       }
@@ -534,7 +533,7 @@ class ReactInteractive extends React.Component {
     // hybrid device
     if (this.touchEventListeners && this.mouseEventListeners) {
       if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
-      this.p.props.touchActive || Date.now() - this.track.touchEndTime < 600)) {
+      this.p.props.touchActive || this.track.recentTouch)) {
         e.stopPropagation();
         return false;
       }
@@ -704,38 +703,91 @@ class ReactInteractive extends React.Component {
     this.track.mouseOn = false;
     this.track.buttonDown = false;
 
+    const resetTouches = () => {
+      this.track.touchDown = false;
+      this.track.touches = { points: {} };
+      if (this.track.timeoutIDs.touchTapTimer !== undefined) {
+        window.clearTimeout(this.track.timeoutIDs.touchTapTimer);
+        delete this.track.timeoutIDs.touchTapTimer;
+      }
+      this.track.recentTouch = true;
+      this.manageSetTimeout('recentTouchTimer', () => {
+        this.track.recentTouch = false;
+      }, 600);
+    };
+
     switch (e.type) {
       case 'touchstart':
         this.p.props.onTouchStart && this.p.props.onTouchStart(e);
 
-        // if going from no touch to touch, set touch start time
-        if (!this.track.touchDown) this.track.touchStartTime = Date.now();
-        this.track.touchDown = true;
+        // if going from no touch to touch, set touchTapTimer
+        if (!this.track.touchDown && !this.track.touches.canceled) {
+          this.manageSetTimeout('touchTapTimer', () => {
+            this.handleEvent(dummyEvent('touchtapcancel'));
+          }, 600);
+        }
 
-        // cancel if also touching someplace else on the screen
-        if (e.touches.length !== e.targetTouches.length) this.track.touches.canceled = true;
+        if (!this.track.touches.canceled) {
+          this.track.touchDown = true;
+        }
+
+        // cancel if also touching someplace else on the screen or there there was already
+        // a touchend without removing all touches
+        if (e.touches.length !== e.targetTouches.length || this.track.touches.touchend) {
+          this.handleTouchEvent({ type: 'touchtapcancel' });
+        }
+
+        if (this.p.props.touchActiveTapOnly) {
+          const p = this.p.props;
+          const maxTapPoints = (p.onTapFour && 4) || (p.onTapThree && 3) ||
+          (p.onTapTwo && 2) || 1;
+          if (maxTapPoints < e.targetTouches.length) {
+            this.handleTouchEvent({ type: 'touchtapcancel' });
+          }
+        }
 
         if (!this.track.touches.canceled) {
           // log touch start position for each touch point that is part of the touchstart event
           for (let i = 0; i < e.changedTouches.length; i++) {
-            this.track.touches[e.changedTouches[i].identifier] = {
+            this.track.touches.points[e.changedTouches[i].identifier] = {
               startX: e.changedTouches[i].clientX,
               startY: e.changedTouches[i].clientY,
             };
           }
         }
         return 'updateState';
+      case 'touchmove':
+        if (!this.track.touches.canceled) {
+          const p = this.p.props;
+          const maxPts = (p.onTapFour && 4) || (p.onTapThree && 3) ||
+          (p.onTapTwo && 2) || ((p.onTap || p.onClick) && 1) || 0;
+          // make sure each changed touch point hasn't moved more than the allowed tolerance
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const touchTrack = this.track.touches.points[e.changedTouches[i].identifier];
+            if (touchTrack) {
+              if (Math.abs(e.changedTouches[i].clientX - touchTrack.startX) >= 15 + (3 * maxPts) ||
+              Math.abs(e.changedTouches[i].clientY - touchTrack.startY) >= 15 + (3 * maxPts)) {
+                this.handleTouchEvent({ type: 'touchtapcancel' });
+                break;
+              }
+            }
+          }
+          return 'updateState';
+        }
+        return 'terminate';
       case 'touchend':
         this.p.props.onTouchEnd && this.p.props.onTouchEnd(e);
-        this.track.touchDown = e.targetTouches.length > 0;
 
         // cancel if also touching someplace else on the screen
-        if (e.touches.length !== e.targetTouches.length) this.track.touches.canceled = true;
+        if (e.touches.length !== e.targetTouches.length) {
+          this.handleTouchEvent({ type: 'touchtapcancel' });
+        }
 
         if (!this.track.touches.canceled) {
+          this.track.touches.touchend = true;
           // log touch end position for each touch point that is part of the touchend event
           for (let i = 0; i < e.changedTouches.length; i++) {
-            const touchTrack = this.track.touches[e.changedTouches[i].identifier];
+            const touchTrack = this.track.touches.points[e.changedTouches[i].identifier];
             if (touchTrack) {
               touchTrack.endX = e.changedTouches[i].clientX;
               touchTrack.endY = e.changedTouches[i].clientY;
@@ -745,14 +797,10 @@ class ReactInteractive extends React.Component {
 
         // if there are no remaining touces, then process the touch interaction
         if (e.targetTouches.length === 0) {
-          // track the touch interaction end time
-          this.track.touchEndTime = Date.now();
           // determine if there was a tap and number of touch points for the tap
           const tapTouchPoints = (() => {
-            // max 500ms between start and end of touch interaction to be a tap
-            const tapWithinTime = (this.track.touchEndTime - this.track.touchStartTime) < 500;
-            if (this.track.touches.canceled || !tapWithinTime) return 0;
-            const touches = this.track.touches;
+            if (this.track.touches.canceled) return 0;
+            const touches = this.track.touches.points;
             const touchKeys = Object.keys(touches);
             const touchCount = touchKeys.length;
             // make sure each touch point hasn't moved more than the allowed tolerance
@@ -765,8 +813,7 @@ class ReactInteractive extends React.Component {
             return 0;
           })();
 
-          // reset touch interaction tracking object
-          this.track.touches = {};
+          resetTouches();
 
           switch (tapTouchPoints) {
             case 1: {
@@ -792,14 +839,23 @@ class ReactInteractive extends React.Component {
       case 'touchcancel':
         this.p.props.onTouchCancel && this.p.props.onTouchCancel(e);
         this.track.touchDown = e.targetTouches.length > 0;
-        // if there are no remaining touces, then process and reset the touch interaction
+        // if there are no remaining touces, then reset the touch interaction
         if (e.targetTouches.length === 0) {
-          this.track.touchEndTime = Date.now();
-          this.track.touches = {};
+          resetTouches();
         } else {
-          this.track.touches.canceled = true;
+          this.handleTouchEvent({ type: 'touchtapcancel' });
         }
         return 'updateState';
+
+      case 'touchtapcancel':
+        if (this.track.touchDown) {
+          this.track.touches.canceled = true;
+          if (this.p.props.touchActiveTapOnly) {
+            this.track.touchDown = false;
+            return 'updateState';
+          }
+        }
+        return 'terminate';
 
       // for click events fired on touchOnly devices, listen for because synthetic
       // click events won't fire touchend event
@@ -965,6 +1021,8 @@ class ReactInteractive extends React.Component {
     (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex))) {
       props.onClick = this.handleEvent;
     }
+
+    if (this.p.props.touchActiveTapOnly) props.onTouchMove = this.handleEvent;
 
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
     if (typeof this.p.props.as === 'string') {

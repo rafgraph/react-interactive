@@ -89,6 +89,16 @@ export const knownProps = {
   useBrowserOutlineFocus: true,
   useBrowserCursor: true,
   touchActiveScroll: true,
+  touchActiveTapOnly: true,
   focusToggleOff: true,
   stylePriority: true,
 };
+
+export function dummyEvent(type) {
+  return {
+    type,
+    persist: () => {},
+    preventDefault: () => {},
+    stopPropagation: () => {},
+  };
+}
