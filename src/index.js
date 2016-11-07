@@ -265,10 +265,7 @@ class ReactInteractive extends React.Component {
       this.computeState(),
       this.p.props,
       // create dummy 'event' object that caused the state change, will be passed to onStateChange
-      { type: 'forcestate',
-        persist: () => {},
-        preventDefault: () => {},
-        stopPropagation: () => {} }
+      dummyEvent('forcestate')
     );
   }
 
