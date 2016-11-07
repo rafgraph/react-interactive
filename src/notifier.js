@@ -64,7 +64,7 @@ if (detectIt.hasTouchEventsApi) {
 }
 
 if (detectIt.deviceType !== 'touchOnly') {
-  ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'].forEach((eType) => {
+  ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup', 'scroll'].forEach((eType) => {
     setupEvent(eType);
   });
 
@@ -80,6 +80,6 @@ if (detectIt.deviceType !== 'touchOnly') {
   observer.observe(document, { childList: true, attributes: true, subtree: true });
 }
 
-['scroll', 'dragstart', 'focus'].forEach((eType) => {
+['dragstart', 'focus'].forEach((eType) => {
   setupEvent(eType);
 });

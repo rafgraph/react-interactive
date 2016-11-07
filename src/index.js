@@ -44,7 +44,6 @@ class ReactInteractive extends React.Component {
       updateTopNode: false,
       notifyOfNext: {},
       documentFocusEvent: null,
-      boundingRect: {},
       timeoutIDs: {},
       state: this.state,
     };
@@ -320,19 +319,7 @@ class ReactInteractive extends React.Component {
   handleNotifyOfNext = (e) => {
     switch (e.type) {
       case 'scroll':
-        if (this.track.state.iState === 'touchActive') {
-          const newR = this.topNode.getBoundingClientRect();
-          const prevR = this.track.boundingRect;
-          if (newR.top === prevR.top && newR.left === prevR.left &&
-          newR.bottom === prevR.bottom && newR.right === prevR.right) {
-            return 'reNotifyOfNext';
-          }
-          this.forceTrackIState('normal');
-          this.track.touches.canceled = true;
-          this.updateState(this.computeState(), this.p.props, e, true);
-          delete this.track.notifyOfNext[e.type];
-          return null;
-        } else if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
+        if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
           return 'reNotifyOfNext';
         }
         break;
@@ -382,20 +369,15 @@ class ReactInteractive extends React.Component {
   mangageNotifyOfNext(newState) {
     if (newState.iState !== 'normal' && !this.track.drag) {
       ['scroll', 'dragstart', 'mouseenter'].forEach((eType) => {
-        if (eType !== 'mouseenter' || this.mouseEventListeners) { // TODO better way to handle mousenter
-          if (!this.track.notifyOfNext[eType] &&
-          !(eType === 'scroll' && newState.iState === 'touchActive' &&
-          this.p.props.touchActiveScroll)) {
-            if (newState.iState === 'touchActive') {
-              this.track.boundingRect = this.topNode.getBoundingClientRect();
-            }
+        if ((eType !== 'mouseenter' && eType !== 'scroll') || this.mouseEventListeners) { // TODO better way to handle mousenter
+          if (!this.track.notifyOfNext[eType]) {
             this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
           }
         }
       });
     } else {
       ['scroll', 'dragstart', 'mouseenter'].forEach((eType) => {
-        if (eType !== 'mouseenter' || this.mouseEventListeners) { // TODO better way to handle mousenter
+        if ((eType !== 'mouseenter' && eType !== 'scroll') || this.mouseEventListeners) { // TODO better way to handle mousenter
           if (this.track.notifyOfNext[eType]) {
             cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
             delete this.track.notifyOfNext[eType];

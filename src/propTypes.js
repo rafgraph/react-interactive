@@ -101,7 +101,6 @@ const propTypes = {
   tabIndex: PropTypes.string,
   useBrowserOutlineFocus: PropTypes.bool,
   useBrowserCursor: PropTypes.bool,
-  touchActiveScroll: PropTypes.bool,
   touchActiveTapOnly: PropTypes.bool,
   focusToggleOff: PropTypes.bool,
   stylePriority: PropTypes.arrayOf(PropTypes.string),

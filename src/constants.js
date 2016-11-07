@@ -88,7 +88,6 @@ export const knownProps = {
   mutableProps: true,
   useBrowserOutlineFocus: true,
   useBrowserCursor: true,
-  touchActiveScroll: true,
   touchActiveTapOnly: true,
   focusToggleOff: true,
   stylePriority: true,
