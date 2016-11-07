@@ -67,21 +67,19 @@ if (detectIt.deviceType !== 'touchOnly') {
   ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'].forEach((eType) => {
     setupEvent(eType);
   });
+
+  notifyOfNextSubs.mutation = [];
+  subsIDs.mutation = {};
+  const mutationEvent = {
+    type: 'mutation',
+    persist: () => {},
+    preventDefault: () => {},
+    stopPropagation: () => {},
+  };
+  const observer = new MutationObserver(eventHandler.bind(null, mutationEvent));
+  observer.observe(document, { childList: true, attributes: true, subtree: true });
 }
 
 ['scroll', 'dragstart', 'focus'].forEach((eType) => {
   setupEvent(eType);
 });
-
-notifyOfNextSubs.mutation = [];
-subsIDs.mutation = {};
-
-const mutationEvent = {
-  type: 'mutation',
-  persist: () => {},
-  preventDefault: () => {},
-  stopPropagation: () => {},
-};
-
-const observer = new MutationObserver(eventHandler.bind(null, mutationEvent));
-observer.observe(document, { childList: true, attributes: true, subtree: true });
