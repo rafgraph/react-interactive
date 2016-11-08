@@ -36,6 +36,7 @@ class ReactInteractive extends React.Component {
       buttonDown: false,
       focus: false,
       focusFrom: 'reset',
+      previousFocusFrom: 'reset',
       focusTransition: 'reset',
       focusStateOnMouseDown: false,
       spaceKeyDown: false,
@@ -43,7 +44,6 @@ class ReactInteractive extends React.Component {
       drag: false,
       updateTopNode: false,
       notifyOfNext: {},
-      documentFocusEvent: null,
       timeoutIDs: {},
       state: this.state,
     };
@@ -340,12 +340,16 @@ class ReactInteractive extends React.Component {
   }
 
   handleNotifyOfNext = (e) => {
+    let updateState = false;
+
     switch (e.type) {
       case 'scroll':
         if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
           return 'reNotifyOfNext';
         }
+        updateState = true;
         break;
+
       case 'dragstart':
         // use setTimeout because notifier drag event will fire before the drag event on RI,
         // so w/o timeout when this intance of RI is dragged it would go:
@@ -357,30 +361,37 @@ class ReactInteractive extends React.Component {
             this.updateState(this.computeState(), this.p.props, e, true);
           }
         }, 30);
-        delete this.track.notifyOfNext[e.type];
-        return null;
+        break;
+
       case 'mouseenter':
       case 'mutation':
         if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
           return 'reNotifyOfNext';
         }
+        updateState = true;
         break;
+
       case 'focus':
-        this.track.documentFocusEvent = e;
-        this.manageSetTimeout('expireNotifyOfNextFocus', () => {
-          if (this.track.notifyOfNext.focus) {
-            cancelNotifyOfNext('focus', this.track.notifyOfNext.focus);
-            delete this.track.notifyOfNext.focus;
-          }
-          this.track.documentFocusEvent = null;
-        }, 34);
-        return 'reNotifyOfNext';
+        // if the window focus event is not followed by an element focus event, then reset focusFrom
+        this.manageSetTimeout('windowFocus', () => {
+          this.track.focusFrom = 'reset';
+        }, 600);
+        break;
+
+      // window blur event to preserve the focusFrom state
+      case 'blur':
+        // clear the timer set in mangageNotifyOfNext that was set to cancel this notification
+        window.clearTimeout(this.track.timeoutIDs.elementBlur);
+        delete this.track.timeoutIDs.elementBlur;
+        // notifiy of the next window focus event (re-entering the app/window/tab)
+        this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+        // reinstate focusFrom to it's previous value to preserve the focusFrom state
+        this.track.focusFrom = this.track.previousFocusFrom;
+        break;
       default:
-        delete this.track.notifyOfNext[e.type];
-        return null;
     }
 
-    this.updateState(this.computeState(), this.p.props, e, true);
+    if (updateState) this.updateState(this.computeState(), this.p.props, e, true);
     delete this.track.notifyOfNext[e.type];
     return null;
   }
@@ -405,15 +416,17 @@ class ReactInteractive extends React.Component {
       });
     }
 
-    // notify of next setup for maintaining correct focusFrom when switching apps/windows
-    if (newState.focus) {
-      if (this.track.timeoutIDs.expireNotifyOfNextFocus) {
-        window.clearTimeout(this.track.timeoutIDs.expireNotifyOfNextFocus);
-        delete this.track.timeoutIDs.expireNotifyOfNextFocus;
-      }
-      if (!this.track.notifyOfNext.focus) {
-        this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
-      }
+    // notify of next setup for maintaining correct focusFrom when switching apps/windows,
+    // if exiting the focus state, notify of the next window blur (leaving the app/window/tab)
+    // event if it immediatly follows this event, otherwise cancel the notify of next
+    if (!newState.focus && this.track.state.focus) {
+      this.track.notifyOfNext.blur = notifyOfNext('blur', this.handleNotifyOfNext);
+      this.manageSetTimeout('elementBlur', () => {
+        if (this.track.notifyOfNext.blur) {
+          cancelNotifyOfNext('blur', this.track.notifyOfNext.blur);
+          delete this.track.notifyOfNext.blur;
+        }
+      }, 600);
     }
 
     if (this.track.mouseOn && !this.track.notifyOfNext.mutation) {
@@ -871,11 +884,15 @@ class ReactInteractive extends React.Component {
   handleOtherEvent(e) {
     switch (e.type) {
       case 'focus':
-        // set focusFrom based on the type of focusTransition
-        // if the native focus event is the same as the document focus event from notify of next,
-        // and focusFrom has not been reset, then this is a re-focus after switching apps/windows
-        // so leave focusFrom in its current state.
-        if (e.nativeEvent !== this.track.documentFocusEvent || this.track.focusFrom === 'reset') {
+        // if there was a timer set by a recent window focus event, clear it
+        if (this.track.timeoutIDs.windowFocus) {
+          window.clearTimeout(this.track.timeoutIDs.windowFocus);
+          delete this.track.timeoutIDs.windowFocus;
+        }
+
+        // if this is a known focusTransition or focusFrom is reset,
+        // then set focusFrom based on the type of focusTransition,
+        if (this.track.focusTransition !== 'reset' || this.track.focusFrom === 'reset') {
           const focusTransition = this.track.focusTransition.toLowerCase();
           if (/mouse/.test(focusTransition)) {
             this.track.focusFrom = 'mouse';
@@ -891,15 +908,10 @@ class ReactInteractive extends React.Component {
         this.track.focus = true;
         return 'updateState';
       case 'blur':
-        // only reset focusFrom if this is a known focusTransition or the blur event
-        // is preceeded by a mousedown or touchend event, otherwise it's an unknown
-        // blur source (could be from switching apps), so leave focusFrom as is
-        if (this.track.focusTransition !== 'reset' ||
-        input.mouse.recentMouseDown || input.touch.recentTouchEnd) {
-          this.track.focusFrom = 'reset';
-        }
         this.track.focusTransition = 'reset';
         this.p.props.onBlur && this.p.props.onBlur(e);
+        this.track.previousFocusFrom = this.track.focusFrom;
+        this.track.focusFrom = 'reset';
         this.track.focus = false;
         this.track.spaceKeyDown = false;
         this.track.enterKeyDown = false;

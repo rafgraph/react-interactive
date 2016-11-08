@@ -47,25 +47,25 @@ function eventHandler(e) {
   subsIDs[e.type] = reNotifyOfNextIDs;
 }
 
-function setupEvent(eType) {
+function setupEvent(element, eType, capture) {
   notifyOfNextSubs[eType] = [];
   subsIDs[eType] = {};
-  const useCapture = (eType !== 'mouseenter') && (eType !== 'mouseleave');
-  document.addEventListener(eType, eventHandler, passiveEventSupport ? {
-    capture: useCapture,
+  // const useCapture = (eType !== 'mouseenter') && (eType !== 'mouseleave');
+  element.addEventListener(eType, eventHandler, passiveEventSupport ? {
+    capture,
     passive: true,
-  } : useCapture);
+  } : capture);
 }
 
 if (detectIt.hasTouchEventsApi) {
   ['touchstart', 'touchend', 'touchcancel'].forEach((eType) => {
-    setupEvent(eType);
+    setupEvent(document, eType, true);
   });
 }
 
 if (detectIt.deviceType !== 'touchOnly') {
   ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup', 'scroll'].forEach((eType) => {
-    setupEvent(eType);
+    setupEvent(document, eType, !(eType === 'mouseenter' || eType === 'mouseleave'));
   });
 
   notifyOfNextSubs.mutation = [];
@@ -80,6 +80,8 @@ if (detectIt.deviceType !== 'touchOnly') {
   observer.observe(document, { childList: true, attributes: true, subtree: true });
 }
 
-['dragstart', 'focus'].forEach((eType) => {
-  setupEvent(eType);
+setupEvent(document, 'dragstart', true);
+
+['focus', 'blur'].forEach((eType) => {
+  setupEvent(window, eType, false);
 });
