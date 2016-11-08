@@ -995,13 +995,17 @@ class ReactInteractive extends React.Component {
     if (className) props.className = className;
 
     // only set onClick listener if it's required
-    if (this.p.props.onClick ||
-    (this.clickHandler !== this.handleTouchEvent ? this.p.props.onMouseClick :
-    (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex))) {
+    if (this.p.props.onClick || (this.mouseEventListeners && this.p.props.onMouseClick) ||
+    (this.touchEventListeners &&
+      (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex)
+    )) {
       props.onClick = this.handleEvent;
     }
 
-    if (this.p.props.touchActiveTapOnly) props.onTouchMove = this.handleEvent;
+    //  only set onTouchMove listener if it's required
+    if (this.p.props.touchActiveTapOnly && this.touchEventListeners) {
+      props.onTouchMove = this.handleEvent;
+    }
 
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
     if (typeof this.p.props.as === 'string') {
