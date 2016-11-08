@@ -14,7 +14,7 @@ function updateTouch(e) {
   if (e.type === 'touchstart') {
     input.touch.touchOnScreen = true;
     if (input.mouse) input.mouse.mouseOnDocument = false;
-  } else if (e.type === 'touchend' || e.type === 'touchcancel') {
+  } else if ((e.type === 'touchend' || e.type === 'touchcancel') && e.touches.length === 0) {
     input.touch.touchOnScreen = false;
     input.touch.recentTouch = true;
     if (touchTimerID) window.clearTimeout(touchTimerID);
