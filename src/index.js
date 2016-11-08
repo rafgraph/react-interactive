@@ -351,16 +351,12 @@ class ReactInteractive extends React.Component {
         // so w/o timeout when this intance of RI is dragged it would go:
         // active -> force normal from notifier drag -> active from RI's drag event,
         // but the timeout will allow time for RI's drag event to fire before force normal
-        this.manageSetTimeout(
-          'dragstart',
-          () => {
-            if (!this.track.drag) {
-              this.forceTrackIState('normal');
-              this.updateState(this.computeState(), this.p.props, e, true);
-            }
-          },
-          30
-        );
+        this.manageSetTimeout('dragstart', () => {
+          if (!this.track.drag) {
+            this.forceTrackIState('normal');
+            this.updateState(this.computeState(), this.p.props, e, true);
+          }
+        }, 30);
         delete this.track.notifyOfNext[e.type];
         return null;
       case 'mouseenter':
@@ -630,19 +626,15 @@ class ReactInteractive extends React.Component {
         // setTimeout because React misses focus calls made during componentWillReceiveProps,
         // which is where forceState calls come from (the browser receives the focus call
         // but not React), so have to call focus asyncrounsly so React receives it
-        this.manageSetTimeout(
-          'forceStateFocusTrue',
-          () => { !this.track.state.focus && focusTransition('focus', 'forceStateFocus', 'force'); },
-          0
-        );
+        this.manageSetTimeout('forceStateFocusTrue', () => {
+          !this.track.state.focus && focusTransition('focus', 'forceStateFocus', 'force');
+        }, 0);
         return 'terminate';
       case 'forceStateFocusFalse':
         // same as forceStateFocusTrue, but for focus false
-        this.manageSetTimeout(
-          'forceStateFocusFalse',
-          () => { this.track.state.focus && focusTransition('blur', 'forceStateBlur', 'force'); },
-          0
-        );
+        this.manageSetTimeout('forceStateFocusFalse', () => {
+          this.track.state.focus && focusTransition('blur', 'forceStateBlur', 'force');
+        }, 0);
         return 'terminate';
       case 'refCallback':
         // if in the focus state and RI has a new topDOMNode, then call focus() on `this.topNode`
