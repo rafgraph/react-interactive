@@ -299,11 +299,37 @@ class ReactInteractive extends React.Component {
 
   checkMousePosition() {
     if (!this.mouseEventListeners) return null;
-    if (!input.mouse.mouseOnDocument) return null;
-    const r = this.topNode.getBoundingClientRect();
-    const mX = input.mouse.event.clientX;
-    const mY = input.mouse.event.clientY;
-    if (mX >= (r.left - 1) && mX <= (r.right + 1) && mY >= (r.top - 1) && mY <= (r.bottom + 1)) {
+
+    const mouseX = input.mouse.event.clientX;
+    const mouseY = input.mouse.event.clientY;
+    function mouseOnNode(node) {
+      const rect = node.getBoundingClientRect();
+      return (
+        mouseX >= (rect.left - 1) &&
+        mouseX <= (rect.right + 1) &&
+        mouseY >= (rect.top - 1) &&
+        mouseY <= (rect.bottom + 1)
+      );
+    }
+
+    let mouseOn = true;
+
+    if (!input.mouse.mouseOnDocument) {
+      mouseOn = false;
+    } else if (!this.p.props.checkDOMChildren) {
+      mouseOn = mouseOnNode(this.topNode);
+    } else {
+      const recursiveCheck = (node) => {
+        if (mouseOnNode(node)) return true;
+        for (let i = 0; i < node.children.length; i++) {
+          if (recursiveCheck(node.children[i])) return true;
+        }
+        return false;
+      };
+      mouseOn = recursiveCheck(this.topNode);
+    }
+
+    if (mouseOn) {
       this.track.mouseOn = true;
       this.track.buttonDown = input.mouse.event.buttons === 1;
       return 'mouseOn';

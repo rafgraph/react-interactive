@@ -104,6 +104,7 @@ const propTypes = {
   touchActiveTapOnly: PropTypes.bool,
   focusToggleOff: PropTypes.bool,
   stylePriority: PropTypes.arrayOf(PropTypes.string),
+  checkDOMChildren: PropTypes.bool,
 };
 
 export default propTypes;
