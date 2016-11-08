@@ -5,7 +5,7 @@ import propTypes from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
 import extractStyle from './extractStyle';
-import input, { updateMouseFromRI } from './input-tracker';
+import input, { updateMouseFromRI } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent } from './constants';
 
