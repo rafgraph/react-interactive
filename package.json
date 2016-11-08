@@ -47,7 +47,7 @@
     "react": "^15.3.2"
   },
   "dependencies": {
-    "detect-it": "^1.0.0",
+    "detect-it": "^1.1.0",
     "object-assign": "^4.1.0"
   }
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import detectIt from 'detect-it';
 import objectAssign from 'object-assign';
 import propTypes from './propTypes';
 import compareProps from './compareProps';
@@ -7,7 +6,8 @@ import mergeAndExtractProps from './mergeAndExtractProps';
 import extractStyle from './extractStyle';
 import input, { updateMouseFromRI } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
-import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent } from './constants';
+import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
+  hasTouchEventsApi } from './constants';
 
 class ReactInteractive extends React.Component {
   static propTypes = propTypes;
@@ -157,14 +157,14 @@ class ReactInteractive extends React.Component {
       eventHandlers[otherEvents[event]] = this.handleEvent;
     });
 
-    if (detectIt.hasTouchEventsApi) {
+    if (hasTouchEventsApi) {
       this.touchEventListeners = true;
       Object.keys(touchEvents).forEach((event) => {
         eventHandlers[touchEvents[event]] = this.handleEvent;
       });
     }
     // if the device is mouseOnly or hybrid, then set mouse listeners
-    if (detectIt.deviceType !== 'touchOnly') {
+    if (deviceType !== 'touchOnly') {
       this.mouseEventListeners = true;
       Object.keys(mouseEvents).forEach((event) => {
         eventHandlers[mouseEvents[event]] = this.handleEvent;
@@ -954,7 +954,7 @@ class ReactInteractive extends React.Component {
       style.outlineOffset = '0';
     }
     // if touchActive or active prop provided, then reset webkit tap highlight style
-    if ((this.p.props.touchActive || this.p.props.active) && detectIt.hasTouchEventsApi) {
+    if ((this.p.props.touchActive || this.p.props.active) && hasTouchEventsApi) {
       style.WebkitTapHighlightColor = 'rgba(0, 0, 0, 0)';
     }
     // set cursor to pointer if clicking does something

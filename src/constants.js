@@ -1,3 +1,9 @@
+import detectIt from 'detect-it';
+
+export const deviceType = detectIt.deviceType;
+export const hasTouchEventsApi = detectIt.hasTouchEventsApi;
+export const passiveEventSupport = detectIt.passiveEvents;
+
 export const mouseEvents = {
   mouseenter: 'onMouseEnter',
   mouseleave: 'onMouseLeave',

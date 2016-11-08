@@ -1,5 +1,5 @@
 import detectIt from 'detect-it';
-import passiveEventSupport from './detectPassiveEventSupport';
+import { passiveEventSupport } from './constants';
 
 const notifyOfAllSubs = {};
 const notifyOfNextSubs = {};
