@@ -501,7 +501,7 @@ class ReactInteractive extends React.Component {
       }
       if (e.type === 'focus') {
         if (this.track.focusTransition === 'reset' && (input.touch.recentTouch ||
-        (this.track.state.iState !== 'touchActive' && input.touch.touchOnScreen))) {
+        (!this.track.touchDown && input.touch.touchOnScreen))) {
           e.stopPropagation();
           this.manageFocus('focusForceBlur');
           return false;
@@ -522,7 +522,7 @@ class ReactInteractive extends React.Component {
       }
       if (e.type === 'focus') {
         if (this.track.focusTransition === 'reset' && (input.touch.recentTouch ||
-        (this.track.state !== 'touchActive' && input.touch.touchOnScreen))) {
+        (!this.track.touchDown && input.touch.touchOnScreen))) {
           e.stopPropagation();
           this.manageFocus('focusForceBlur');
           return false;
