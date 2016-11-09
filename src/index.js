@@ -260,13 +260,8 @@ class ReactInteractive extends React.Component {
       return;
     }
 
-    // update state with new computed state
-    this.updateState(
-      this.computeState(),
-      this.p.props,
-      // create dummy 'event' object that caused the state change, will be passed to onStateChange
-      dummyEvent('forcestate')
-    );
+    // update state with new computed state and dummy 'event' that caused state change
+    this.updateState(this.computeState(), this.p.props, dummyEvent('forcestate'));
   }
 
   // compute the state based on what's set in `this.track`, returns a new state object
@@ -509,8 +504,7 @@ class ReactInteractive extends React.Component {
   // checks if the event is a valid event or not, returns true / false respectivly
   isValidEvent(e) {
     // refCallbackFocus calls focus when there is a new top DOM node and RI is already in the
-    // focus state to keep the browser's focus state in sync with RI's,
-    // so reset and return 'terminate'
+    // focus state to keep the browser's focus state in sync with RI's, so reset and return false
     if (e.type === 'focus' && this.track.focusTransition === 'refCallbackFocus') {
       e.stopPropagation();
       this.track.focusTransition = 'reset';
@@ -748,9 +742,8 @@ class ReactInteractive extends React.Component {
         }
 
         if (this.p.props.touchActiveTapOnly) {
-          const p = this.p.props;
-          const maxTapPoints = (p.onTapFour && 4) || (p.onTapThree && 3) ||
-          (p.onTapTwo && 2) || 1;
+          const maxTapPoints = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
+          (this.p.props.onTapTwo && 2) || 1;
           if (maxTapPoints < e.targetTouches.length) {
             this.handleTouchEvent({ type: 'touchtapcancel' });
           }
@@ -768,9 +761,8 @@ class ReactInteractive extends React.Component {
         return 'updateState';
       case 'touchmove':
         if (!this.track.touches.canceled) {
-          const p = this.p.props;
-          const maxPts = (p.onTapFour && 4) || (p.onTapThree && 3) ||
-          (p.onTapTwo && 2) || ((p.onTap || p.onClick) && 1) || 0;
+          const maxPts = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
+          (this.p.props.onTapTwo && 2) || 1;
           // make sure each changed touch point hasn't moved more than the allowed tolerance
           for (let i = 0; i < e.changedTouches.length; i++) {
             const touchTrack = this.track.touches.points[e.changedTouches[i].identifier];
