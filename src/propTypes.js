@@ -89,6 +89,7 @@ const propTypes = {
   onMouseDown: PropTypes.func,
   onMouseUp: PropTypes.func,
   onTouchStart: PropTypes.func,
+  onTouchMove: PropTypes.func,
   onTouchEnd: PropTypes.func,
   onTouchCancel: PropTypes.func,
   onFocus: PropTypes.func,

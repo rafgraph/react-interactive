@@ -82,6 +82,7 @@ export const knownProps = {
   onMouseDown: true,
   onMouseUp: true,
   onTouchStart: true,
+  onTouchMove: true,
   onTouchEnd: true,
   onTouchCancel: true,
   onFocus: true,

@@ -760,7 +760,8 @@ class ReactInteractive extends React.Component {
         }
         return 'updateState';
       case 'touchmove':
-        if (!this.track.touches.canceled) {
+        this.p.props.onTouchMove && this.p.props.onTouchMove(e);
+        if (!this.track.touches.canceled && this.p.props.touchActiveTapOnly) {
           const maxPts = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
           (this.p.props.onTapTwo && 2) || 1;
           // make sure each changed touch point hasn't moved more than the allowed tolerance
@@ -1025,7 +1026,7 @@ class ReactInteractive extends React.Component {
     }
 
     //  only set onTouchMove listener if it's required
-    if (this.p.props.touchActiveTapOnly && this.touchEventListeners) {
+    if (this.touchEventListeners && (this.p.props.touchActiveTapOnly || this.p.props.onTouchMove)) {
       props.onTouchMove = this.handleEvent;
     }
 
