@@ -1,19 +1,28 @@
-import detectIt from 'detect-it';
 import { notifyOfAll } from './notifier';
+import { deviceType, hasTouchEventsApi, mouseEvents, touchEvents } from './constants';
 
+// the shape of what's being tracked globally
+// the input object is the default export
 const input = {
-  mouse: {},
-  touch: {},
+  mouse: {
+    mouseOnDocument: false,
+    clientX: 0,
+    clientY: 0,
+    buttons: 0,
+  },
+  touch: {
+    touchOnScreen: false,
+    recentTouch: false,
+  },
 };
 
+// update touch input tracking
 let touchTimerID = null;
-
 function updateTouch(e) {
-  input.touch.event = e;
   if (e.type === 'touchstart') {
     input.touch.touchOnScreen = true;
-    if (input.mouse) input.mouse.mouseOnDocument = false;
-  } else if ((e.type === 'touchend' || e.type === 'touchcancel') && e.touches.length === 0) {
+    input.mouse.mouseOnDocument = false;
+  } else if (e.touches.length === 0) {
     input.touch.touchOnScreen = false;
     input.touch.recentTouch = true;
     if (touchTimerID) window.clearTimeout(touchTimerID);
@@ -24,33 +33,38 @@ function updateTouch(e) {
   }
 }
 
+// update mouse input tracking
 function updateMouse(e) {
-  if (input.touch && (input.touch.recentTouch || input.touch.touchOnScreen)) return;
-  input.mouse.event = e;
+  input.mouse.clientX = e.clientX;
+  input.mouse.clientY = e.clientY;
+  input.mouse.buttons = e.buttons;
   if (e.type === 'mouseleave') input.mouse.mouseOnDocument = false;
   else input.mouse.mouseOnDocument = true;
 }
 
+// only update mouse if the mouse event is not from a touch event
+function updateHybridMouse(e) {
+  if (input.touch.recentTouch || input.touch.touchOnScreen) return;
+  updateMouse(e);
+}
+
+// update mouse from RI - this is required for enter and leave events from RI elements
+// because when the mouse is moved onto an RI element the most recent mousemove event
+// will have the mouse coordinates as off the element, so need to get updated coordinates
+// from the react event
 export function updateMouseFromRI(e) {
+  updateMouse(e);
   input.mouse.mouseOnDocument = true;
-  input.mouse.event = e.nativeEvent;
 }
 
-if (detectIt.hasTouchEventsApi) {
-  input.touch = {
-    recentTouch: false,
-    touchOnScreen: false,
-    event: {},
-  };
-  notifyOfAll(['touchstart', 'touchend', 'touchcancel'], updateTouch);
+// sign up for notification of touch events if the device has the touch events api
+if (hasTouchEventsApi) {
+  notifyOfAll(Object.keys(touchEvents), updateTouch);
 }
 
-if (detectIt.deviceType !== 'touchOnly') {
-  input.mouse = {
-    mouseOnDocument: false,
-    event: {},
-  };
-  notifyOfAll(['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup'], updateMouse);
+// sign up for notification of mouse events if the device is mouseOnly or hybrid
+if (deviceType !== 'touchOnly') {
+  notifyOfAll(Object.keys(mouseEvents), deviceType === 'hybrid' ? updateHybridMouse : updateMouse);
 }
 
 export default input;

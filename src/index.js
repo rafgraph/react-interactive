@@ -295,8 +295,8 @@ class ReactInteractive extends React.Component {
   checkMousePosition() {
     if (!this.mouseEventListeners) return null;
 
-    const mouseX = input.mouse.event.clientX;
-    const mouseY = input.mouse.event.clientY;
+    const mouseX = input.mouse.clientX;
+    const mouseY = input.mouse.clientY;
     function mouseOnNode(node) {
       const rect = node.getBoundingClientRect();
       return (
@@ -326,7 +326,7 @@ class ReactInteractive extends React.Component {
 
     if (mouseOn) {
       this.track.mouseOn = true;
-      this.track.buttonDown = input.mouse.event.buttons === 1;
+      this.track.buttonDown = input.mouse.buttons === 1;
       return 'mouseOn';
     }
     this.track.mouseOn = false;
