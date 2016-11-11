@@ -1,6 +1,38 @@
 # React Interactive
 
 [Live example](http://react-interactive.rafrex.com)
+- Use **inline styles for all interactive states** - `hover`, `active`, `focus`, etc... (no style tags or CSS added to the page)
+- Separate `active` states for mouse, touch, and keyboard interactions
+- Separate styles for the `focus` state based on how it was entered - from mouse, touch, or tab key
+- State change callback to easily incorporate the interactive state into your component
+
+
+```javascript
+// Interactive and focusable div
+<Interactive
+  as="div" // what the Interactive component is rendered as
+  hover={{ color: 'green' }}
+
+  active={{ color: 'blue' }}
+  // OR
+  hoverActive={{ color: 'red' }}
+  touchActive={{ color: 'blue' }}
+  keyActive={{ color: 'orange' }}
+
+  focus={{ outline: '2px solid green' }}
+  // OR
+  focus={{
+    focusFromTabStyle: { outline: '2px solid orange' }
+    focusFromMouseStyle: { outline: '2px solid green' }
+    focusFromTouchStyle: { outline: '2px solid blue' }
+  }}
+
+  // hook called on every state change, receives prevState and nextState objects
+  onStateChange={this.handleInteractiveStateChange}
+  onClick={this.handleClick}
+  style={{ fontSize: '16px', padding: '3px', color: 'black' }}
+>This is an interactive and focusable div</Interactive>
+```
 
 Interactive state machine as a React component. There are 5 mutually exclusive states, plus 1 boolean state that can be combined with the other 5.
 - The 5 mutually exclusive states are:
@@ -14,19 +46,21 @@ Interactive state machine as a React component. There are 5 mutually exclusive s
 
 \*The 3 separate `[type]Active` states can be treated as a single `active` state if desired. `hoverActive` (mouse on and button down), `touchActive` (touch on screen), `keyActive` (has focus and enter key down).
 
-Compared to CSS, React Interactive is a simpler state machine with better touch device and keyboard support, and on enter/leave state hooks. See [comparison below](#interactive-state-machine-comparison).
+The `focus` state can be styled 3 separate ways based on how it was entered, from `mouse`, `touch`, or `tab` key.
+
+Compared to CSS, React Interactive is a simpler state machine with better touch device and keyboard support, and state change hooks. See [comparison below](#interactive-state-machine-comparison).
 
 #### Basic Examples
 ```javascript
-// Interactive and focusable div
+// Interactive div with state change hook
 <Interactive
   as="div"
   normal={{ color: 'black' }}
   hover={{ color: 'green' }}
-  active={{ color: 'blue' }} // style to use for the hoverActive, touchActive and keyActive states
-  focus={{ outline: '2px solid green' }}
+  active="hover" // use the hover state style for the active state
   style={{ fontSize: '16px', padding: '3px', border: '2px dotted black' }}
   onClick={this.handleClick}
+  onStateChange={this.handleInteractiveStateChange}
 >This is an interactive and focusable div</Interactive>
 ```
 ```javascript
@@ -40,23 +74,6 @@ import { Link } from 'react-router';
   active={{ color: 'blue' }}
   style={{ color: 'black', padding: '3px' }}
 >This is an interactive React Router Link component</Interactive>
-```
-```javascript
-// Interactive link with state change hooks
-<Interactive
-  as="a"
-  href="https://example.tld"
-  // hook called on every state change, receives prevState and nextState objects
-  onStateChange{this.handleInteractiveStateChange}
-  hover={{
-    style: { color: 'green' },
-    // hooks called on enter/leave of the hover state
-    onEnter: this.handleEnterHover,
-    onLeave: this.handleLeaveHover,
-  }}
-  active="hover" // use the hover state style for the active state
-  style={{ color: 'black', padding: '3px' }}
->This is an interactive link with state change hooks</Interactive>
 ```
 ```javascript
 // Interactive link with separate styles for mouse, touch, and keyboard interactions
