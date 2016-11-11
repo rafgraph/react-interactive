@@ -31,7 +31,7 @@ class ReactInteractive extends React.Component {
     this.track = {
       touchDown: false,
       recentTouch: false,
-      touches: { points: {} },
+      touches: { points: {}, active: 0 },
       mouseOn: false,
       buttonDown: false,
       focus: false,
@@ -702,121 +702,143 @@ class ReactInteractive extends React.Component {
   }
 
   // returns 'terminate' if the caller (this.handleEvent) should not call updateState(...)
+  // note that a touch interaction lasts from the start of the first touch point on RI,
+  // until removal of the last touch point on RI, and then the touch interaction is reset
   handleTouchEvent(e) {
     // reset mouse trackers
     this.track.mouseOn = false;
     this.track.buttonDown = false;
 
-    const resetTouches = () => {
+    // maximum number of touch points where a tap is still possible
+    const maxTapPoints = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
+    (this.p.props.onTapTwo && 2) || 1;
+
+    // reset touch interaction tracking, called when there are no more touches on the target
+    const resetTouchInteraction = () => {
       this.track.touchDown = false;
-      this.track.touches = { points: {} };
+      this.track.touches = { points: {}, active: 0 };
+      // clear the touchTapTimer if it's running
       if (this.track.timeoutIDs.touchTapTimer !== undefined) {
         window.clearTimeout(this.track.timeoutIDs.touchTapTimer);
         delete this.track.timeoutIDs.touchTapTimer;
       }
+    };
+
+    // track recent touch, called from touchend and touchcancel
+    const recentTouch = () => {
       this.track.recentTouch = true;
       this.manageSetTimeout('recentTouchTimer', () => {
         this.track.recentTouch = false;
       }, 600);
     };
 
+    // returns true if there are extra touches on the screen
+    const extraTouches = () => (
+      //  if also touching someplace else on the screen, or
+      (e.touches.length !== this.track.touches.active) ||
+      // if there is a touchActiveTapOnly prop and more touches than maxTapPoints
+      (this.p.props.touchActiveTapOnly && this.track.touches.active > maxTapPoints)
+    );
+
+    // returns true if a touch point has moved more than is allowed for a tap
+    const touchMoved = (endTouch, startTouch, numberOfPoints) => (
+      Math.abs(endTouch.clientX - startTouch.startX) >= 15 + (3 * numberOfPoints) ||
+      Math.abs(endTouch.clientY - startTouch.startY) >= 15 + (3 * numberOfPoints)
+    );
+
+    // log touch position for each touch point that is part of the touch event
+    const logTouchCoordsAs = (logAs) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const point = this.track.touches.points[e.changedTouches[i].identifier] || {};
+        point[`${logAs}X`] = e.changedTouches[i].clientX;
+        point[`${logAs}Y`] = e.changedTouches[i].clientY;
+        this.track.touches.points[e.changedTouches[i].identifier] = point;
+      }
+    };
+
     switch (e.type) {
       case 'touchstart':
         this.p.props.onTouchStart && this.p.props.onTouchStart(e);
+        // update number of active touches
+        this.track.touches.active += e.changedTouches.length;
+        if (this.track.touches.tapCanceled) return 'terminate';
+        // cancel tap if there was already a touchend in this interaction or there are extra touches
+        if (this.track.touches.touchend || extraTouches()) {
+          // recursively call handleTouchEvent with a touchtapcancel event to set track properties,
+          // call handleTouchEvent directly don't go through handleEvent so updateState isn't called
+          // return whatever touchtapcancel says todo (either terminate or updateState)
+          return this.handleTouchEvent({ type: 'touchtapcancel' });
+        }
 
         // if going from no touch to touch, set touchTapTimer
-        if (!this.track.touchDown && !this.track.touches.canceled) {
+        if (!this.track.touchDown) {
           this.manageSetTimeout('touchTapTimer', () => {
+            // if the timer finishes then fire a touchtapcancel event to cancel the tap,
+            // because this goes through handleEvent, updateState will be called if needed
             this.handleEvent(dummyEvent('touchtapcancel'));
           }, 600);
         }
 
-        if (!this.track.touches.canceled) {
-          this.track.touchDown = true;
-        }
-
-        // cancel if also touching someplace else on the screen or there there was already
-        // a touchend without removing all touches
-        if (e.touches.length !== e.targetTouches.length || this.track.touches.touchend) {
-          this.handleTouchEvent({ type: 'touchtapcancel' });
-        }
-
-        if (this.p.props.touchActiveTapOnly) {
-          const maxTapPoints = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
-          (this.p.props.onTapTwo && 2) || 1;
-          if (maxTapPoints < e.targetTouches.length) {
-            this.handleTouchEvent({ type: 'touchtapcancel' });
-          }
-        }
-
-        if (!this.track.touches.canceled) {
-          // log touch start position for each touch point that is part of the touchstart event
-          for (let i = 0; i < e.changedTouches.length; i++) {
-            this.track.touches.points[e.changedTouches[i].identifier] = {
-              startX: e.changedTouches[i].clientX,
-              startY: e.changedTouches[i].clientY,
-            };
-          }
-        }
+        // set touchDown
+        this.track.touchDown = true;
+        // log touch start position
+        logTouchCoordsAs('start');
         return 'updateState';
+
       case 'touchmove':
         this.p.props.onTouchMove && this.p.props.onTouchMove(e);
-        if (!this.track.touches.canceled && this.p.props.touchActiveTapOnly) {
-          const maxPts = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
-          (this.p.props.onTapTwo && 2) || 1;
-          // make sure each changed touch point hasn't moved more than the allowed tolerance
+        if (this.track.touches.tapCanceled) return 'terminate';
+        // cancel tap if there are extra touches
+        if (extraTouches()) return this.handleTouchEvent({ type: 'touchtapcancel' });
+
+        // if touchActiveTapOnly prop, check to see if the touch moved enough to cancel tap
+        if (this.p.props.touchActiveTapOnly) {
           for (let i = 0; i < e.changedTouches.length; i++) {
-            const touchTrack = this.track.touches.points[e.changedTouches[i].identifier];
-            if (touchTrack) {
-              if (Math.abs(e.changedTouches[i].clientX - touchTrack.startX) >= 15 + (3 * maxPts) ||
-              Math.abs(e.changedTouches[i].clientY - touchTrack.startY) >= 15 + (3 * maxPts)) {
-                this.handleTouchEvent({ type: 'touchtapcancel' });
-                break;
-              }
+            const touch = this.track.touches.points[e.changedTouches[i].identifier];
+            if (touch && touchMoved(e.changedTouches[i], touch, maxTapPoints)) {
+              return this.handleTouchEvent({ type: 'touchtapcancel' });
             }
           }
-          return 'updateState';
         }
         return 'terminate';
+
       case 'touchend':
+        // start recent touch timer
+        recentTouch();
         this.p.props.onTouchEnd && this.p.props.onTouchEnd(e);
+        // update number of active touches
+        this.track.touches.active -= e.changedTouches.length;
+        // track that there has need a touchend in this touch interaction
+        this.track.touches.touchend = true;
 
-        // cancel if also touching someplace else on the screen
-        if (e.touches.length !== e.targetTouches.length) {
-          this.handleTouchEvent({ type: 'touchtapcancel' });
-        }
+        // check to see if tap is already canceled or should be canceled
+        if (this.track.touches.active === 0 &&
+        (!this.track.touchDown || this.track.touches.tapCanceled || extraTouches())) {
+          resetTouchInteraction();
+          return 'updateState';
+        } else if (this.track.touches.tapCanceled) return 'terminate';
+        else if (extraTouches()) return this.handleTouchEvent({ type: 'touchtapcancel' });
 
-        if (!this.track.touches.canceled) {
-          this.track.touches.touchend = true;
-          // log touch end position for each touch point that is part of the touchend event
-          for (let i = 0; i < e.changedTouches.length; i++) {
-            const touchTrack = this.track.touches.points[e.changedTouches[i].identifier];
-            if (touchTrack) {
-              touchTrack.endX = e.changedTouches[i].clientX;
-              touchTrack.endY = e.changedTouches[i].clientY;
-            }
-          }
-        }
+        // log touch end position
+        logTouchCoordsAs('client');
 
-        // if there are no remaining touces, then process the touch interaction
-        if (e.targetTouches.length === 0) {
+        // if there are no remaining touches, then process the touch interaction
+        if (this.track.touches.active === 0) {
           // determine if there was a tap and number of touch points for the tap
           const tapTouchPoints = (() => {
-            if (this.track.touches.canceled) return 0;
             const touches = this.track.touches.points;
             const touchKeys = Object.keys(touches);
-            const touchCount = touchKeys.length;
-            // make sure each touch point hasn't moved more than the allowed tolerance
-            if (touchKeys.every(touch => (
-              Math.abs(touches[touch].endX - touches[touch].startX) < 15 + (3 * touchCount) &&
-              Math.abs(touches[touch].endY - touches[touch].startY) < 15 + (3 * touchCount)
-            ))) {
-              return touchCount;
+            const count = touchKeys.length;
+
+            // if every touch point hasn't moved, then return the count
+            if (touchKeys.every(touch => (!touchMoved(touches[touch], touches[touch], count)))) {
+              return count;
             }
             return 0;
           })();
 
-          resetTouches();
+          // reset the touch interaction
+          resetTouchInteraction();
 
           switch (tapTouchPoints) {
             case 1: {
@@ -840,20 +862,31 @@ class ReactInteractive extends React.Component {
         return 'updateState';
 
       case 'touchcancel':
+        recentTouch();
         this.p.props.onTouchCancel && this.p.props.onTouchCancel(e);
-        this.track.touchDown = e.targetTouches.length > 0;
-        // if there are no remaining touces, then reset the touch interaction
-        if (e.targetTouches.length === 0) {
-          resetTouches();
-        } else {
-          this.handleTouchEvent({ type: 'touchtapcancel' });
-        }
-        return 'updateState';
+        this.track.touches.active -= e.changedTouches.length;
 
+        // if there are no remaining touches, then reset the touch interaction
+        if (this.track.touches.active === 0) {
+          resetTouchInteraction();
+          return 'updateState';
+        }
+
+        // cancel tap and return whatever touchtapcancel says todo
+        return this.handleTouchEvent({ type: 'touchtapcancel' });
+
+      // cancel tap for this touch interaction
       case 'touchtapcancel':
+        // clear the touchTapTimer if it's running
+        if (this.track.timeoutIDs.touchTapTimer) {
+          window.clearTimeout(this.track.timeoutIDs.touchTapTimer);
+          delete this.track.timeoutIDs.touchTapTimer;
+        }
         if (this.track.touchDown) {
-          this.track.touches.canceled = true;
+          // set the tap event to canceled
+          this.track.touches.tapCanceled = true;
           if (this.p.props.touchActiveTapOnly) {
+            // if touchActiveTapOnly prop, exit the touchActive state and updateState
             this.track.touchDown = false;
             return 'updateState';
           }
