@@ -22,14 +22,17 @@ function updateTouch(e) {
   if (e.type === 'touchstart') {
     input.touch.touchOnScreen = true;
     input.mouse.mouseOnDocument = false;
-  } else if (e.touches.length === 0) {
-    input.touch.touchOnScreen = false;
+  } else if (e.type === 'touchend' || e.type === 'touchcancel') {
     input.touch.recentTouch = true;
     if (touchTimerID) window.clearTimeout(touchTimerID);
     touchTimerID = window.setTimeout(() => {
       input.touch.recentTouch = false;
       touchTimerID = null;
     }, 600);
+  }
+
+  if (e.touches.length === 0) {
+    input.touch.touchOnScreen = false;
   }
 }
 
