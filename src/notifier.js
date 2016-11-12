@@ -1,10 +1,29 @@
-import detectIt from 'detect-it';
-import { passiveEventSupport } from './constants';
+import { deviceType, hasTouchEventsApi, mouseEvents, touchEvents, passiveEventSupport,
+  dummyEvent } from './constants';
 
+// list of callbacks that are called every time the event fires
+// {
+//   eventA: cbFunction,
+//   eventB: cbFunction,
+// }
 const notifyOfAllSubs = {};
+
+// list of callbacks that are called only for the next event and then deleted
+// {
+//   eventA: [{ id: 1, callback: cbFunction }, { id: 2, callback: cbFunction }],
+//   eventB: [{ id: 3, callback: cbFunction }, { id: 4, callback: cbFunction }],
+// }
 const notifyOfNextSubs = {};
+
+// list of sub IDs with corresponding index in notifyOfNextSubs array for easy cancelation of sub
+// {
+//   event: { id: indexInNotifyOfNextSubsArray },
+//   eventA: { 1: 0, 2: 1 },
+//   eventB: { 3: 0, 4: 1 },
+// }
 const subsIDs = {};
 
+// generate unique ID
 let idPlace = 0;
 function nextID(eType) {
   if (idPlace === Number.MAX_SAFE_INTEGER) idPlace = 0;
@@ -13,29 +32,39 @@ function nextID(eType) {
   return nextID(eType);
 }
 
+// subscribe to notifyOfNext, returns the ID of the subscription so it can be canceled
 export function notifyOfNext(eType, callback) {
   const id = nextID(eType);
   subsIDs[eType][id] = notifyOfNextSubs[eType].push({ id, callback }) - 1;
   return id;
 }
 
+// cancel an already existing subscription
+const blankFunction = () => {};
 export function cancelNotifyOfNext(eType, id) {
   if (subsIDs[eType][id] !== 'undefined') {
-    notifyOfNextSubs[eType][subsIDs[eType][id]].callback = () => {};
+    notifyOfNextSubs[eType][subsIDs[eType][id]].callback = blankFunction;
     delete subsIDs[eType][id];
   }
 }
 
+// subscribe to notifyOfAll, only used by inputTracker
 export function notifyOfAll(eTypes, callback) {
   eTypes.forEach((eType) => {
     notifyOfAllSubs[eType] = callback;
   });
 }
 
-function eventHandler(e) {
-  notifyOfAllSubs[e.type] && notifyOfAllSubs[e.type](e);
+// notify all when event comes in
+function handleNotifyAll(e) {
+  notifyOfAllSubs[e.type](e);
+}
+
+// notify next when event comes, if the callback returns 'reNotifyOfNext', then re-subscribe
+// using the same id
+function handleNotifyNext(e) {
   if (notifyOfNextSubs[e.type].length === 0) return;
-  e.persist = () => {};
+  e.persist = blankFunction;
   const reNotifyOfNext = [];
   const reNotifyOfNextIDs = {};
   notifyOfNextSubs[e.type].forEach((sub) => {
@@ -47,41 +76,55 @@ function eventHandler(e) {
   subsIDs[e.type] = reNotifyOfNextIDs;
 }
 
-function setupEvent(element, eType, capture) {
+function handleNotifyAllAndNext(e) {
+  handleNotifyAll(e);
+  handleNotifyNext(e);
+}
+
+// setup event listeners and notification system for events
+function setupEvent(element, eType, handler, capture) {
   notifyOfNextSubs[eType] = [];
   subsIDs[eType] = {};
-  // const useCapture = (eType !== 'mouseenter') && (eType !== 'mouseleave');
-  element.addEventListener(eType, eventHandler, passiveEventSupport ? {
+  element.addEventListener(eType, handler, passiveEventSupport ? {
     capture,
     passive: true,
   } : capture);
 }
 
-if (detectIt.hasTouchEventsApi) {
-  ['touchstart', 'touchend', 'touchcancel'].forEach((eType) => {
-    setupEvent(document, eType, true);
+// if the device has touch, then setup event listeners for touch events
+if (hasTouchEventsApi) {
+  Object.keys(touchEvents).forEach((eType) => {
+    setupEvent(document, eType, handleNotifyAll, true);
   });
 }
 
-if (detectIt.deviceType !== 'touchOnly') {
-  ['mouseenter', 'mouseleave', 'mousemove', 'mousedown', 'mouseup', 'scroll'].forEach((eType) => {
-    setupEvent(document, eType, !(eType === 'mouseenter' || eType === 'mouseleave'));
+// if the device has a mouse, then setup event listeners for mouse events,
+// see manageNotifyOfNext and handleNotifyOfNext in index.js for more info
+// on why a specific listener is set
+if (deviceType !== 'touchOnly') {
+  Object.keys(mouseEvents).forEach((eType) => {
+    setupEvent(document, eType,
+      eType === 'mouseenter' ? handleNotifyAllAndNext : handleNotifyAll,
+      // don't use capture for enter/leave so the event only fires when the mouse leaves the doc
+      !(eType === 'mouseenter' || eType === 'mouseleave')
+    );
   });
+
+  setupEvent(document, 'dragstart', handleNotifyNext, true);
+
+  if (passiveEventSupport) {
+    setupEvent(document, 'scroll', handleNotifyNext, true);
+  }
 
   notifyOfNextSubs.mutation = [];
   subsIDs.mutation = {};
-  const mutationEvent = {
-    type: 'mutation',
-    persist: () => {},
-    preventDefault: () => {},
-    stopPropagation: () => {},
-  };
-  const observer = new MutationObserver(eventHandler.bind(null, mutationEvent));
-  observer.observe(document, { childList: true, attributes: true, subtree: true });
+  const mutationEvent = dummyEvent('mutation');
+  const observer = new MutationObserver(handleNotifyNext.bind(null, mutationEvent));
+  const body = document.getElementsByTagName('body')[0];
+  observer.observe(body, { childList: true, attributes: true, subtree: true, characterData: true });
 }
 
-setupEvent(document, 'dragstart', true);
-
+// always set focus/blur listener on the window so know when leave/enter the app/window/tab
 ['focus', 'blur'].forEach((eType) => {
-  setupEvent(window, eType, false);
+  setupEvent(window, eType, handleNotifyNext, false);
 });
