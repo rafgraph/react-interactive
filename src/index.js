@@ -287,6 +287,7 @@ class ReactInteractive extends React.Component {
     return newState;
   }
 
+  // check the mouse position relative to the RI element on the page
   checkMousePosition() {
     if (deviceType === 'touchOnly') return null;
 
@@ -309,6 +310,9 @@ class ReactInteractive extends React.Component {
     } else if (!this.p.props.checkDOMChildren) {
       mouseOn = mouseOnNode(this.topNode);
     } else {
+      // if the checkDOMChildren prop is present, then do a recursive check of the node and its
+      // children until the mouse is on a node or all children are checked,
+      // this is useful when the children aren't inside of the parent on the page
       const recursiveCheck = (node) => {
         if (mouseOnNode(node)) return true;
         for (let i = 0; i < node.children.length; i++) {
@@ -319,6 +323,7 @@ class ReactInteractive extends React.Component {
       mouseOn = recursiveCheck(this.topNode);
     }
 
+    // set appropriate track properties and return mouseOn/Off
     if (mouseOn) {
       this.track.mouseOn = true;
       this.track.buttonDown = input.mouse.buttons === 1;
