@@ -43,7 +43,6 @@
   - [Installing `react-interactive`](#installing-react-interactive)
 - [API](#api)
   - [API for `<Interactive />`](#api-for-interactive-)
-  - [Order That Callbacks Are Called In](#order-that-callbacks-are-called-in)
   - [Merging Styles and Classes](#merging-styles-and-classes)
   - [`as` Prop Type](#as-prop-type)
   - [`state` Object](#state-object)
@@ -156,7 +155,7 @@ For the definition of when each state is entered, see the [state machine definit
 | Prop | Type | Example | Description |
 |:-----|:-----|:--------|:------------|
 | `as` | string (html tag name) <br /> or <br /> ReactComponent <br> or <br> JSX/ReactElement | `"div"` <br> or <br> `MyComponent` <br> or <br> `<div>...</div>` | What the Interactive component is rendered as. It can be an html tag name (as a string), or it can be a ReactComponent (Interactive's callbacks are passed down as props to the component), or it can be a JSX/ReactElement (see [`as` prop type](#as-prop-type) notes for more info). Note that `as` is hot-swappable on each render and Interactive will seamlessly maintain the current interactive state. The `as` prop is required (it is the only required prop). |
-| `normal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: { color: 'black' }, className: 'some-clase', onEnter: function(state){...}, onLeave: function(state){...}, }` <br> or <br> `'hover'` | Style or options object for the `normal` state, or a string indicating a state to match. If it's an object, it can be either a style object or an options object with any of these four keys: `style`, `className`, `onEnter`, `onLeave`. The `style` object is merged with both the `style` prop and the focus state `style` (see [merging styles](#merging-styles-and-classes) for the order that styles are merged in). The `className` is a string of space separated class names and is merged as a union with the `className` prop and the focus state `className`. The `onEnter` and `onLeave` functions are called when transitioning to and from the state, respectively, and receive the state as a string, `'normal'`, as their only argument. If the value of the `normal` prop is a string, it must indicate one of the other states, e.g. `'hover'`, and that state's `style` and `className` properties will be used for both states (note that the callbacks are only used for the state they are defined on). |
+| `normal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: { color: 'black' }, className: 'some-clase' }` <br> or <br> `'hover'` | Style or options object for the `normal` state, or a string indicating a state to match. If it's an object, it can be either a style object or an options object with the keys: `style` and `className`. The `style` object is merged with both the `style` prop and the focus state `style` (see [merging styles](#merging-styles-and-classes) for the order that styles are merged in). The `className` is a string of space separated class names and is merged as a union with the `className` prop and the focus state `className`. If the value of the `normal` prop is a string, it must indicate one of the other states, e.g. `'hover'`, and that state's `style` and `className` properties will be used for both states. |
 | `hover` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'green' }` <br> or... (same as above) | Same as `normal`, but for the `hover` state. Note that if there is no `hoverActive` or `active` prop, then the `hover` prop's style and classes are used for the `hoverActive` state. |
 | `active` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `normal`, but for the `active` state. Note that the `active` state is the union of the `hoverActive`, `touchActive`, and `keyActive` states. The `active` prop is only used in place of the `[type]Active` prop if the respective `[type]Active` prop is not present. |
 | `hoverActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `normal`, but for the `hoverActive` state. Note that if there is no `hoverActive` or `active` prop, then the `hover` prop's style and classes are used for the `hoverActive` state. |
@@ -165,7 +164,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `focus` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ border: '2px dotted green' }` <br> or... (same as above), <br> or see the [`focusFrom` API](#focusfrom-api) for additional options | Same as `normal`, but for the `focus` state, or see the [`focusFrom` API](#focusfrom-api) for additional options. The focus state can be applied to any element, not just inputs, and will toggle on click/tap unless the element is for user input. |
 | `style` | style object | `{ margin: '10px' }` | Styles that are always applied. Styles are merged with state styles. State styles have priority when there are conflicts. |
 | `className` | string | `"some-class other-class"` | Classes that are always applied to the element, and are merged as a union with state classes. |
-| `onStateChange` | function | `function({ prevState, nextState, event }) {...}` | Function called on each state change. Receives an object with `prevState`, `nextState` and `event` keys as the sole argument. `prevState` and `nextState` are [state objects](#state-object). The `event` is the event that caused the state change (a synthetic React event). `onStateChange` will be called immediately before the `onEnter` and `onLeave` callbacks for each state. |
+| `onStateChange` | function | `function({ prevState, nextState, event }) {...}` | Function called on each state change. Receives an object with `prevState`, `nextState` and `event` keys as the sole argument. `prevState` and `nextState` are [state objects](#state-object). The `event` is the event that caused the state change (a synthetic React event). |
 | `setStateCallback` | function | `function({ prevState, nextState }) {...}` | Function passed in as a callback to `setState`. Receives the same object as `onStateChange` as its sole argument, except without the `event` key (`setState` is asynchronous and React events don't persist asynchronously). Use this hook if you need  to wait until the DOM is updated before executing the callback. |
 | `forceState` | state object | `{ iState: 'normal', focus: false, focusFrom: undefined }` | Force enter this state. A [state object](#state-object) with keys for one or both of `iState` and `focus`, as well as `focusFrom` if focus is true (defaults to `'tab'` if not provided). If only one key is present, a shallow merge is done with the current state, for example, use `{ focus: true }` to only focus the element. Note that for an `active` `iState`, you must specify `[type]Active` and not just `active`. Note that `forceState` is not used for the initial render (it is only used in `componentWillReceiveProps`). |
 | `initialState` | state object | `{ iState: 'normal', focus: true, focusFrom: 'tab' }` | Optional initial state to enter when the component is created. Same as `forceState` except used in the `constructor` to set `iState` and in `componentDidMount` to set `focus` (RI can't set focus until after it has a reference to the DOM node). |
@@ -181,16 +180,6 @@ For the definition of when each state is entered, see the [state machine definit
 | `checkDOMChildren` | boolean |   `checkDOMChildren` | Add this prop if the DOM node's children are not contained inside of it on the page. For example, a child that is absolutely positioned outside of its parent. React Interactive does some quality control checks using `node.getBoundingClientRect()`, and by default the children are assumed to be within the parent's rectangle, but if this is not the case, then add this prop and the children will be checked. |
 | `mutableProps` |  | `mutableProps` | By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you are passing in mutable props, add the `mutableProps` prop, and the component will always update. If you're not sure and notice buggy behavior, then add this property. |
 | `...` | anything | `id="some-id"`, `tabIndex="1"`, etc... | All additional props received are passed through. |
-
-#### Order That Callbacks Are Called In
-1. Event callbacks are called first:
-  1. `onMouseClick`, `onTap`, or `onEnterKey` (mutually exclusive)
-  * `onClick`
-* `onStateChange`
-* `onLeave` and `onEnter` state hooks
-* `setStateCallback` is passed in as a callback to `setState`, and is called after `setState` finishes
-
-Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`, etc..., they will be called before React Interactive changes its state and calls any of its callbacks.
 
 #### Merging Styles and Classes
 - Styles are merged in the following order (last one takes precedence):
@@ -270,11 +259,6 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
       focusFromTabClassName: 'tab-focus-class',
       focusFromMouseClassName: 'mouse-focus-class',
       focusFromTouchClassName: 'touch-focus-class',
-
-      // enter/leave state hooks receive the string 'focus' (the state) as the first
-      // argument, and focusFrom ('tab', 'mouse', or 'touch') as the second argument
-      onEnter: function(state, focusFrom) {...},
-      onLeave:  function(state, focusFrom) {...},
     }}
   >Interactive div with separate focus from styles</Interactive>
 ```
@@ -298,7 +282,7 @@ Note that if you pass in other event handlers, e.g. `onMouseDown`, `onTouchEnd`,
   - To use the `WebkitTapHighlightColor` for styling, don't provide a `touchActive` or `active` prop and set the `WebkitTapHighlightColor` style in the main `style` prop.
 
 ## Interactive State Machine Comparison
-Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and on enter/leave state hooks.
+Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and state change hooks.
 - Let's define some basic mouse, touch, and keyboard states:
   - `mouseOn`: the mouse is on the element
   - `buttonDown`: the mouse button is down while the mouse is on the element
@@ -340,7 +324,7 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 
 #### React Interactive Advantages Over CSS
 - A simpler state machine (CSS selectors make for messy state machines)
-- Enter/leave state hooks
+- State change hooks
 - Separate active states for each type of interaction - `hoverActive`, `touchActive`, and `keyActive`
 - Separate styles for the focus state based on how it was entered (see the [`focusFrom` API](#focusfrom-api)) - `focusFromTab`, `focusFromMouse`, and `focusFromTouch`
 - Toggle focus on click/tap (unless the element is for user input)
