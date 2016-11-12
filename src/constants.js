@@ -47,7 +47,7 @@ export const stateProps = {
   focus: true,
 };
 
-export const iStateOptionsKeys = ['style', 'className', 'onEnter', 'onLeave'];
+export const iStateOptionsKeys = ['style', 'className'];
 
 export const focusOptionsKeys = [
   ...iStateOptionsKeys,

@@ -476,18 +476,6 @@ class ReactInteractive extends React.Component {
     // call onStateChange prop callback
     props.onStateChange && props.onStateChange({ prevState, nextState, event });
 
-    // call onEnter and onLeave callbacks
-    if (iStateChange) {
-      props[prevIState] && props[prevIState].onLeave && props[prevIState].onLeave(prevIState);
-      props[nextIState] && props[nextIState].onEnter && props[nextIState].onEnter(nextIState);
-    }
-    if (focusChange) {
-      const transition = newState.focus ? 'onEnter' : 'onLeave';
-      const focusFrom = newState.focus ? newState.focusFrom : prevState.focusFrom;
-      props.focus && props.focus[transition] &&
-      props.focus[transition]('focus', focusFrom);
-    }
-
     // track new state because setState is asyncrounous
     this.track.state = newState;
 

@@ -12,8 +12,6 @@ function statePropsExcept(state) {
 const iStateOptionsObjectShape = {
   style: PropTypes.object,
   className: PropTypes.string,
-  onEnter: PropTypes.func,
-  onLeave: PropTypes.func,
 };
 
 const focusOptionsObjectShape = {
