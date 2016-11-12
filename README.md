@@ -22,9 +22,9 @@
   focus={{ outline: '2px solid green' }}
   // OR
   focus={{
-    focusFromTabStyle: { outline: '2px solid orange' }
-    focusFromMouseStyle: { outline: '2px solid green' }
-    focusFromTouchStyle: { outline: '2px solid blue' }
+    focusFromTabStyle: { outline: '2px solid orange' },
+    focusFromMouseStyle: { outline: '2px solid green' },
+    focusFromTouchStyle: { outline: '2px solid blue' },
   }}
 
   // hook called on every state change, receives prevState and nextState objects
