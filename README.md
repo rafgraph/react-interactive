@@ -2,9 +2,9 @@
 
 [Live example](http://react-interactive.rafrex.com)
 - Use **inline styles for all interactive states** - `hover`, `active`, `focus`, etc... (no style tags or CSS added to the page)
-- Separate `active` states for mouse, touch, and keyboard interactions
-- Separate styles for the `focus` state based on how it was entered - from mouse, touch, or tab key
-- State change callback to easily incorporate the interactive state into your component
+- Separate `active` states for mouse, touch, and keyboard interactions (not possible with CSS)
+- Separate styles for the `focus` state based on how it was entered - from mouse, touch, or tab key (not possible with CSS)
+- State change hook to easily incorporate the interactive state into your component (not possible with CSS)
 
 
 ```javascript
@@ -61,7 +61,7 @@ Compared to CSS, React Interactive is a simpler state machine with better touch 
   style={{ fontSize: '16px', padding: '3px', border: '2px dotted black' }}
   onClick={this.handleClick}
   onStateChange={this.handleInteractiveStateChange}
->This is an interactive and focusable div</Interactive>
+>This is an interactive div with state change hook</Interactive>
 ```
 ```javascript
 // Interactive as a React Router Link component
