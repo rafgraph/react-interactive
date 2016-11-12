@@ -334,6 +334,9 @@ class ReactInteractive extends React.Component {
 
     switch (e.type) {
       case 'scroll':
+      case 'mouseenter':
+      case 'mutation':
+        // check mouse position, if it's still on RI, then reNotifyOfNext, else updateDate
         if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
           return 'reNotifyOfNext';
         }
@@ -353,19 +356,14 @@ class ReactInteractive extends React.Component {
         }, 30);
         break;
 
-      case 'mouseenter':
-      case 'mutation':
-        if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
-          return 'reNotifyOfNext';
-        }
-        updateState = true;
-        break;
-
+      // window focus event
       case 'focus':
         // if the window focus event is not followed by an element focus event, then reset focusFrom
-        this.manageSetTimeout('windowFocus', () => {
-          this.track.focusFrom = 'reset';
-        }, 600);
+        if (this.track.focusFrom !== 'reset') {
+          this.manageSetTimeout('windowFocus', () => {
+            this.track.focusFrom = 'reset';
+          }, 600);
+        }
         break;
 
       // window blur event to preserve the focusFrom state
