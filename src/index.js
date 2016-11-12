@@ -56,9 +56,6 @@ class ReactInteractive extends React.Component {
     this.tagName = '';
     this.type = '';
 
-    // keep track of what event handlers are set, updated in setupEventHandlers
-    this.mouseEventListeners = false;
-    this.touchEventListeners = false;
     // the event handlers to pass down as props to the element/component
     this.eventHandlers = this.setupEventHandlers();
 
@@ -158,14 +155,12 @@ class ReactInteractive extends React.Component {
     });
 
     if (hasTouchEventsApi) {
-      this.touchEventListeners = true;
       Object.keys(touchEvents).forEach((event) => {
         eventHandlers[touchEvents[event]] = this.handleEvent;
       });
     }
     // if the device is mouseOnly or hybrid, then set mouse listeners
     if (deviceType !== 'touchOnly') {
-      this.mouseEventListeners = true;
       Object.keys(mouseEvents).forEach((event) => {
         eventHandlers[mouseEvents[event]] = this.handleEvent;
       });
@@ -293,7 +288,7 @@ class ReactInteractive extends React.Component {
   }
 
   checkMousePosition() {
-    if (!this.mouseEventListeners) return null;
+    if (deviceType === 'touchOnly') return null;
 
     const mouseX = input.mouse.clientX;
     const mouseY = input.mouse.clientY;
@@ -394,7 +389,7 @@ class ReactInteractive extends React.Component {
   mangageNotifyOfNext(newState) {
     if (newState.iState !== 'normal' && !this.track.drag) {
       ['scroll', 'dragstart', 'mouseenter'].forEach((eType) => {
-        if ((eType !== 'mouseenter' && eType !== 'scroll') || this.mouseEventListeners) { // TODO better way to handle mousenter
+        if ((eType !== 'mouseenter' && eType !== 'scroll') || deviceType !== 'touchOnly') { // TODO better way to handle mousenter
           if (!this.track.notifyOfNext[eType]) {
             this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
           }
@@ -402,7 +397,7 @@ class ReactInteractive extends React.Component {
       });
     } else {
       ['scroll', 'dragstart', 'mouseenter'].forEach((eType) => {
-        if ((eType !== 'mouseenter' && eType !== 'scroll') || this.mouseEventListeners) { // TODO better way to handle mousenter
+        if ((eType !== 'mouseenter' && eType !== 'scroll') || deviceType !== 'touchOnly') { // TODO better way to handle mousenter
           if (this.track.notifyOfNext[eType]) {
             cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
             delete this.track.notifyOfNext[eType];
@@ -491,7 +486,7 @@ class ReactInteractive extends React.Component {
     } else if (touchEvents[e.type] || e.type === 'touchmove' || e.type === 'touchtapcancel') {
       if (this.handleTouchEvent(e) === 'terminate') return;
     } else if (e.type === 'click') {
-      if (this.touchEventListeners && !this.mouseEventListeners) {
+      if (deviceType === 'touchOnly') {
         if (this.handleTouchEvent(e) === 'terminate') return;
       } else if (this.handleMouseEvent(e) === 'terminate') return;
     } else if (this.handleOtherEvent(e) === 'terminate') return;
@@ -522,7 +517,7 @@ class ReactInteractive extends React.Component {
     }
 
     // touchOnly device
-    if (this.touchEventListeners && !this.mouseEventListeners) {
+    if (deviceType === 'touchOnly') {
       if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
       this.p.props.touchActive || this.track.recentTouch)) {
         e.stopPropagation();
@@ -539,7 +534,7 @@ class ReactInteractive extends React.Component {
     }
 
     // hybrid device
-    if (this.touchEventListeners && this.mouseEventListeners) {
+    if (deviceType === 'hybrid') {
       if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
       this.p.props.touchActive || this.track.recentTouch)) {
         e.stopPropagation();
@@ -1051,15 +1046,13 @@ class ReactInteractive extends React.Component {
     if (className) props.className = className;
 
     // only set onClick listener if it's required
-    if (this.p.props.onClick || (this.mouseEventListeners && this.p.props.onMouseClick) ||
-    (this.touchEventListeners &&
-      (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex)
-    )) {
+    if (this.p.props.onClick || (deviceType !== 'touchOnly' && this.p.props.onMouseClick) ||
+    (hasTouchEventsApi && (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex))) {
       props.onClick = this.handleEvent;
     }
 
     //  only set onTouchMove listener if it's required
-    if (this.touchEventListeners && (this.p.props.touchActiveTapOnly || this.p.props.onTouchMove)) {
+    if (hasTouchEventsApi && (this.p.props.touchActiveTapOnly || this.p.props.onTouchMove)) {
       props.onTouchMove = this.handleEvent;
     }
 
