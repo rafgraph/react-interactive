@@ -508,7 +508,7 @@ class ReactInteractive extends React.Component {
 
     // if the focusTransition is a force blur and RI is not currently in the focus state,
     // then the force blur is to keep the browser focus state in sync with RI's focus state,
-    // so reset the focusTransition and return 'terminate', no need to do anything
+    // so reset the focusTransition and return false, no need to do anything
     // else because the blur event was only for the benefit of the browser, not RI
     if (e.type === 'blur' && this.track.focusTransition === 'focusForceBlur' && !this.track.state.focus) {
       e.stopPropagation();
@@ -516,13 +516,18 @@ class ReactInteractive extends React.Component {
       return false;
     }
 
-    // touchOnly device
-    if (deviceType === 'touchOnly') {
+    // if the device is touchOnly or a hybrid
+    if (deviceType !== 'mouseOnly') {
+      // reject click events that are from touch interactions,
+      // unless no active or touchActive props, then only reject if recent touch on RI,
+      // this allows for edge taps that don't fire touch events on RI (only click events)
+      // so the click event is allowed through when WebkitTapHightlightColor indicates a click
       if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
       this.p.props.touchActive || this.track.recentTouch)) {
         e.stopPropagation();
         return false;
       }
+      // reject unknown focus events from touch interactions
       if (e.type === 'focus') {
         if (this.track.focusTransition === 'reset' && (input.touch.recentTouch ||
         (!this.track.touchDown && input.touch.touchOnScreen))) {
@@ -533,26 +538,14 @@ class ReactInteractive extends React.Component {
       }
     }
 
-    // hybrid device
     if (deviceType === 'hybrid') {
-      if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
-      this.p.props.touchActive || this.track.recentTouch)) {
-        e.stopPropagation();
-        return false;
-      }
+      // reject mouse events from touch interactions
       if (/mouse/.test(e.type) && (input.touch.touchOnScreen || input.touch.recentTouch)) {
         e.stopPropagation();
         return false;
       }
-      if (e.type === 'focus') {
-        if (this.track.focusTransition === 'reset' && (input.touch.recentTouch ||
-        (!this.track.touchDown && input.touch.touchOnScreen))) {
-          e.stopPropagation();
-          this.manageFocus('focusForceBlur');
-          return false;
-        }
-      }
     }
+
     return true;
   }
 
