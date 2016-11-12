@@ -574,23 +574,25 @@ class ReactInteractive extends React.Component {
 
   // check to see if a focusTransition is necessary and update this.track.focusTransition
   // returns 'terminate' if handleEvent should terminate, returns 'updateState'
-  // if hanldeEvent should continue and call updateState this time through
+  // if handleEvent should continue and call updateState this time through
   // focus event lifecycle:
   // - browser calls focus -> onFocus listener triggered
-  // - RI calls focus -> set track.focusTransition to transition type -> onFocus listener triggered
-  // - RI focus event handler uses track.focusTransition to determine if the focus event is:
-  //   - sent from RI to keep browser focus in sync with RI -> reset focusTransition -> end
-  //   - errant -> call blur to keep browser in sync, set focusTransition to focusForceBlur -> end
-  //   - sent from RI -> reset focusTransition -> RI enters the focus state
-  //   - sent from browser -> set focusTransition to browserFocus -> RI enters the focus state
+  // - RI calls focus (using manageFocus) -> set focusTransition -> onFocus listener triggered
+  // - RI event handler uses track.focusTransition to determine if the focus event is:
+  //   - not a valid event (in isValidEvent)
+  //     - sent from RI to keep browser focus in sync with RI -> reset focusTransition -> end
+  //     - errant -> call blur to keep browser in sync, set focusTransition to focusForceBlur -> end
+  //   - a valid event
+  //     - sent from RI -> reset focusTransition -> RI enters the focus state w/ focusFrom
+  //       based on the focusTransition
+  //     - sent from browser -> RI enters the focus state w/ focusFrom set to 'tab'
   // - browser calls blur -> onBlur listener triggered
-  // - RI calls blur -> set track.focusTransition to transition type -> onBlur listener triggered
-  // - RI blur event handler uses track.focusTransition to determine if the blur event is:
-  //   - a force blur to keep the browser focus state in sync -> reset focusTransition -> end
-  //     (if it's a force blur meant for both RI and the browser, then it proceeds normally)
-  //   - eveything else -> reset focusTransition (unless it's touchTapBlur) -> RI leaves focus state
-  //     (don't reset touchTapBlur focusTransition because focus event handler uses it to detect a
-  //     subsequent errant focus event sent by the browser)
+  // - RI calls blur (using manageFocus) -> set focusTransition -> onBlur listener triggered
+  // - RI event handler uses track.focusTransition to determine if the blur event is:
+  //   - not a valid event (in isValidEvent)
+  //     - a force blur to keep the browser focus state in sync -> reset focusTransition -> end
+  //       (if it's a force blur meant for both RI and the browser, then it's a valid event)
+  //   - eveything else -> reset focusTransition -> RI leaves focus state
   manageFocus(type) {
     // is the DOM node tag blurable, the below tags won't be blurred by RI
     const tagIsBlurable =
