@@ -287,169 +287,6 @@ class ReactInteractive extends React.Component {
     return newState;
   }
 
-  // check the mouse position relative to the RI element on the page
-  checkMousePosition() {
-    if (deviceType === 'touchOnly') return null;
-
-    const mouseX = input.mouse.clientX;
-    const mouseY = input.mouse.clientY;
-    function mouseOnNode(node) {
-      const rect = node.getBoundingClientRect();
-      return (
-        mouseX >= (rect.left - 1) &&
-        mouseX <= (rect.right + 1) &&
-        mouseY >= (rect.top - 1) &&
-        mouseY <= (rect.bottom + 1)
-      );
-    }
-
-    let mouseOn = true;
-
-    if (!input.mouse.mouseOnDocument) {
-      mouseOn = false;
-    } else if (!this.p.props.checkDOMChildren) {
-      mouseOn = mouseOnNode(this.topNode);
-    } else {
-      // if the checkDOMChildren prop is present, then do a recursive check of the node and its
-      // children until the mouse is on a node or all children are checked,
-      // this is useful when the children aren't inside of the parent on the page
-      const recursiveCheck = (node) => {
-        if (mouseOnNode(node)) return true;
-        for (let i = 0; i < node.children.length; i++) {
-          if (recursiveCheck(node.children[i])) return true;
-        }
-        return false;
-      };
-      mouseOn = recursiveCheck(this.topNode);
-    }
-
-    // set appropriate track properties and return mouseOn/Off
-    if (mouseOn) {
-      this.track.mouseOn = true;
-      this.track.buttonDown = input.mouse.buttons === 1;
-      return 'mouseOn';
-    }
-    this.track.mouseOn = false;
-    this.track.buttonDown = false;
-    return 'mouseOff';
-  }
-
-  handleNotifyOfNext = (e) => {
-    let updateState = false;
-
-    switch (e.type) {
-      case 'scroll':
-      case 'mouseenter':
-      case 'mutation':
-        // check mouse position, if it's still on RI, then reNotifyOfNext, else updateState
-        if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
-          return 'reNotifyOfNext';
-        }
-        updateState = true;
-        break;
-
-      case 'dragstart':
-        // use setTimeout because notifier drag event will fire before the drag event on RI,
-        // so w/o timeout when this intance of RI is dragged it would go:
-        // active -> force normal from notifier drag -> active from RI's drag event,
-        // but the timeout will allow time for RI's drag event to fire before force normal
-        this.manageSetTimeout('dragstart', () => {
-          if (!this.track.drag) {
-            this.forceTrackIState('normal');
-            this.updateState(this.computeState(), this.p.props, e, true);
-          }
-        }, 30);
-        break;
-
-      // window focus event
-      case 'focus':
-        // if the window focus event is not followed by an element focus event, then reset focusFrom
-        if (this.track.focusFrom !== 'reset') {
-          this.manageSetTimeout('windowFocus', () => {
-            this.track.focusFrom = 'reset';
-          }, 600);
-        }
-        break;
-
-      // window blur event to preserve the focusFrom state
-      case 'blur':
-        // clear the timer set in mangageNotifyOfNext that was set to cancel this notification
-        window.clearTimeout(this.track.timeoutIDs.elementBlur);
-        delete this.track.timeoutIDs.elementBlur;
-        // notifiy of the next window focus event (re-entering the app/window/tab)
-        this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
-        // reinstate focusFrom to it's previous value to preserve the focusFrom state
-        this.track.focusFrom = this.track.previousFocusFrom;
-        break;
-      default:
-    }
-
-    if (updateState) this.updateState(this.computeState(), this.p.props, e, true);
-    delete this.track.notifyOfNext[e.type];
-    return null;
-  }
-
-  // notifyOfNext plugs the holes in the events fired by the browser on the RI element,
-  // in some situations the browser fails to fire the necessary event leaving RI stuck
-  // in the wrong state (a not normal iState), so sign up to be notified of the next global event
-  // and do some checks (in handleNotifyOfNext) to confirm RI is in the correct state,
-  // note that notifyOfNext only while not in the normal state makes the notifier O(1) instead of
-  // O(n), where n is the number of mounted RI components
-  mangageNotifyOfNext(newState) {
-    // set notifyOfNext
-    const setNON = (eType) => {
-      if (!this.track.notifyOfNext[eType]) {
-        this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
-      }
-    };
-    // cancel notifyOfNext
-    const cancelNON = (eType) => {
-      if (this.track.notifyOfNext[eType]) {
-        cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
-        delete this.track.notifyOfNext[eType];
-      }
-    };
-
-    if (deviceType !== 'touchOnly') {
-      // if not in the normal state, then set notifyOfNext, otherwise cancel
-      const shouldSetNON = newState.iState !== 'normal' && !this.track.drag;
-
-      // check mouse position on document mouseenter to prevent from sticking in
-      // the hover state after switching to another app/window, moving the mouse,
-      // and then switching  back (so the mouse is no longer over the element)
-      shouldSetNON ? setNON('mouseenter') : cancelNON('mouseenter');
-
-      // the dragstart event on an element fires after a short delay, so it is possible to
-      // start dragging an element and have the mouseenter another element putting it in the
-      // hoverActive state before the dragstart event fires (after the dragstart event
-      // no other mouse events are fired), so sign up for next global dragstart to force intro
-      // normal state while another element is being dragged
-      shouldSetNON ? setNON('dragstart') : cancelNON('dragstart');
-
-      // the scroll listener provides a minor improvement to accuracy by exiting the hover state
-      // as soon as the mouse is scrolled off an element instead of waiting for the scrolling to end
-      // only set as a passive event as the improvement is not worth it if it hurts performance
-      if (passiveEventSupport) {
-        shouldSetNON ? setNON('scroll') : cancelNON('scroll');
-      }
-
-      // if the mouse is on RI, then sign up for next DOM mutation event, which could
-      // move the mouse off of RI (by changing the layout of the page)
-      // without firing a mouseleave event (because the mouse never moved)
-      this.track.mouseOn ? setNON('mutation') : cancelNON('mutation');
-    }
-
-    // notify of next setup for maintaining correct focusFrom when switching apps/windows,
-    // if exiting the focus state, notify of the next window blur (leaving the app/window/tab)
-    // event if it immediately follows this event, otherwise cancel the notify of next
-    if (this.track.state.focus && !newState.focus) {
-      setNON('blur');
-      this.manageSetTimeout('elementBlur', () => {
-        cancelNON('blur');
-      }, 600);
-    }
-  }
-
   // takes a new state, calls setState and the state change callbacks
   updateState(newState, props, event, dontMangageNotifyOfNext) {
     if (!dontMangageNotifyOfNext) this.mangageNotifyOfNext(newState);
@@ -558,6 +395,163 @@ class ReactInteractive extends React.Component {
     }
 
     return true;
+  }
+
+  // notifyOfNext plugs the holes in the events fired by the browser on the RI element,
+  // in some situations the browser fails to fire the necessary event leaving RI stuck
+  // in the wrong state (a not normal iState), so sign up to be notified of the next global event
+  // and do some checks (in handleNotifyOfNext) to confirm RI is in the correct state,
+  // note that notifyOfNext only while not in the normal state makes the notifier O(1) instead of
+  // O(n), where n is the number of mounted RI components
+  mangageNotifyOfNext(newState) {
+    // set notifyOfNext
+    const setNON = (eType) => {
+      if (!this.track.notifyOfNext[eType]) {
+        this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
+      }
+    };
+    // cancel notifyOfNext
+    const cancelNON = (eType) => {
+      if (this.track.notifyOfNext[eType]) {
+        cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
+        delete this.track.notifyOfNext[eType];
+      }
+    };
+
+    if (deviceType !== 'touchOnly') {
+      // if not in the normal state, then set notifyOfNext, otherwise cancel
+      const shouldSetNON = newState.iState !== 'normal' && !this.track.drag;
+
+      // check mouse position on document mouseenter to prevent from sticking in
+      // the hover state after switching to another app/window, moving the mouse,
+      // and then switching  back (so the mouse is no longer over the element)
+      shouldSetNON ? setNON('mouseenter') : cancelNON('mouseenter');
+
+      // the dragstart event on an element fires after a short delay, so it is possible to
+      // start dragging an element and have the mouseenter another element putting it in the
+      // hoverActive state before the dragstart event fires (after the dragstart event
+      // no other mouse events are fired), so sign up for next global dragstart to force intro
+      // normal state while another element is being dragged
+      shouldSetNON ? setNON('dragstart') : cancelNON('dragstart');
+
+      // the scroll listener provides a minor improvement to accuracy by exiting the hover state
+      // as soon as the mouse is scrolled off an element instead of waiting for the scrolling to end
+      // only set as a passive event as the improvement is not worth it if it hurts performance
+      if (passiveEventSupport) {
+        shouldSetNON ? setNON('scroll') : cancelNON('scroll');
+      }
+
+      // if the mouse is on RI, then sign up for next DOM mutation event, which could
+      // move the mouse off of RI (by changing the layout of the page)
+      // without firing a mouseleave event (because the mouse never moved)
+      this.track.mouseOn ? setNON('mutation') : cancelNON('mutation');
+    }
+
+    // notify of next setup for maintaining correct focusFrom when switching apps/windows,
+    // if exiting the focus state, notify of the next window blur (leaving the app/window/tab)
+    // event if it immediately follows this event, otherwise cancel the notify of next
+    if (this.track.state.focus && !newState.focus) {
+      setNON('blur');
+      this.manageSetTimeout('elementBlur', () => {
+        cancelNON('blur');
+      }, 600);
+    }
+  }
+
+  handleNotifyOfNext = (e) => {
+    let updateState = false;
+
+    switch (e.type) {
+      case 'scroll':
+      case 'mouseenter':
+      case 'mutation':
+        // check mouse position, if it's still on RI, then reNotifyOfNext, else updateState
+        if (this.track.mouseOn && this.checkMousePosition() === 'mouseOn') {
+          return 'reNotifyOfNext';
+        }
+        this.track.mouseOn = false;
+        this.track.buttonDown = false;
+        updateState = true;
+        break;
+
+      case 'dragstart':
+        // use setTimeout because notifier drag event will fire before the drag event on RI,
+        // so w/o timeout when this intance of RI is dragged it would go:
+        // active -> force normal from notifier drag -> active from RI's drag event,
+        // but the timeout will allow time for RI's drag event to fire before force normal
+        this.manageSetTimeout('dragstart', () => {
+          if (!this.track.drag) {
+            this.forceTrackIState('normal');
+            this.updateState(this.computeState(), this.p.props, e, true);
+          }
+        }, 30);
+        break;
+
+      // window focus event
+      case 'focus':
+        // if the window focus event is not followed by an element focus event, then reset focusFrom
+        if (this.track.focusFrom !== 'reset') {
+          this.manageSetTimeout('windowFocus', () => {
+            this.track.focusFrom = 'reset';
+          }, 600);
+        }
+        break;
+
+      // window blur event to preserve the focusFrom state
+      case 'blur':
+        // clear the timer set in mangageNotifyOfNext that was set to cancel this notification
+        window.clearTimeout(this.track.timeoutIDs.elementBlur);
+        delete this.track.timeoutIDs.elementBlur;
+        // notifiy of the next window focus event (re-entering the app/window/tab)
+        this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+        // reinstate focusFrom to it's previous value to preserve the focusFrom state
+        this.track.focusFrom = this.track.previousFocusFrom;
+        break;
+      default:
+    }
+
+    if (updateState) this.updateState(this.computeState(), this.p.props, e, true);
+    delete this.track.notifyOfNext[e.type];
+    return null;
+  }
+
+  // check the mouse position relative to the RI element on the page
+  checkMousePosition() {
+    if (deviceType === 'touchOnly') return null;
+
+    const mouseX = input.mouse.clientX;
+    const mouseY = input.mouse.clientY;
+    function mouseOnNode(node) {
+      const rect = node.getBoundingClientRect();
+      return (
+        mouseX >= (rect.left - 1) &&
+        mouseX <= (rect.right + 1) &&
+        mouseY >= (rect.top - 1) &&
+        mouseY <= (rect.bottom + 1)
+      );
+    }
+
+    let mouseOn = true;
+
+    if (!input.mouse.mouseOnDocument) {
+      mouseOn = false;
+    } else if (!this.p.props.checkDOMChildren) {
+      mouseOn = mouseOnNode(this.topNode);
+    } else {
+      // if the checkDOMChildren prop is present, then do a recursive check of the node and its
+      // children until the mouse is on a node or all children are checked,
+      // this is useful when the children aren't inside of the parent on the page
+      const recursiveCheck = (node) => {
+        if (mouseOnNode(node)) return true;
+        for (let i = 0; i < node.children.length; i++) {
+          if (recursiveCheck(node.children[i])) return true;
+        }
+        return false;
+      };
+      mouseOn = recursiveCheck(this.topNode);
+    }
+
+    return mouseOn ? 'mouseOn' : 'mouseOff';
   }
 
   // check to see if a focusTransition is necessary and update this.track.focusTransition
