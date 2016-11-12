@@ -9,9 +9,10 @@
 - Option to use class names instead of inline styles if you prefer to write your styles separately with CSS
 
 ```javascript
-// Interactive and focusable div
+import Interactive from 'react-interactive';
+...
 <Interactive
-  as="div" // what the Interactive component is rendered as
+  as="div" // what the Interactive component is rendered as, can be anything
   hover={{ color: 'green' }}
 
   active={{ color: 'blue' }}
