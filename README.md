@@ -5,7 +5,8 @@
 - Separate `active` states for mouse, touch, and keyboard interactions (not possible with CSS)
 - Separate styles for the `focus` state based on how it was entered - from mouse, touch, or tab key (not possible with CSS)
 - State change hook to easily incorporate the interactive state into your component (not possible with CSS)
-
+- Built in touch device and keyboard support - the `onClick` handler is called on mouse click, touch tap (without delay), and enter keydown
+- Option to use class names instead of inline styles if you prefer to write your styles separately with CSS
 
 ```javascript
 // Interactive and focusable div
