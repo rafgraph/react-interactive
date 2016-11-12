@@ -34,6 +34,35 @@
 >This is an interactive and focusable div</Interactive>
 ```
 
+## Table of Contents
+- [React Interactive](#react-interactive)
+  - [Live Example](http://react-interactive.rafrex.com)
+- [The Basics](#the-basics)
+  - [Interactive State Machine](#interactive-state-machine)
+  - [Basic Examples](#basic-examples)
+  - [Installing `react-interactive`](#installing-react-interactive)
+- [API](#api)
+  - [API for `<Interactive />`](#api-for-interactive-)
+  - [Order That Callbacks Are Called In](#order-that-callbacks-are-called-in)
+  - [Merging Styles and Classes](#merging-styles-and-classes)
+  - [`as` Prop Type](#as-prop-type)
+  - [`state` Object](#state-object)
+  - [`focusFrom` API](#focusfrom-api)
+  - [`focus` State](#focus-state)
+  - [Default Styles](#default-styles)
+- [Interactive State Machine Comparison](#interactive-state-machine-comparison)
+  - [React Interactive State Machine](#react-interactive-state-machine)
+  - [CSS Interactive State Machine](#css-interactive-state-machine)
+  - [React Interactive Advantages Over CSS](#react-interactive-advantages-over-css)
+- [State Machine Notes](#state-machine-notes)
+- [Complex Examples](#complex-examples)
+  - [Using Interactive's State in Parent Component](#using-interactives-state-in-parent-component)
+  - [Show On `hover` and `active`](#show-on-hover-and-active)
+  - [Show On `hover`, `touchActive` and `focusFromTab`](#show-on-hover-touchactive-and-focusfromtab)
+  - [Hot Swappable `as`](#hot-swappable-as)
+
+## The Basics
+#### Interactive State Machine
 Interactive state machine as a React component. There are 5 mutually exclusive states, plus 1 boolean state that can be combined with the other 5.
 - The 5 mutually exclusive states are:
   - `normal`
@@ -117,31 +146,6 @@ $ npm install react-interactive
 ```javascript
 import Interactive from 'react-interactive';
 ```
-
-## Table of Contents
-- [React Interactive](#react-interactive)
-  - [Basic Examples](#basic-examples)
-  - [Installing `react-interactive`](#installing-react-interactive)
-- Table of Contents <= you are here
-- [API](#api)
-  - [API for `<Interactive />`](#api-for-interactive-)
-  - [Order That Callbacks Are Called In](#order-that-callbacks-are-called-in)
-  - [Merging Styles and Classes](#merging-styles-and-classes)
-  - [`as` Prop Type](#as-prop-type)
-  - [`state` Object](#state-object)
-  - [`focusFrom` API](#focusfrom-api)
-  - [`focus` State](#focus-state)
-  - [Default Styles](#default-styles)
-- [Interactive State Machine Comparison](#interactive-state-machine-comparison)
-  - [React Interactive State Machine](#react-interactive-state-machine)
-  - [CSS Interactive State Machine](#css-interactive-state-machine)
-  - [React Interactive Advantages Over CSS](#react-interactive-advantages-over-css)
-- [State Machine Notes](#state-machine-notes)
-- [Complex Examples](#complex-examples)
-  - [Using Interactive's State in Parent Component](#using-interactives-state-in-parent-component)
-  - [Show On `hover` and `active`](#show-on-hover-and-active)
-  - [Show On `hover`, `touchActive` and `focusFromTab`](#show-on-hover-touchactive-and-focusfromtab)
-  - [Hot Swappable `as`](#hot-swappable-as)
 
 ## API
 
