@@ -366,7 +366,7 @@ class ReactInteractive extends React.Component {
     }
 
     // if the device is touchOnly or a hybrid
-    if (deviceType !== 'mouseOnly') {
+    if (hasTouchEventsApi) {
       if (e.type === 'click' && this.track.touchClick) return true;
 
       // reject click events that are from touch interactions,
