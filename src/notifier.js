@@ -96,7 +96,7 @@ if (hasTouchEventsApi) {
   Object.keys(touchEvents).forEach((eType) => {
     setupEvent(document, eType,
       eType === 'touchstart' ? handleNotifyAllAndNext : handleNotifyAll,
-      true
+      true,
     );
   });
 }
@@ -109,7 +109,7 @@ if (deviceType !== 'touchOnly') {
     setupEvent(document, eType,
       eType === 'mouseenter' ? handleNotifyAllAndNext : handleNotifyAll,
       // don't use capture for enter/leave so the event only fires when the mouse leaves the doc
-      !(eType === 'mouseenter' || eType === 'mouseleave')
+      !(eType === 'mouseenter' || eType === 'mouseleave'),
     );
   });
 

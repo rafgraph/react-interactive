@@ -83,7 +83,6 @@ class ReactInteractive extends React.Component {
         focus: this.p.props.initialState.focus,
         focusFrom: this.p.props.initialState.focusFrom,
       });
-      return;
     }
   }
 
@@ -321,7 +320,7 @@ class ReactInteractive extends React.Component {
     // only place that setState is called
     this.setState(
       newState,
-      props.setStateCallback && props.setStateCallback.bind(this, { prevState, nextState })
+      props.setStateCallback && props.setStateCallback.bind(this, { prevState, nextState }),
     );
   }
 
@@ -1034,7 +1033,7 @@ class ReactInteractive extends React.Component {
     return joinClasses(
       this.p.props.className || '',
       this.p[`${this.state.iState}Style`].className,
-      this.state.focus ? this.p[`${this.state.focusFrom}FocusStyle`].className : ''
+      this.state.focus ? this.p[`${this.state.focusFrom}FocusStyle`].className : '',
     );
   }
 
@@ -1068,7 +1067,7 @@ class ReactInteractive extends React.Component {
     // If `as` is a ReactClass or a ReactFunctionalComponent, then wrap it in a span
     // so can access the DOM node without breaking encapsulation
     return React.createElement('span', { ref: this.refCallback },
-      React.createElement(this.p.props.as, props, this.p.props.children)
+      React.createElement(this.p.props.as, props, this.p.props.children),
     );
   }
 }
