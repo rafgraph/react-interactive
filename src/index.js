@@ -31,6 +31,7 @@ class ReactInteractive extends React.Component {
     this.track = {
       touchDown: false,
       recentTouch: false,
+      touchClick: false,
       touches: { points: {}, active: 0 },
       mouseOn: false,
       buttonDown: false,
@@ -334,7 +335,7 @@ class ReactInteractive extends React.Component {
     } else if (touchEvents[e.type] || e.type === 'touchmove' || e.type === 'touchtapcancel') {
       if (this.handleTouchEvent(e) === 'terminate') return;
     } else if (e.type === 'click') {
-      if (deviceType === 'touchOnly') {
+      if (deviceType === 'touchOnly' || this.track.touchClick) {
         if (this.handleTouchEvent(e) === 'terminate') return;
       } else if (this.handleMouseEvent(e) === 'terminate') return;
     } else if (this.handleOtherEvent(e) === 'terminate') return;
@@ -366,12 +367,15 @@ class ReactInteractive extends React.Component {
 
     // if the device is touchOnly or a hybrid
     if (deviceType !== 'mouseOnly') {
+      if (e.type === 'click' && this.track.touchClick) return true;
+
       // reject click events that are from touch interactions,
       // unless no active or touchActive props, then only reject if recent touch on RI,
       // this allows for edge taps that don't fire touch events on RI (only click events)
       // so the click event is allowed through when WebkitTapHightlightColor indicates a click
       if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
       this.p.props.touchActive || this.track.recentTouch)) {
+        e.preventDefault();
         e.stopPropagation();
         return false;
       }
@@ -379,6 +383,7 @@ class ReactInteractive extends React.Component {
       if (e.type === 'focus') {
         if (this.track.focusTransition === 'reset' && (input.touch.recentTouch ||
         (!this.track.touchDown && input.touch.touchOnScreen))) {
+          e.preventDefault();
           e.stopPropagation();
           this.manageFocus('focusForceBlur');
           return false;
@@ -389,6 +394,7 @@ class ReactInteractive extends React.Component {
     if (deviceType === 'hybrid') {
       // reject mouse events from touch interactions
       if (/mouse/.test(e.type) && (input.touch.touchOnScreen || input.touch.recentTouch)) {
+        e.preventDefault();
         e.stopPropagation();
         return false;
       }
@@ -617,13 +623,8 @@ class ReactInteractive extends React.Component {
         if (this.track.focusStateOnMouseDown) return focusTransition('blur', 'mouseUpBlur');
         this.track.focusTransition = 'reset';
         return 'updateState';
-      case 'touchtap':
-        return toggleFocus('touchTap');
       case 'touchclick':
-        // always return 'terminate' becasue no need for the caller to continue
-        // and call updateState if can't toggle focus
-        toggleFocus('touchClick');
-        return 'terminate';
+        return toggleFocus('touchClick');
       case 'forceStateFocusTrue':
         // setTimeout because React misses focus calls made during componentWillReceiveProps,
         // which is where forceState calls come from (the browser receives the focus call
@@ -752,21 +753,25 @@ class ReactInteractive extends React.Component {
     };
 
     switch (e.type) {
-      case 'touchstart':
+      case 'touchstart': {
         this.p.props.onTouchStart && this.p.props.onTouchStart(e);
         // update number of active touches
         this.track.touches.active += e.changedTouches.length;
         if (this.track.touches.tapCanceled) return 'terminate';
+        const newTouchDown = !this.track.touchDown;
+        this.track.touchDown = true;
         // cancel tap if there was already a touchend in this interaction or there are extra touches
         if (this.track.touches.touchend || extraTouches()) {
           // recursively call handleTouchEvent with a touchtapcancel event to set track properties,
           // call handleTouchEvent directly don't go through handleEvent so updateState isn't called
-          // return whatever touchtapcancel says todo (either terminate or updateState)
-          return this.handleTouchEvent({ type: 'touchtapcancel' });
+          return (
+            this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState' || newTouchDown ?
+            'updateState' : 'terminate'
+          );
         }
 
         // if going from no touch to touch, set touchTapTimer
-        if (!this.track.touchDown) {
+        if (newTouchDown) {
           this.manageSetTimeout('touchTapTimer', () => {
             // if the timer finishes then fire a touchtapcancel event to cancel the tap,
             // because this goes through handleEvent, updateState will be called if needed
@@ -774,11 +779,10 @@ class ReactInteractive extends React.Component {
           }, 600);
         }
 
-        // set touchDown
-        this.track.touchDown = true;
         // log touch start position
         logTouchCoordsAs('start');
         return 'updateState';
+      }
 
       case 'touchmove':
         this.p.props.onTouchMove && this.p.props.onTouchMove(e);
@@ -803,7 +807,7 @@ class ReactInteractive extends React.Component {
         this.p.props.onTouchEnd && this.p.props.onTouchEnd(e);
         // update number of active touches
         this.track.touches.active -= e.changedTouches.length;
-        // track that there has need a touchend in this touch interaction
+        // track that there has been a touchend in this touch interaction
         this.track.touches.touchend = true;
 
         // check to see if tap is already canceled or should be canceled
@@ -837,10 +841,10 @@ class ReactInteractive extends React.Component {
 
           switch (tapTouchPoints) {
             case 1: {
-              const manageFocusReturn = this.manageFocus('touchtap');
-              this.p.props.onTap && this.p.props.onTap(e);
-              this.p.props.onClick && this.p.props.onClick(e);
-              return manageFocusReturn;
+              this.track.touchClick = true;
+              this.topNode.click();
+              // return terminate because topNode.click() will call manageFocus and updateState
+              return 'terminate';
             }
             case 2:
               this.p.props.onTapTwo && this.p.props.onTapTwo(e);
@@ -891,6 +895,7 @@ class ReactInteractive extends React.Component {
       // for click events fired on touchOnly devices, listen for because synthetic
       // click events won't fire touchend event
       case 'click': {
+        this.track.touchClick = false;
         const manageFocusReturn = this.manageFocus('touchclick');
         this.p.props.onTap && this.p.props.onTap(e);
         this.p.props.onClick && this.p.props.onClick(e);
