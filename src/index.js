@@ -453,6 +453,12 @@ class ReactInteractive extends React.Component {
       this.track.mouseOn ? setNON('mutation') : cancelNON('mutation');
     }
 
+    if (hasTouchEventsApi) {
+      // cancel tap when touch someplace else on the screen
+      newState.iState === 'touchActive' ?
+      this.p.props.touchActiveTapOnly && setNON('touchstart') : cancelNON('touchstart');
+    }
+
     // notify of next setup for maintaining correct focusFrom when switching apps/windows,
     // if exiting the focus state, notify of the next window blur (leaving the app/window/tab)
     // event if it immediately follows this event, otherwise cancel the notify of next
@@ -478,6 +484,22 @@ class ReactInteractive extends React.Component {
         this.track.mouseOn = false;
         this.track.buttonDown = false;
         updateState = true;
+        break;
+
+      case 'touchstart':
+        // cancel tap when touch someplace else on the screen
+        // check topNode and children to make sure they weren't the target
+        if (this.p.props.touchActiveTapOnly) {
+          const recursiveCheck = (node) => {
+            if (e.target === node) return true;
+            for (let i = 0; i < node.children.length; i++) {
+              if (recursiveCheck(node.children[i])) return true;
+            }
+            return false;
+          };
+          if (recursiveCheck(this.topNode)) return 'reNotifyOfNext';
+          updateState = this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState';
+        }
         break;
 
       case 'dragstart':

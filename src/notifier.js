@@ -94,7 +94,10 @@ function setupEvent(element, eType, handler, capture) {
 // if the device has touch, then setup event listeners for touch events
 if (hasTouchEventsApi) {
   Object.keys(touchEvents).forEach((eType) => {
-    setupEvent(document, eType, handleNotifyAll, true);
+    setupEvent(document, eType,
+      eType === 'touchstart' ? handleNotifyAllAndNext : handleNotifyAll,
+      true
+    );
   });
 }
 
