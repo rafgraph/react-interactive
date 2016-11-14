@@ -1,4 +1,4 @@
-import { deviceType, hasTouchEventsApi, mouseEvents, touchEvents, passiveEventSupport,
+import { deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents, passiveEventSupport,
   dummyEvent } from './constants';
 
 // list of callbacks that are called every time the event fires
@@ -92,7 +92,7 @@ function setupEvent(element, eType, handler, capture) {
 }
 
 // if the device has touch, then setup event listeners for touch events
-if (hasTouchEventsApi) {
+if (deviceHasTouch) {
   Object.keys(touchEvents).forEach((eType) => {
     setupEvent(document, eType,
       eType === 'touchstart' ? handleNotifyAllAndNext : handleNotifyAll,
@@ -104,7 +104,7 @@ if (hasTouchEventsApi) {
 // if the device has a mouse, then setup event listeners for mouse events,
 // see manageNotifyOfNext and handleNotifyOfNext in index.js for more info
 // on why a specific listener is set
-if (deviceType !== 'touchOnly') {
+if (deviceHasMouse) {
   Object.keys(mouseEvents).forEach((eType) => {
     setupEvent(document, eType,
       eType === 'mouseenter' ? handleNotifyAllAndNext : handleNotifyAll,

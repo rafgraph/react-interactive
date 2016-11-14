@@ -1,7 +1,8 @@
 import detectIt from 'detect-it';
 
 export const deviceType = detectIt.deviceType;
-export const hasTouchEventsApi = detectIt.hasTouchEventsApi;
+export const deviceHasTouch = detectIt.hasTouch;
+export const deviceHasMouse = detectIt.hasMouse;
 export const passiveEventSupport = detectIt.passiveEvents;
 
 export const mouseEvents = {

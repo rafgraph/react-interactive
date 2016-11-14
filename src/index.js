@@ -8,7 +8,7 @@ import recursiveNodeCheck from './recursiveNodeCheck';
 import input, { updateMouseFromRI } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
-  hasTouchEventsApi, passiveEventSupport } from './constants';
+  deviceHasTouch, deviceHasMouse, passiveEventSupport } from './constants';
 
 class ReactInteractive extends React.Component {
   static propTypes = propTypes;
@@ -155,13 +155,14 @@ class ReactInteractive extends React.Component {
       eventHandlers[otherEvents[event]] = this.handleEvent;
     });
 
-    if (hasTouchEventsApi) {
+    // if the device has touch, set touch event listeners
+    if (deviceHasTouch) {
       Object.keys(touchEvents).forEach((event) => {
         eventHandlers[touchEvents[event]] = this.handleEvent;
       });
     }
-    // if the device is mouseOnly or hybrid, then set mouse listeners
-    if (deviceType !== 'touchOnly') {
+    // if the device has a mouse, set mouse event listeners
+    if (deviceHasMouse) {
       Object.keys(mouseEvents).forEach((event) => {
         eventHandlers[mouseEvents[event]] = this.handleEvent;
       });
@@ -366,7 +367,7 @@ class ReactInteractive extends React.Component {
     }
 
     // if the device is touchOnly or a hybrid
-    if (hasTouchEventsApi) {
+    if (deviceHasTouch) {
       if (e.type === 'click' && this.track.touchClick) return true;
 
       // reject click events that are from touch interactions,
@@ -424,7 +425,7 @@ class ReactInteractive extends React.Component {
       }
     };
 
-    if (deviceType !== 'touchOnly') {
+    if (deviceHasMouse) {
       // if not in the normal state, then set notifyOfNext, otherwise cancel
       const shouldSetNON = newState.iState !== 'normal' && !this.track.drag;
 
@@ -453,7 +454,7 @@ class ReactInteractive extends React.Component {
       this.track.mouseOn ? setNON('mutation') : cancelNON('mutation');
     }
 
-    if (hasTouchEventsApi) {
+    if (deviceHasTouch) {
       // cancel tap when touch someplace else on the screen
       newState.iState === 'touchActive' ?
       this.p.props.touchActiveTapOnly && setNON('touchstart') : cancelNON('touchstart');
@@ -538,7 +539,7 @@ class ReactInteractive extends React.Component {
 
   // check the mouse position relative to the RI element on the page
   checkMousePosition() {
-    if (deviceType === 'touchOnly') return null;
+    if (!deviceHasMouse) return null;
 
     const mouseX = input.mouse.clientX;
     const mouseY = input.mouse.clientY;
@@ -984,7 +985,7 @@ class ReactInteractive extends React.Component {
       style.outlineOffset = '0';
     }
     // if touchActive or active prop provided, then reset webkit tap highlight style
-    if ((this.p.props.touchActive || this.p.props.active) && hasTouchEventsApi) {
+    if ((this.p.props.touchActive || this.p.props.active) && deviceHasTouch) {
       style.WebkitTapHighlightColor = 'rgba(0, 0, 0, 0)';
     }
     // set cursor to pointer if clicking does something
@@ -1049,13 +1050,13 @@ class ReactInteractive extends React.Component {
     if (className) props.className = className;
 
     // only set onClick listener if it's required
-    if (this.p.props.onClick || (deviceType !== 'touchOnly' && this.p.props.onMouseClick) ||
-    (hasTouchEventsApi && (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex))) {
+    if (this.p.props.onClick || (deviceHasMouse && this.p.props.onMouseClick) ||
+    (deviceHasTouch && (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex))) {
       props.onClick = this.handleEvent;
     }
 
     //  only set onTouchMove listener if it's required
-    if (hasTouchEventsApi && (this.p.props.touchActiveTapOnly || this.p.props.onTouchMove)) {
+    if (deviceHasTouch && (this.p.props.touchActiveTapOnly || this.p.props.onTouchMove)) {
       props.onTouchMove = this.handleEvent;
     }
 

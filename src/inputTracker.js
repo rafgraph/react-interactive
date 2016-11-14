@@ -1,5 +1,5 @@
 import { notifyOfAll } from './notifier';
-import { deviceType, hasTouchEventsApi, mouseEvents, touchEvents } from './constants';
+import { deviceType, deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents } from './constants';
 
 // the shape of what's being tracked globally
 // the input object is the default export
@@ -60,13 +60,13 @@ export function updateMouseFromRI(e) {
   input.mouse.mouseOnDocument = true;
 }
 
-// sign up for notification of touch events if the device has the touch events api
-if (hasTouchEventsApi) {
+// sign up for notification of touch events if the device supports the touch events api
+if (deviceHasTouch) {
   notifyOfAll(Object.keys(touchEvents), updateTouch);
 }
 
-// sign up for notification of mouse events if the device is mouseOnly or hybrid
-if (deviceType !== 'touchOnly') {
+// sign up for notification of mouse events if the device has a mouse
+if (deviceHasMouse) {
   notifyOfAll(Object.keys(mouseEvents), deviceType === 'hybrid' ? updateHybridMouse : updateMouse);
 }
 
