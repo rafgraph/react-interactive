@@ -4,6 +4,7 @@ import propTypes from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
 import extractStyle from './extractStyle';
+import recursiveNodeCheck from './recursiveNodeCheck';
 import input, { updateMouseFromRI } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
@@ -490,14 +491,7 @@ class ReactInteractive extends React.Component {
         // cancel tap when touch someplace else on the screen
         // check topNode and children to make sure they weren't the target
         if (this.p.props.touchActiveTapOnly) {
-          const recursiveCheck = (node) => {
-            if (e.target === node) return true;
-            for (let i = 0; i < node.children.length; i++) {
-              if (recursiveCheck(node.children[i])) return true;
-            }
-            return false;
-          };
-          if (recursiveCheck(this.topNode)) return 'reNotifyOfNext';
+          if (recursiveNodeCheck(this.topNode, node => e.target === node)) return 'reNotifyOfNext';
           updateState = this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState';
         }
         break;
@@ -569,14 +563,7 @@ class ReactInteractive extends React.Component {
       // if the checkDOMChildren prop is present, then do a recursive check of the node and its
       // children until the mouse is on a node or all children are checked,
       // this is useful when the children aren't inside of the parent on the page
-      const recursiveCheck = (node) => {
-        if (mouseOnNode(node)) return true;
-        for (let i = 0; i < node.children.length; i++) {
-          if (recursiveCheck(node.children[i])) return true;
-        }
-        return false;
-      };
-      mouseOn = recursiveCheck(this.topNode);
+      mouseOn = recursiveNodeCheck(this.topNode, mouseOnNode);
     }
 
     return mouseOn ? 'mouseOn' : 'mouseOff';
