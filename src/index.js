@@ -832,29 +832,25 @@ class ReactInteractive extends React.Component {
 
         // if there are no remaining touches, then process the touch interaction
         if (this.track.touches.active === 0) {
-          // determine if there was a tap and number of touch points for the tap
-          const tapTouchPoints = (() => {
-            const touches = this.track.touches.points;
-            const touchKeys = Object.keys(touches);
-            const count = touchKeys.length;
+          const touches = this.track.touches.points;
+          const touchKeys = Object.keys(touches);
+          const count = touchKeys.length;
 
-            // if every touch point hasn't moved, then return the count
-            if (touchKeys.every(touch => (!touchMoved(touches[touch], touches[touch], count)))) {
-              return count;
-            }
-            return 0;
-          })();
+          // determine if there was a tap and number of touch points for the tap
+          // if every touch point hasn't moved, set tapTouchPoints to count
+          const tapTouchPoints =
+            touchKeys.every(touch => (!touchMoved(touches[touch], touches[touch], count))) ?
+            count : 0;
 
           // reset the touch interaction
           resetTouchInteraction();
 
           switch (tapTouchPoints) {
-            case 1: {
+            case 1:
               this.track.touchClick = true;
               this.topNode.click();
               // return terminate because topNode.click() will call manageFocus and updateState
               return 'terminate';
-            }
             case 2:
               this.p.props.onTapTwo && this.p.props.onTapTwo(e);
               break;
