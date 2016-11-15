@@ -210,6 +210,14 @@ class ReactInteractive extends React.Component {
       passThroughProps.tabIndex = '0';
     }
 
+    // if onClick prop but it's not clear what the role of the element is then add role="button"
+    if (passThroughProps.role === null) delete passThroughProps.role;
+    else if (mergedProps.onClick && !mergedProps.role && typeof mergedProps.as === 'string' &&
+    !({ a: 1, area: 1, input: 1, button: 1, textarea: 1, select: 1 })[mergedProps.as]) {
+      mergedProps.role = 'button';
+      passThroughProps.role = 'button';
+    }
+
     this.p.normalStyle = extractStyle(mergedProps, 'normal');
     this.p.hoverStyle = extractStyle(mergedProps, 'hover');
     this.p.hoverActiveStyle = extractStyle(mergedProps, 'hoverActive');

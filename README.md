@@ -191,13 +191,15 @@ For the definition of when each state is entered, see the [state machine definit
 - If you want an iState style to take precedence over the focus style, then use the `stylePriority` prop and specify which iStates should have priority over focus, e.g. `stylePriority={ hover: true, hoverActive: true }`
 - Classes are merged as a union without preference:
   - `focus` state classes if in the focus state
-  - iState classes (`normal`, `hover`, or `active`)
+  - iState classes
   - The `className` prop
 
 #### `as` Prop Type
 - If `as` is a string:
   - E.g. `as="div"`
   - The string must be an html tag name, for example, `div`, `span`, `a`, `h1`, `p`, `ul`, `li`, `input`, `select`, `button`, etc...
+  - Note that for buttons `as="button"` is discouraged because each browser has their own way of displaying and handling button interactions making for inconsistent rendering and behavior across browsers. For better consistency, use `as="div"/"span"` and `role="button"` - note that RI will take care of adding the appropriate `tabIndex` and enter keydown handler, etc, so it will work just like a button.
+  - Note that if you add an `onClick` prop without a `role` prop, and it's not clear what the role of the element is (i.e. it's not for user input, a link, or an area tag), then RI will automatically add `role="button"` for better accessibility. If you don't want any `role` added to the DOM element, then pass in the prop `role={null}`. 
   - Note that for SVG images, `as="svg"` works fine except that in general SVGs are not focusable by the browser, so if you need `focus` then wrap the `svg` element in a Interactive `span`. Also with SVGs you can make a specific path interactive, e.g. `as="path"` to create interactions within the SVG.
 - If `as` is a ReactComponent:
   - E.g. `as={MyComponent}`
