@@ -24,6 +24,11 @@ const focusOptionsObjectShape = {
   focusFromTouchClassName: PropTypes.string,
 };
 
+const iStatesShape = {};
+Object.keys(iStates).forEach((iState) => {
+  iStatesShape[iState] = PropTypes.bool;
+});
+
 const propTypes = {
   as: PropTypes.oneOfType([
     PropTypes.string,
@@ -102,7 +107,7 @@ const propTypes = {
   useBrowserCursor: PropTypes.bool,
   touchActiveTapOnly: PropTypes.bool,
   focusToggleOff: PropTypes.bool,
-  stylePriority: PropTypes.arrayOf(PropTypes.string),
+  stylePriority: PropTypes.shape(iStatesShape),
   checkDOMChildren: PropTypes.bool,
 };
 

@@ -1011,10 +1011,10 @@ class ReactInteractive extends React.Component {
 
     // add iState and focus state styles third:
     // focus has priority over iState styles unless overridden in stylePriority
-    const stylePriority = this.p.props.stylePriority;
+    const hasPriority = this.p.props.stylePriority && this.p.props.stylePriority[this.state.iState];
     const iStateStyle = this.p[`${this.state.iState}Style`].style;
     const focusStyle = this.state.focus ? this.p[`${this.state.focusFrom}FocusStyle`].style : null;
-    if (stylePriority && stylePriority.indexOf(this.state.iState) !== -1) {
+    if (hasPriority) {
       objectAssign(style, focusStyle, iStateStyle);
     } else {
       objectAssign(style, iStateStyle, focusStyle);
