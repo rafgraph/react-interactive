@@ -60,6 +60,31 @@ export const focusOptionsKeys = [
   'focusFromTouchClassName',
 ];
 
+// don't toggle focus on these tags
+export const nonBlurrableTags = {
+  input: true,
+  button: true,
+  textarea: true,
+  select: true,
+};
+
+// tags with known roles, and that the browser may have a click handler for
+export const knownRoleTags = {
+  ...nonBlurrableTags,
+  a: true,
+  area: true,
+};
+
+// elements triggered by the enter key
+export function enterKeyTrigger(tag, type) {
+  return (tag !== 'select') && (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'));
+}
+
+// elements triggered by the space bar
+export function spaceKeyTrigger(tag, type) {
+  return (tag === 'button') || (tag === 'select') ||
+  (tag === 'input' && (type === 'checkbox' || type === 'radio' || type === 'submit'));
+}
 
 // known props to not pass through, every prop not on this list is passed through
 export const knownProps = {
@@ -71,9 +96,6 @@ export const knownProps = {
   onStateChange: true,
   setStateCallback: true,
   onClick: true,
-  onMouseClick: true,
-  onEnterKey: true,
-  onTap: true,
   onTapTwo: true,
   onTapThree: true,
   onTapFour: true,

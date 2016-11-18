@@ -7,8 +7,10 @@ import extractStyle from './extractStyle';
 import recursiveNodeCheck from './recursiveNodeCheck';
 import input, { updateMouseFromRI } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
+import syntheticClick from './syntheticClick';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
-  deviceHasTouch, deviceHasMouse, passiveEventSupport } from './constants';
+  deviceHasTouch, deviceHasMouse, passiveEventSupport, nonBlurrableTags, knownRoleTags,
+  enterKeyTrigger, spaceKeyTrigger } from './constants';
 
 class ReactInteractive extends React.Component {
   static propTypes = propTypes;
@@ -32,10 +34,10 @@ class ReactInteractive extends React.Component {
     this.track = {
       touchDown: false,
       recentTouch: false,
-      touchClick: false,
       touches: { points: {}, active: 0 },
       mouseOn: false,
       buttonDown: false,
+      clickType: 'reset',
       focus: false,
       focusFrom: 'reset',
       previousFocusFrom: 'reset',
@@ -57,6 +59,9 @@ class ReactInteractive extends React.Component {
     // tagName and type properties of topNode
     this.tagName = '';
     this.type = '';
+    // if the topNode is triggered by the enter key, and/or the space bar
+    this.enterKeyTrigger = false;
+    this.spaceKeyTrigger = false;
 
     // the event handlers to pass down as props to the element/component
     this.eventHandlers = this.setupEventHandlers();
@@ -170,6 +175,27 @@ class ReactInteractive extends React.Component {
     return eventHandlers;
   }
 
+  // returns true if a click listener should be set, called from props setup
+  setClickListener(props) {
+    // set click listener when there is an onClick prop
+    if (props.onClick) return true;
+    if (deviceHasTouch) {
+      // set click listener when the element is focusable - this is to correct a bug
+      // in Chrome on iOS where it will sometimes, when it is under stress, fire focus and
+      // click events without firing a touch event on the document - the result is the focus event
+      // will cause RI to enter the focus from tab state errantly, and then the click event will
+      // toggle focus off making the correction, so have to listen for click events
+      if (props.tabIndex) return true;
+      // set click listener when the element has a knownRoleTag, i.e. the browser
+      // has a click event handler so preventDefault() needs to be called when the
+      // browser sends a click event after RI has canceled tap (e.g. touchTapTimer expired, etc),
+      // note that on the component's first render this.tagName won't be set, so use props.as
+      const tag = this.tagName || (typeof props.as === 'string' && props.as);
+      if (knownRoleTags[tag]) return true;
+    }
+    return false;
+  }
+
   // find and set the top DOM node of `as`
   refCallback = (node) => {
     this.refNode = node;
@@ -180,6 +206,8 @@ class ReactInteractive extends React.Component {
       else this.topNode = node;
       this.tagName = this.topNode.tagName.toLowerCase();
       this.type = this.topNode.type && this.topNode.type.toLowerCase();
+      this.enterKeyTrigger = enterKeyTrigger(this.tagName, this.type);
+      this.spaceKeyTrigger = spaceKeyTrigger(this.tagName, this.type);
       // if node is a new node then call manageFocus to keep browser in sync with RI,
       // note: above assignments can't be in this if statement b/c node could have mutated,
       // node should maintain focus state when mutated
@@ -213,10 +241,21 @@ class ReactInteractive extends React.Component {
     // if onClick prop but it's not clear what the role of the element is then add role="button"
     if (passThroughProps.role === null) delete passThroughProps.role;
     else if (mergedProps.onClick && !mergedProps.role && typeof mergedProps.as === 'string' &&
-    !({ a: 1, area: 1, input: 1, button: 1, textarea: 1, select: 1 })[mergedProps.as]) {
+    !knownRoleTags[mergedProps.as]) {
       mergedProps.role = 'button';
       passThroughProps.role = 'button';
     }
+
+    // add onClick handler to passThroughProps if it's required
+    if (this.setClickListener(mergedProps)) passThroughProps.onClick = this.handleEvent;
+
+    //  add onTouchMove handler to passThroughProps if it's required
+    if (deviceHasTouch && (mergedProps.touchActiveTapOnly || mergedProps.onTouchMove)) {
+      passThroughProps.onTouchMove = this.handleEvent;
+    }
+
+    // add other event handlers to passThroughProps
+    objectAssign(passThroughProps, this.eventHandlers);
 
     this.p.normalStyle = extractStyle(mergedProps, 'normal');
     this.p.hoverStyle = extractStyle(mergedProps, 'hover');
@@ -273,19 +312,10 @@ class ReactInteractive extends React.Component {
   // note: use the respective active state when drag is true (i.e. dragging the element)
   computeState() {
     const { mouseOn, buttonDown, touchDown, focus, focusFrom, drag } = this.track;
-    const focusKeyDown = focus && (() => {
-      const tag = this.tagName;
-      const type = this.type;
-      if (this.track.enterKeyDown && tag !== 'select' &&
-      (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'))) {
-        return true;
-      }
-      if (this.track.spaceKeyDown && (tag === 'button' || tag === 'select' ||
-      (tag === 'input' && (type === 'checkbox' || type === 'radio' || type === 'submit')))) {
-        return true;
-      }
-      return false;
-    })();
+    const focusKeyDown = focus && (
+      (this.track.enterKeyDown && this.enterKeyTrigger) ||
+      (this.track.spaceKeyDown && this.spaceKeyTrigger)
+    );
     const newState = { focus, focusFrom: focus ? focusFrom : undefined };
     if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag) newState.iState = 'normal';
     else if (mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag) {
@@ -344,9 +374,7 @@ class ReactInteractive extends React.Component {
     } else if (touchEvents[e.type] || e.type === 'touchmove' || e.type === 'touchtapcancel') {
       if (this.handleTouchEvent(e) === 'terminate') return;
     } else if (e.type === 'click') {
-      if (deviceType === 'touchOnly' || this.track.touchClick) {
-        if (this.handleTouchEvent(e) === 'terminate') return;
-      } else if (this.handleMouseEvent(e) === 'terminate') return;
+      if (this.handleClickEvent(e) === 'terminate') return;
     } else if (this.handleOtherEvent(e) === 'terminate') return;
 
     // compute the new state object and pass it as an argument to updateState,
@@ -356,6 +384,9 @@ class ReactInteractive extends React.Component {
 
   // checks if the event is a valid event or not, returns true / false respectivly
   isValidEvent(e) {
+    // if it's a known click event then return true
+    if (e.type === 'click' && this.track.clickType !== 'reset') return true;
+
     // refCallbackFocus calls focus when there is a new top DOM node and RI is already in the
     // focus state to keep the browser's focus state in sync with RI's, so reset and return false
     if (e.type === 'focus' && this.track.focusTransition === 'refCallbackFocus') {
@@ -376,14 +407,12 @@ class ReactInteractive extends React.Component {
 
     // if the device is touchOnly or a hybrid
     if (deviceHasTouch) {
-      if (e.type === 'click' && this.track.touchClick) return true;
-
       // reject click events that are from touch interactions,
       // unless no active or touchActive props, then only reject if recent touch on RI,
       // this allows for edge taps that don't fire touch events on RI (only click events)
       // so the click event is allowed through when WebkitTapHightlightColor indicates a click
-      if (e.type === 'click' && input.touch.recentTouch && (this.p.props.active ||
-      this.p.props.touchActive || this.track.recentTouch)) {
+      if (e.type === 'click' && (input.touch.recentTouch || input.touch.touchOnScreen) &&
+      (this.p.props.active || this.p.props.touchActive || this.track.recentTouch)) {
         e.preventDefault();
         e.stopPropagation();
         return false;
@@ -434,7 +463,7 @@ class ReactInteractive extends React.Component {
     };
 
     if (deviceHasMouse) {
-      // if not in the normal state, then set notifyOfNext, otherwise cancel
+      // if not in the normal state and not dragging, then set notifyOfNext, otherwise cancel
       const shouldSetNON = newState.iState !== 'normal' && !this.track.drag;
 
       // check mouse position on document mouseenter to prevent from sticking in
@@ -451,7 +480,7 @@ class ReactInteractive extends React.Component {
 
       // the scroll listener provides a minor improvement to accuracy by exiting the hover state
       // as soon as the mouse is scrolled off an element instead of waiting for the scrolling to end
-      // only set as a passive event as the improvement is not worth it if it hurts performance
+      // only set as a passive listener as the improvement is not worth it if it hurts performance
       if (passiveEventSupport) {
         shouldSetNON ? setNON('scroll') : cancelNON('scroll');
       }
@@ -599,11 +628,9 @@ class ReactInteractive extends React.Component {
   //       (if it's a force blur meant for both RI and the browser, then it's a valid event)
   //   - eveything else -> reset focusTransition -> RI leaves focus state
   manageFocus(type) {
-    // is the DOM node tag blurable, the below tags won't be blurred by RI
-    const tagIsBlurable =
-      (({ input: 1, button: 1, textarea: 1, select: 1 })[this.tagName] === undefined) &&
-      !this.p.props.focusToggleOff;
-    // is the node focusable, if there is a foucs or tabIndex prop, or it's non-blurable, then it is
+    // is the DOM node tag blurable for toggle focus
+    const tagIsBlurable = !nonBlurrableTags[this.tagName] && !this.p.props.focusToggleOff;
+    // is the node focusable, if there is a focus or tabIndex prop, or it's non-blurable, then it is
     const tagIsFocusable = this.p.props.focus || this.p.props.tabIndex ||
     this.tagName === 'a' || !tagIsBlurable;
 
@@ -697,21 +724,14 @@ class ReactInteractive extends React.Component {
         this.track.buttonDown = true;
         // track focus state on mousedown to know if should blur on mouseup
         this.track.focusStateOnMouseDown = this.track.state.focus;
-        // attempt to initiate focus, if successful return b/c focus called updateState
         return this.manageFocus('mousedown');
-      case 'mouseup':
+      case 'mouseup': {
         this.p.props.onMouseUp && this.p.props.onMouseUp(e);
         this.track.buttonDown = false;
-        // attempt to end focus, if successful return b/c blur called updateState
-        return this.manageFocus('mouseup');
-      case 'click':
-        // check to see if click event was generated by clicking on the element or synthetically
-        if (this.checkMousePosition(e) === 'mouseOn') {
-          this.p.props.onMouseClick && this.p.props.onMouseClick(e);
-        } else this.p.props.onEnterKey && this.p.props.onEnterKey(e);
-        this.p.props.onClick && this.p.props.onClick(e);
-        // click doesn't change state, so return
-        return 'terminate';
+        const manageFocusReturn = this.manageFocus('mouseup');
+        this.manageClick('mouseClick');
+        return manageFocusReturn;
+      }
       default:
         return 'terminate';
     }
@@ -831,8 +851,9 @@ class ReactInteractive extends React.Component {
         this.track.touches.touchend = true;
 
         // check to see if tap is already canceled or should be canceled
-        if (this.track.touches.active === 0 &&
-        (!this.track.touchDown || this.track.touches.tapCanceled || extraTouches())) {
+        if ((this.track.touches.active === 0 && (this.track.touches.tapCanceled || extraTouches()))
+        // in case the browser missed firing a touchend event, happens in some browsers on Andriod
+        || (e.touches.length === 0 && this.track.touches.active > 0)) {
           resetTouchInteraction();
           return 'updateState';
         } else if (this.track.touches.tapCanceled) return 'terminate';
@@ -857,11 +878,11 @@ class ReactInteractive extends React.Component {
           resetTouchInteraction();
 
           switch (tapTouchPoints) {
-            case 1:
-              this.track.touchClick = true;
-              this.topNode.click();
-              // return terminate because topNode.click() will call manageFocus and updateState
-              return 'terminate';
+            case 1: {
+              const manageFocusReturn = this.manageFocus('touchclick');
+              this.manageClick('tapClick');
+              return manageFocusReturn;
+            }
             case 2:
               this.p.props.onTapTwo && this.p.props.onTapTwo(e);
               break;
@@ -907,21 +928,92 @@ class ReactInteractive extends React.Component {
           }
         }
         return 'terminate';
-
-      // for click events fired on touchOnly devices, listen for because synthetic
-      // click events won't fire touchend event
-      case 'click': {
-        const fromTap = this.track.touchClick;
-        this.track.touchClick = false;
-        const manageFocusReturn = this.manageFocus('touchclick');
-        if (fromTap) this.p.props.onTap && this.p.props.onTap(e);
-        else this.p.props.onEnterKey && this.p.props.onEnterKey(e);
-        this.p.props.onClick && this.p.props.onClick(e);
-        return manageFocusReturn;
-      }
       default:
         return 'terminate';
     }
+  }
+
+  // called in anticipation of a click event (before it's fired) to track the source
+  // of the click event (mouse, touch, key), and synthetically call node.click() if needed
+  manageClick(type) {
+    // clear clickType timer if it's running
+    if (this.track.timeoutIDs.clickType !== undefined) {
+      window.clearTimeout(this.track.timeoutIDs.clickType);
+      delete this.track.timeoutIDs.clickType;
+    }
+
+    // timer to reset the clickType,
+    // when it's left to the browser to call click(), the browser has 600ms
+    // to add the click event to the queue for it to be recognized as a known click event
+    const setClickTypeTimer = () => {
+      this.manageSetTimeout('clickType', () => {
+        this.track.clickType = 'reset';
+      }, 600);
+    };
+
+    switch (type) {
+      case 'mouseClick':
+        this.track.clickType = 'mouseClick';
+        // let the browser call click() for mouse interactions
+        setClickTypeTimer();
+        break;
+      case 'tapClick':
+        this.track.clickType = 'tapClick';
+        // for touch interactions, use syntheticClick to call node.click() now and
+        // block the subsequent click event created by the browser if there is one
+        syntheticClick(this.topNode);
+        this.track.clickType = 'reset';
+        break;
+      case 'keyClick':
+        this.track.clickType = 'keyClick';
+        // if the element has a known interactive role (a, button, input, etc),
+        // then let the browser call click() for keyClick interactions (enter key and/or space bar)
+        if (knownRoleTags[this.tagName]) {
+          setClickTypeTimer();
+
+        // if the element doesn't have a known interactive role, but there is an onClick prop,
+        // then call node.click() directly as the browser won't fire a click event
+        // from a keyClick interaction
+        } else if (this.p.props.onClick) {
+          this.topNode.click();
+          this.track.clickType = 'reset';
+        }
+        break;
+      default:
+    }
+  }
+
+  // returns 'terminate' if the caller (this.handleEvent) should not call updateState(...)
+  // in almost cases this will return terminate as click events don't change state,
+  // the one exception is an unknown but valid click event from a touch interaction,
+  // which will need to manageFocus, and then return whatever manageFocus says to do
+  handleClickEvent(e) {
+    // clear clickType timer if running
+    if (this.track.timeoutIDs.clickType !== undefined) {
+      window.clearTimeout(this.track.timeoutIDs.clickType);
+      delete this.track.timeoutIDs.clickType;
+    }
+    let returnValue = 'terminate';
+    // if this is an unknown click event, make some assumptions
+    if (this.track.clickType === 'reset') {
+      // unknown click event on a form submit input with a recentEnterKeyDown on the document
+      // is considered to be a keyClick (when you press enter to submit a form
+      // but focus is not on the submit button)
+      const enterKeyFormSubmit =
+      this.tagName === 'input' && this.type === 'submit' && input.key.recentEnterKeyDown;
+      if (enterKeyFormSubmit) this.track.clickType = 'keyClick';
+      // if there is a recent touch on the document,
+      // or this is a unknown synthetic click event on a touchOnly device
+      else if (input.touch.recentTouch || deviceType === 'touchOnly') {
+        returnValue = this.manageFocus('touchclick');
+        this.track.keyClick = 'tapClick';
+      // else this is a unknown synthetic click event on a mouseOnly or hybrid device
+      } else this.track.keyClick = 'mouseClick';
+    }
+    // call onClick handler and pass in clickType (mouseClick, tapClick, keyClick) as 2nd argument
+    this.p.props.onClick && this.p.props.onClick(e, this.track.clickType);
+    this.track.clickType = 'reset';
+    return returnValue;
   }
 
   // returns 'terminate' if the caller (this.handleEvent) should not call updateState(...)
@@ -965,15 +1057,16 @@ class ReactInteractive extends React.Component {
         if (e.key === ' ') this.track.spaceKeyDown = true;
         else if (e.key === 'Enter') {
           this.track.enterKeyDown = true;
-          this.p.props.onEnterKey && this.p.props.onEnterKey(e);
-          this.p.props.onClick && this.p.props.onClick(e);
+          if (this.enterKeyTrigger) this.manageClick('keyClick');
         } else return 'terminate';
         return 'updateState';
       case 'keyup':
         this.p.props.onKeyUp && this.p.props.onKeyUp(e);
-        if (e.key === ' ') this.track.spaceKeyDown = false;
-        else if (e.key === 'Enter') this.track.enterKeyDown = false;
-        else return 'terminate';
+        if (e.key === 'Enter') this.track.enterKeyDown = false;
+        else if (e.key === ' ') {
+          this.track.spaceKeyDown = false;
+          if (this.spaceKeyTrigger) this.manageClick('keyClick');
+        } else return 'terminate';
         return 'updateState';
       case 'dragstart':
         this.p.props.onDragStart && this.p.props.onDragStart(e);
@@ -1053,35 +1146,22 @@ class ReactInteractive extends React.Component {
 
   render() {
     // props to pass down:
-    // eventHandlers
+    // passThroughProps (includes event handlers)
     // style
     // className
-    // passThroughProps
-    const props = { ...this.p.passThroughProps, ...this.eventHandlers };
-    props.style = this.computeStyle();
+    this.p.passThroughProps.style = this.computeStyle();
     const className = this.computeClassName();
-    if (className) props.className = className;
-
-    // only set onClick listener if it's required
-    if (this.p.props.onClick || (deviceHasMouse && this.p.props.onMouseClick) ||
-    (deviceHasTouch && (this.p.props.onTap || this.p.props.focus || this.p.props.tabIndex))) {
-      props.onClick = this.handleEvent;
-    }
-
-    //  only set onTouchMove listener if it's required
-    if (deviceHasTouch && (this.p.props.touchActiveTapOnly || this.p.props.onTouchMove)) {
-      props.onTouchMove = this.handleEvent;
-    }
+    if (className) this.p.passThroughProps.className = className;
 
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
     if (typeof this.p.props.as === 'string') {
-      props.ref = this.refCallback;
-      return React.createElement(this.p.props.as, props, this.p.props.children);
+      this.p.passThroughProps.ref = this.refCallback;
+      return React.createElement(this.p.props.as, this.p.passThroughProps, this.p.props.children);
     }
     // If `as` is a ReactClass or a ReactFunctionalComponent, then wrap it in a span
     // so can access the DOM node without breaking encapsulation
     return React.createElement('span', { ref: this.refCallback },
-      React.createElement(this.p.props.as, props, this.p.props.children),
+      React.createElement(this.p.props.as, this.p.passThroughProps, this.p.props.children),
     );
   }
 }

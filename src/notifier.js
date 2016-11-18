@@ -90,12 +90,16 @@ function setupEvent(element, eType, handler, capture) {
   subsIDs[eType] = {};
   element.addEventListener(eType, handler, passiveEventSupport ? {
     capture,
-    passive: true,
+    // don't set click listener as passive because syntheticClick may call preventDefault
+    passive: eType !== 'click',
   } : capture);
 }
 
-// if the device has touch, then setup event listeners for touch events
 if (deviceHasTouch) {
+  // set up click listener for use with syntheticClick on touch devices
+  setupEvent(window, 'click', handleNotifyAll, true);
+
+  // if the device has touch, then setup event listeners for touch events
   Object.keys(touchEvents).forEach((eType) => {
     setupEvent(document, eType,
       eType === 'touchstart' ? handleNotifyAllAndNext : handleNotifyAll,
@@ -134,3 +138,6 @@ if (deviceHasMouse) {
 ['focus', 'blur'].forEach((eType) => {
   setupEvent(window, eType, handleNotifyNext, false);
 });
+
+// always set keydown listener for enter key events for form submission
+setupEvent(document, 'keydown', handleNotifyAll, true);

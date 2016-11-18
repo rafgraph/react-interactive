@@ -14,6 +14,9 @@ const input = {
     touchOnScreen: false,
     recentTouch: false,
   },
+  key: {
+    recentEnterKeyDown: false,
+  },
 };
 
 // update touch input tracking
@@ -51,6 +54,19 @@ function updateHybridMouse(e) {
   updateMouse(e);
 }
 
+// update recent enter keydown tracking, used for form submission detection
+let enterKeyDownTimerID = null;
+function updateEnterKeyDown(e) {
+  if (e.key === 'Enter') {
+    input.key.recentEnterKeyDown = true;
+    if (enterKeyDownTimerID) window.clearTimeout(enterKeyDownTimerID);
+    enterKeyDownTimerID = window.setTimeout(() => {
+      input.key.recentEnterKeyDown = false;
+      enterKeyDownTimerID = null;
+    }, 600);
+  }
+}
+
 // update mouse from RI - this is required for enter and leave events from RI elements
 // because when the mouse is moved onto an RI element the most recent mousemove event
 // will have the mouse coordinates as off the element, so need to get updated coordinates
@@ -69,5 +85,8 @@ if (deviceHasTouch) {
 if (deviceHasMouse) {
   notifyOfAll(Object.keys(mouseEvents), deviceType === 'hybrid' ? updateHybridMouse : updateMouse);
 }
+
+// sign up for notification of enter keydown events for form submission detection
+notifyOfAll(['keydown'], updateEnterKeyDown);
 
 export default input;
