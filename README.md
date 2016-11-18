@@ -48,6 +48,7 @@ import Interactive from 'react-interactive';
   - [Merging Styles and Classes](#merging-styles-and-classes)
   - [`as` Prop Type](#as-prop-type)
   - [`state` Object](#state-object)
+  - [Default `role` and `tabIndex`](#default-role-and-tabindex)
   - [`focusFrom` API](#focusfrom-api)
   - [`focus` State](#focus-state)
   - [Default Styles](#default-styles)
@@ -195,9 +196,7 @@ For the definition of when each state is entered, see the [state machine definit
 #### `as` Prop Type
 - If `as` is a string:
   - E.g. `as="div"`
-  - The string must be an html tag name, for example, `div`, `span`, `a`, `h1`, `p`, `ul`, `li`, `input`, `select`, `button`, etc...
-  - Note that for buttons `as="button"` is discouraged because each browser has their own way of displaying and handling button interactions making for inconsistent rendering and behavior across browsers. For better consistency, use `as="div"/"span"` and `role="button"` - note that RI will take care of adding the appropriate `tabIndex` and enter keydown handler, etc, so it will work just like a button.
-  - Note that if you add an `onClick` prop without a `role` prop, and it's not clear what the role of the element is (i.e. it's not for user input, a link, or an area tag), then RI will automatically add `role="button"` for better accessibility. If you don't want any `role` added to the DOM element, then pass in the prop `role={null}`.
+  - The string must be an html tag name, for example, `div`, `span`, `a`, `h1`, `p`, `ul`, `li`, `input`, `select`, etc...
   - Note that for SVG images, `as="svg"` works fine except that in general SVGs are not focusable by the browser, so if you need `focus` then wrap the `svg` element in a Interactive `span`. Also with SVGs you can make a specific path interactive, e.g. `as="path"` to create interactions within the SVG.
 - If `as` is a ReactComponent:
   - E.g. `as={MyComponent}`
@@ -232,7 +231,12 @@ For the definition of when each state is entered, see the [state machine definit
   focusFrom: undefined / 'tab' / 'mouse' / 'touch',
 }
 ```
-- In Interactive's API, the `onStateChange` and `setStateCallback` hooks receive the previous and next state objects when they are called, and the `forceState` and `initialState` props pass in a state object to the Interactive component.
+- In RI's API, the `onStateChange` and `setStateCallback` hooks receive the previous and next state objects when they are called, and the `forceState` and `initialState` props pass in a state object to the RI component.
+
+#### Default `role` and `tabIndex`
+- If you add an `onClick` prop without a `role` prop, and it's not clear what the role of the element is (i.e. it's not for user input, a link, or an area tag), then RI will automatically add `role="button"` for better accessibility. If you don't want any `role` added to the DOM element, then pass in the prop `role={null}`.
+- If you add a `focus` or `onClick` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
+- Note that for buttons `as="button"` is discouraged because browsers are inconsistent in how they display and handle button interactions. For better consistency, use `as="div"/"span"` and add an `onClick` handler. By default RI will add `role="button"`, `tabIndex="0"`, and a key click handler (which will call `onClick`), so it will work just like a button. You can override these with your own `role` and `tabIndex` if you prefer.
 
 #### `focusFrom` API
 - The `focusFrom` API allows for separate styles and class names based on how the `focus` state is entered (tab key, mouse, or touch).
@@ -272,7 +276,6 @@ For the definition of when each state is entered, see the [state machine definit
   - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
   - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 finger tap. Also, on touchOnly devices, a click event not preceded by a touch event (e.g. a synthetic click event) will toggle focus on/off.
   - If you want to turn off focus toggle, then add the `focusToggleOff` prop. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event.
-- If you add a `focus` or `onClick` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
 - The focus state change occurs in the same `setState` call as the iState change, so the `onStateChange` hook is only called once. For example, `onMouseDown` enters the `focus` state and the `hoverActive` state in a single state change (and render). This achieved by controlling the browser's focus state - without this control the browser would fire the focus event immediately after the mouse down event resulting in two `setState` calls (and two `onStateChange` calls), one to enter the `hoverActive` state and one to enter the `focus` state.
 
 #### Default Styles
