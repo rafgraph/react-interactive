@@ -846,13 +846,19 @@ class ReactInteractive extends React.Component {
         this.p.props.onTouchEnd && this.p.props.onTouchEnd(e);
         // update number of active touches
         this.track.touches.active -= e.changedTouches.length;
+        // if a touch event was dropped somewhere, i.e.
+        // cumulative length of changed touches for touchstarts !== touchends, then reset
+        if ((this.track.touches.active < 0) ||
+        (e.touches.length === 0 && this.track.touches.active > 0)) {
+          resetTouchInteraction();
+          return 'updateState';
+        }
+
         // track that there has been a touchend in this touch interaction
         this.track.touches.touchend = true;
 
         // check to see if tap is already canceled or should be canceled
-        if ((this.track.touches.active === 0 && (this.track.touches.tapCanceled || extraTouches()))
-        // in case the browser missed firing a touchend event, happens in some browsers on Andriod
-        || (e.touches.length === 0 && this.track.touches.active > 0)) {
+        if (this.track.touches.active === 0 && (this.track.touches.tapCanceled || extraTouches())) {
           resetTouchInteraction();
           return 'updateState';
         } else if (this.track.touches.tapCanceled) return 'terminate';
