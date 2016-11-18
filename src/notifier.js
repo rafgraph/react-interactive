@@ -2,22 +2,25 @@ import { deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents, passiveEventS
   dummyEvent } from './constants';
 
 // list of callbacks that are called every time the event fires
+// only one callback function per eventType b/c notifyOfAll is only used by inputTracker
 // {
-//   eventA: cbFunction,
-//   eventB: cbFunction,
+//   eventType: callback,
+//   eventA: cbFunctionA,
+//   eventB: cbFunctionB,
 // }
 const notifyOfAllSubs = {};
 
 // list of callbacks that are called only for the next event and then deleted
 // {
-//   eventA: [{ id: 1, callback: cbFunction }, { id: 2, callback: cbFunction }],
-//   eventB: [{ id: 3, callback: cbFunction }, { id: 4, callback: cbFunction }],
+//   eventType: [{ id, callback }, { id, callback }, ...],
+//   eventA: [{ id: 1, callback: cbFunctionA }, { id: 2, callback: cbFunctionB }],
+//   eventB: [{ id: 3, callback: cbFunctionC }, { id: 4, callback: cbFunctionD }],
 // }
 const notifyOfNextSubs = {};
 
 // list of sub IDs with corresponding index in notifyOfNextSubs array for easy cancelation of sub
 // {
-//   event: { id: indexInNotifyOfNextSubsArray },
+//   eventType: { id: indexInNotifyOfNextSubsArray },
 //   eventA: { 1: 0, 2: 1 },
 //   eventB: { 3: 0, 4: 1 },
 // }
