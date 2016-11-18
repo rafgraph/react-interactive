@@ -124,12 +124,13 @@ class ReactInteractive extends React.Component {
       this.p[`${nextState.iState}Style`].className !==
       this.p[`${this.state.iState}Style`].className))
       ||
-      // if `focus` state changed, AND `focus` state has `style` or `className` associiated with it
-      ((nextState.focus !== this.state.focus) &&
+      // if `focus` state changed, AND either no focus prop (update to work with default style) or
+      // `focus` state has `style` or `className` associated with it
+      ((nextState.focus !== this.state.focus) && (!this.p.props.focus ||
       (this.p[`${nextState.focus ? nextState.focusFrom : this.state.focusFrom}FocusStyle`].style
         !== null ||
       this.p[`${nextState.focus ? nextState.focusFrom : this.state.focusFrom}FocusStyle`].className
-        !== '')
+        !== ''))
       )
     );
   }
@@ -1085,8 +1086,10 @@ class ReactInteractive extends React.Component {
     // build style object, priority order: state styles, style prop, default styles
     const style = {};
     // add default styles first:
-    // if focus prop provided, then reset browser focus style
-    if (!this.p.props.useBrowserOutlineFocus && this.p.props.focus) {
+    // if focus prop provided, then reset browser focus style,
+    // otherwise only reset it when focus is not from tab
+    if (!this.p.props.useBrowserOutlineFocus &&
+    (this.p.props.focus || (this.state.focusFrom !== 'tab' && !nonBlurrableTags[this.tagName]))) {
       style.outline = '0';
       style.outlineOffset = '0';
     }
