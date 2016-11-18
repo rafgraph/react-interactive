@@ -63,7 +63,6 @@ export const focusOptionsKeys = [
 // don't toggle focus on these tags
 export const nonBlurrableTags = {
   input: true,
-  button: true,
   textarea: true,
   select: true,
 };
@@ -71,6 +70,7 @@ export const nonBlurrableTags = {
 // tags with known roles, and that the browser may have a click handler for
 export const knownRoleTags = {
   ...nonBlurrableTags,
+  button: true,
   a: true,
   area: true,
 };
