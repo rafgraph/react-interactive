@@ -58,6 +58,7 @@ import Interactive from 'react-interactive';
 - [State Machine Notes](#state-machine-notes)
 - [More Examples](#more-examples)
   - [Using Interactive's State in Parent Component](#using-interactives-state-in-parent-component)
+  - [`Enter or Leave a Specific State Hook`](#enter-or-leave-a-specific-state-hook)
   - [Show On `hover` and `active`](#show-on-hover-and-active)
   - [Show On `hover`, `touchActive` and `focusFromTab`](#show-on-hover-touchactive-and-focusfromtab)
   - [Hot Swappable `as`](#hot-swappable-as)
@@ -382,6 +383,50 @@ class MyComponent extends React.Component {
           // this.state.focusFrom === undefined / 'tab' / 'mouse' / 'touch'
         }
       </div>
+    );
+  }
+}
+```
+
+#### Enter or Leave a Specific State Hook
+- Note that this example is written as a ReactFunctionalComponent, but the same `handleOnStateChange` logic would apply when creating a ReactClass.
+
+```javascript
+import React from 'react';
+import Interactive from 'react-interactive';
+
+function MyFunctionalComponent() {
+  function enterFocus() {
+    // do something when enter the focus state
+  }
+  function leaveFocus() {
+    // do something when leave the focus state
+  }
+  function enterTouchActive() {
+    // do something when enter the touchActive state
+  }
+  function leaveTouchActive() {
+    // do something when leave the touchActive state
+  }
+
+  function handleOnStateChange({ prevState, nextState }) {
+    !prevState.focus && nextState.focus && enterFocus();
+    prevState.focus && !nextState.focus && leaveFocus();
+
+    if (nextState.iState === 'touchActive' && prevState.iState !== nextState.iState) {
+      enterTouchActive();
+    } else if (prevState.iState === 'touchActive' && prevState.iState !== nextState.iState) {
+      leaveTouchActive();
+    }
+  }
+
+  render() {
+    return (
+      <Interactive
+        as="div"
+        onStateChange={handleOnStateChange}
+        // ...and any other props as needed
+      >RI component</Interactive>
     );
   }
 }
