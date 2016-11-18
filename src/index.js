@@ -191,7 +191,7 @@ class ReactInteractive extends React.Component {
       // has a click event handler so preventDefault() needs to be called when the
       // browser sends a click event after RI has canceled tap (e.g. touchTapTimer expired, etc),
       // note that on the component's first render this.tagName won't be set, so use props.as
-      const tag = this.tagName || (typeof props.as === 'string' && props.as);
+      const tag = (typeof props.as === 'string' && props.as) || this.tagName;
       if (knownRoleTags[tag]) return true;
     }
     return false;
@@ -233,8 +233,7 @@ class ReactInteractive extends React.Component {
 
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
     if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
-    else if (!passThroughProps.tabIndex &&
-    (mergedProps.focus || mergedProps.onClick || mergedProps.onEnterKey)) {
+    else if (!passThroughProps.tabIndex && (mergedProps.focus || mergedProps.onClick)) {
       mergedProps.tabIndex = '0';
       passThroughProps.tabIndex = '0';
     }
@@ -632,8 +631,7 @@ class ReactInteractive extends React.Component {
     // is the DOM node tag blurable for toggle focus
     const tagIsBlurable = !nonBlurrableTags[this.tagName] && !this.p.props.focusToggleOff;
     // is the node focusable, if there is a focus or tabIndex prop, or it's non-blurable, then it is
-    const tagIsFocusable = this.p.props.focus || this.p.props.tabIndex ||
-    this.tagName === 'a' || !tagIsBlurable;
+    const tagIsFocusable = this.p.props.tabIndex || knownRoleTags[this.tagName];
 
     // calls focus/blur to transition focus, returns 'terminate' if focus/blur call is made
     // because focus/blur event handler called updateState,
@@ -1100,10 +1098,9 @@ class ReactInteractive extends React.Component {
     // set cursor to pointer if clicking does something
     const lowerAs = typeof this.p.props.as === 'string' && this.p.props.as.toLowerCase();
     if (!this.p.props.useBrowserCursor && (
-      (this.p.props.onClick || this.p.props.onMouseClick ||
+      (this.p.props.onClick ||
         (
-          lowerAs !== 'input' &&
-          (this.p.props.focus || this.p.props.tabIndex) &&
+          lowerAs !== 'input' && this.p.props.tabIndex &&
           (this.p.mouseFocusStyle.style || this.p.mouseFocusStyle.className)
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
