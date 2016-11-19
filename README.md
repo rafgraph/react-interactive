@@ -272,7 +272,7 @@ For the definition of when each state is entered, see the [state machine definit
 #### `focus` State
 - React Interactive's focus state is always kept in sync with the browser's focus state. Added functionality like focus toggle and `focusFrom` are implemented by controlling the browser's focus state.
 - Focus toggle
-  - All elements will toggle focus except if the element is for user input, that is, the element's tag name is `input`, `textarea`, `button`, or `select`.
+  - All elements will toggle focus except if the element is for user input, that is, the element's tag name is `input`, `textarea`, or `select`.
   - For mouse interactions, the focus state is entered on mouse down, and toggled off on mouse up providing it didn't enter the focus state on the preceding mouse down.
   - For touch interactions, the focus state in entered with a 1 touch point/finger tap, and toggled off on the next 1 finger tap. Also, on touchOnly devices, a click event not preceded by a touch event (e.g. a synthetic click event) will toggle focus on/off.
   - If you want to turn off focus toggle, then add the `focusToggleOff` prop. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event.
