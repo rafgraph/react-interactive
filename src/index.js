@@ -280,6 +280,13 @@ class ReactInteractive extends React.Component {
     }, delay);
   }
 
+  cancelTimeout(type) {
+    if (this.track.timeoutIDs[type] !== undefined) {
+      window.clearTimeout(this.track.timeoutIDs[type]);
+      delete this.track.timeoutIDs[type];
+    }
+  }
+
   // force set this.track properties based on iState
   forceTrackIState(iState) {
     if (this.computeState().iState !== iState) {
@@ -559,8 +566,7 @@ class ReactInteractive extends React.Component {
       // window blur event to preserve the focusFrom state
       case 'blur':
         // clear the timer set in mangageNotifyOfNext that was set to cancel this notification
-        window.clearTimeout(this.track.timeoutIDs.elementBlur);
-        delete this.track.timeoutIDs.elementBlur;
+        this.cancelTimeout('elementBlur');
         // notifiy of the next window focus event (re-entering the app/window/tab)
         this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
         // reinstate focusFrom to it's previous value to preserve the focusFrom state
@@ -753,10 +759,7 @@ class ReactInteractive extends React.Component {
       this.track.touchDown = false;
       this.track.touches = { points: {}, active: 0 };
       // clear the touchTapTimer if it's running
-      if (this.track.timeoutIDs.touchTapTimer !== undefined) {
-        window.clearTimeout(this.track.timeoutIDs.touchTapTimer);
-        delete this.track.timeoutIDs.touchTapTimer;
-      }
+      this.cancelTimeout('touchTapTimer');
     };
 
     // track recent touch, called from touchend and touchcancel
@@ -923,10 +926,7 @@ class ReactInteractive extends React.Component {
       // cancel tap for this touch interaction
       case 'touchtapcancel':
         // clear the touchTapTimer if it's running
-        if (this.track.timeoutIDs.touchTapTimer) {
-          window.clearTimeout(this.track.timeoutIDs.touchTapTimer);
-          delete this.track.timeoutIDs.touchTapTimer;
-        }
+        this.cancelTimeout('touchTapTimer');
         if (this.track.touchDown) {
           // set the tap event to canceled
           this.track.touches.tapCanceled = true;
@@ -946,10 +946,7 @@ class ReactInteractive extends React.Component {
   // of the click event (mouse, touch, key), and synthetically call node.click() if needed
   manageClick(type) {
     // clear clickType timer if it's running
-    if (this.track.timeoutIDs.clickType !== undefined) {
-      window.clearTimeout(this.track.timeoutIDs.clickType);
-      delete this.track.timeoutIDs.clickType;
-    }
+    this.cancelTimeout('clickType');
 
     // timer to reset the clickType,
     // when it's left to the browser to call click(), the browser has 600ms
@@ -998,10 +995,7 @@ class ReactInteractive extends React.Component {
   // which will need to manageFocus, and then return whatever manageFocus says to do
   handleClickEvent(e) {
     // clear clickType timer if running
-    if (this.track.timeoutIDs.clickType !== undefined) {
-      window.clearTimeout(this.track.timeoutIDs.clickType);
-      delete this.track.timeoutIDs.clickType;
-    }
+    this.cancelTimeout('clickType');
     let returnValue = 'terminate';
     // if this is an unknown click event, make some assumptions
     if (this.track.clickType === 'reset') {
@@ -1030,10 +1024,7 @@ class ReactInteractive extends React.Component {
     switch (e.type) {
       case 'focus':
         // if there was a timer set by a recent window focus event, clear it
-        if (this.track.timeoutIDs.windowFocus) {
-          window.clearTimeout(this.track.timeoutIDs.windowFocus);
-          delete this.track.timeoutIDs.windowFocus;
-        }
+        this.cancelTimeout('windowFocus');
 
         // if this is a known focusTransition or focusFrom is reset,
         // then set focusFrom based on the type of focusTransition,
