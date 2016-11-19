@@ -407,12 +407,12 @@ class ReactInteractive extends React.Component {
 
     // if the device is touchOnly or a hybrid
     if (deviceHasTouch) {
-      // reject click events that are from touch interactions,
-      // unless no active or touchActive props, then only reject if recent touch on RI,
+      // reject click events that are from touch interactions, unless no active or touchActive prop
+      // if no active or touchActive prop, then let the browser determine what is a click from touch
       // this allows for edge taps that don't fire touch events on RI (only click events)
       // so the click event is allowed through when WebkitTapHightlightColor indicates a click
       if (e.type === 'click' && (input.touch.recentTouch || input.touch.touchOnScreen) &&
-      (this.p.props.active || this.p.props.touchActive || this.track.recentTouch)) {
+      (this.p.props.active || this.p.props.touchActive)) {
         e.preventDefault();
         e.stopPropagation();
         return false;
@@ -884,8 +884,12 @@ class ReactInteractive extends React.Component {
 
           switch (tapTouchPoints) {
             case 1: {
-              const manageFocusReturn = this.manageFocus('touchclick');
-              this.manageClick('tapClick');
+              let manageFocusReturn = 'updateState';
+              // if no active or touchActive prop, let the browser handle click events
+              if (this.p.props.active || this.p.props.touchActive) {
+                manageFocusReturn = this.manageFocus('touchclick');
+                this.manageClick('tapClick');
+              }
               return manageFocusReturn;
             }
             case 2:
@@ -1009,7 +1013,7 @@ class ReactInteractive extends React.Component {
       if (enterKeyFormSubmit) this.track.clickType = 'keyClick';
       // if there is a recent touch on the document,
       // or this is a unknown synthetic click event on a touchOnly device
-      else if (input.touch.recentTouch || deviceType === 'touchOnly') {
+      else if (input.touch.recentTouch || input.touch.touchOnScreen || deviceType === 'touchOnly') {
         returnValue = this.manageFocus('touchclick');
         this.track.keyClick = 'tapClick';
       // else this is a unknown synthetic click event on a mouseOnly or hybrid device

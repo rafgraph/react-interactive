@@ -286,6 +286,7 @@ For the definition of when each state is entered, see the [state machine definit
   - `useBrowserCursor`
 - If a `touchActive` or `active` prop is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
   - To use the `WebkitTapHighlightColor` for styling, don't provide a `touchActive` or `active` prop and set the `WebkitTapHighlightColor` style in the main `style` prop.
+  - Note that if there is no active or touchActive prop, RI will let the browser fully manage what it considers to be a click from a touch interaction. This results in a better match of when the `WebkitTapHighlightColor` is active to what results in a click. RI won't call `node.click()`, so there may be a delay in the click event in some browsers.
 
 ## Interactive State Machine Comparison
 Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and state change hooks.
