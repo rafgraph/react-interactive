@@ -63,6 +63,9 @@ class Interactive extends React.Component {
     this.enterKeyTrigger = false;
     this.spaceKeyTrigger = false;
 
+    // maximum number of touch points where a tap is still possible, updated in propsSetup
+    this.maxTapPoints = 1;
+
     // the event handlers to pass down as props to the element/component
     this.eventHandlers = this.setupEventHandlers();
 
@@ -245,6 +248,10 @@ class Interactive extends React.Component {
       mergedProps.role = 'button';
       passThroughProps.role = 'button';
     }
+
+    // maximum number of touch points where a tap is still possible
+    this.maxTapPoints = (mergedProps.onTapFour && 4) || (mergedProps.onTapThree && 3) ||
+    (mergedProps.onTapTwo && 2) || 1;
 
     // add onClick handler to passThroughProps if it's required
     if (this.setClickListener(mergedProps)) passThroughProps.onClick = this.handleEvent;
@@ -532,10 +539,13 @@ class Interactive extends React.Component {
         break;
 
       case 'touchstart':
-        // cancel tap when touch someplace else on the screen
+        // cancel tap if extra touch point, or when touch someplace else on the screen
         // check topNode and children to make sure they weren't the target
         if (this.p.props.touchActiveTapOnly) {
-          if (recursiveNodeCheck(this.topNode, node => e.target === node)) return 'reNotifyOfNext';
+          if (this.track.touches.active < this.maxTapPoints &&
+          recursiveNodeCheck(this.topNode, node => e.target === node)) {
+            return 'reNotifyOfNext';
+          }
           updateState = this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState';
         }
         break;
@@ -750,10 +760,6 @@ class Interactive extends React.Component {
     this.track.mouseOn = false;
     this.track.buttonDown = false;
 
-    // maximum number of touch points where a tap is still possible
-    const maxTapPoints = (this.p.props.onTapFour && 4) || (this.p.props.onTapThree && 3) ||
-    (this.p.props.onTapTwo && 2) || 1;
-
     // reset touch interaction tracking, called when there are no more touches on the target
     const resetTouchInteraction = () => {
       this.track.touchDown = false;
@@ -775,7 +781,7 @@ class Interactive extends React.Component {
       //  if also touching someplace else on the screen, or
       (e.touches.length !== this.track.touches.active) ||
       // if there is a touchActiveTapOnly prop and more touches than maxTapPoints
-      (this.p.props.touchActiveTapOnly && this.track.touches.active > maxTapPoints)
+      (this.p.props.touchActiveTapOnly && this.track.touches.active > this.maxTapPoints)
     );
 
     // returns true if a touch point has moved more than is allowed for a tap
@@ -836,7 +842,7 @@ class Interactive extends React.Component {
         if (this.p.props.touchActiveTapOnly) {
           for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = this.track.touches.points[e.changedTouches[i].identifier];
-            if (touch && touchMoved(e.changedTouches[i], touch, maxTapPoints)) {
+            if (touch && touchMoved(e.changedTouches[i], touch, this.maxTapPoints)) {
               return this.handleTouchEvent({ type: 'touchtapcancel' });
             }
           }
