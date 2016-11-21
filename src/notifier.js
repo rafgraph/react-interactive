@@ -129,9 +129,8 @@ if (deviceHasMouse) {
   notifyOfNextSubs.mutation = [];
   subsIDs.mutation = {};
   const mutationEvent = dummyEvent('mutation');
-  const observer = new MutationObserver(handleNotifyNext.bind(null, mutationEvent));
-  const body = document.getElementsByTagName('body')[0];
-  observer.observe(body, { childList: true, attributes: true, subtree: true, characterData: true });
+  const mo = new MutationObserver(handleNotifyNext.bind(null, mutationEvent));
+  mo.observe(document, { childList: true, attributes: true, subtree: true, characterData: true });
 }
 
 // always set focus/blur listener on the window so know when leave/enter the app/window/tab
