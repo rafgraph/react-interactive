@@ -12,7 +12,7 @@ import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceTy
   deviceHasTouch, deviceHasMouse, passiveEventSupport, nonBlurrableTags, knownRoleTags,
   enterKeyTrigger, spaceKeyTrigger } from './constants';
 
-class ReactInteractive extends React.Component {
+class Interactive extends React.Component {
   static propTypes = propTypes;
 
   constructor(props) {
@@ -1167,4 +1167,4 @@ class ReactInteractive extends React.Component {
   }
 }
 
-export default ReactInteractive;
+export default Interactive;
