@@ -148,6 +148,12 @@ $ npm install --save react-interactive
 ```
 ```javascript
 import Interactive from 'react-interactive';
+// OR
+var Interactive = require('react-interactive');
+```
+Or use the UMD build that's available on unpkg (the component will be available to use as `Interactive`):
+```html
+<script src="https://unpkg.com/react-interactive/dist/ReactInteractive.min.js"></script>
 ```
 
 ## API
