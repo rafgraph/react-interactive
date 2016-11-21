@@ -600,10 +600,10 @@ class ReactInteractive extends React.Component {
 
     if (!input.mouse.mouseOnDocument) {
       mouseOn = false;
-    } else if (!this.p.props.checkDOMChildren) {
+    } else if (!this.p.props.nonContainedChild) {
       mouseOn = mouseOnNode(this.topNode);
     } else {
-      // if the checkDOMChildren prop is present, then do a recursive check of the node and its
+      // if the nonContainedChild prop is present, then do a recursive check of the node and its
       // children until the mouse is on a node or all children are checked,
       // this is useful when the children aren't inside of the parent on the page
       mouseOn = recursiveNodeCheck(this.topNode, mouseOnNode);

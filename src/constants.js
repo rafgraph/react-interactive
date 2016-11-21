@@ -121,7 +121,7 @@ export const knownProps = {
   touchActiveTapOnly: true,
   focusToggleOff: true,
   stylePriority: true,
-  checkDOMChildren: true,
+  nonContainedChild: true,
 };
 
 export function dummyEvent(type) {
