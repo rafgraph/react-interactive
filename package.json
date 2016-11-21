@@ -4,12 +4,15 @@
   "description": "React Interactive",
   "main": "lib/index.js",
   "scripts": {
-    "build": "rm -rf lib && babel src -d lib",
+    "build": "npm run build-lib && npm run build-dist",
+    "build-lib": "rm -rf lib && babel src -d lib",
+    "build-dist": "rm -rf dist && webpack src/index.js dist/ReactInteractive.js && webpack -p src/index.js dist/ReactInteractive.min.js",
     "prepublish": "npm run build"
   },
   "files": [
+    "src",
     "lib",
-    "src"
+    "dist"
   ],
   "repository": {
     "type": "git",
@@ -36,6 +39,7 @@
     "babel-cli": "^6.18.0",
     "babel-eslint": "^7.1.1",
     "babel-loader": "^6.2.7",
+    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-1": "^6.16.0",
@@ -44,7 +48,8 @@
     "eslint-plugin-import": "^2.1.0",
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.7.1",
-    "react": "^15.4.0"
+    "react": "^15.4.0",
+    "webpack": "^1.13.3"
   },
   "dependencies": {
     "detect-it": "^2.0.0",

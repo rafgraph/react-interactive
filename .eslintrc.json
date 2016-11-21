@@ -8,7 +8,8 @@
   "rules": {
     "no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTernary": true }],
     "no-plusplus": "off",
-    "no-param-reassign": ["error", { "props": false }]
+    "no-param-reassign": ["error", { "props": false }],
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["./webpack.config.babel.js"]}]
   },
   "parserOptions": {
     "ecmaFeatures": {
