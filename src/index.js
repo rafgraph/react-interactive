@@ -335,8 +335,8 @@ class ReactInteractive extends React.Component {
   }
 
   // takes a new state, calls setState and the state change callbacks
-  updateState(newState, props, event, dontMangageNotifyOfNext) {
-    if (!dontMangageNotifyOfNext) this.mangageNotifyOfNext(newState);
+  updateState(newState, props, event, dontmanageNotifyOfNext) {
+    if (!dontmanageNotifyOfNext) this.manageNotifyOfNext(newState);
     const prevIState = this.track.state.iState;
     const nextIState = newState.iState;
     const iStateChange = (nextIState !== prevIState);
@@ -454,7 +454,7 @@ class ReactInteractive extends React.Component {
   // and do some checks (in handleNotifyOfNext) to confirm RI is in the correct state,
   // note that notifyOfNext only while not in the normal state makes the notifier O(1) instead of
   // O(n), where n is the number of mounted RI components
-  mangageNotifyOfNext(newState) {
+  manageNotifyOfNext(newState) {
     // set notifyOfNext
     const setNON = (eType) => {
       if (!this.track.notifyOfNext[eType]) {
@@ -565,7 +565,7 @@ class ReactInteractive extends React.Component {
 
       // window blur event to preserve the focusFrom state
       case 'blur':
-        // clear the timer set in mangageNotifyOfNext that was set to cancel this notification
+        // clear the timer set in manageNotifyOfNext that was set to cancel this notification
         this.cancelTimeout('elementBlur');
         // notifiy of the next window focus event (re-entering the app/window/tab)
         this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
