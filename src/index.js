@@ -1089,8 +1089,8 @@ class Interactive extends React.Component {
     // otherwise only reset it when focus is not from tab
     if (!this.p.props.useBrowserOutlineFocus &&
     (this.p.props.focus || (this.state.focusFrom !== 'tab' && !nonBlurrableTags[this.tagName]))) {
-      style.outline = '0';
-      style.outlineOffset = '0';
+      style.outline = 0;
+      style.outlineOffset = 0;
     }
     // if touchActive or active prop provided, then reset webkit tap highlight style
     if ((this.p.props.touchActive || this.p.props.active) && deviceHasTouch) {
