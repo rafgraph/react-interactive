@@ -508,7 +508,8 @@ class Interactive extends React.Component {
     if (deviceHasTouch) {
       // cancel tap when touch someplace else on the screen
       newState.iState === 'touchActive' ?
-      this.p.props.touchActiveTapOnly && setNON('touchstart') : cancelNON('touchstart');
+      this.p.props.touchActiveTapOnly && this.p.props.extraTouchNoTap && setNON('touchstart') :
+      cancelNON('touchstart');
     }
 
     // notify of next setup for maintaining correct focusFrom when switching apps/windows,
@@ -541,7 +542,7 @@ class Interactive extends React.Component {
       case 'touchstart':
         // cancel tap if extra touch point, or when touch someplace else on the screen
         // check topNode and children to make sure they weren't the target
-        if (this.p.props.touchActiveTapOnly) {
+        if (this.p.props.touchActiveTapOnly && this.p.props.extraTouchNoTap) {
           if (this.track.touches.active < this.maxTapPoints &&
           recursiveNodeCheck(this.topNode, node => e.target === node)) {
             return 'reNotifyOfNext';
@@ -778,10 +779,10 @@ class Interactive extends React.Component {
 
     // returns true if there are extra touches on the screen
     const extraTouches = () => (
-      //  if also touching someplace else on the screen, or
-      (e.touches.length !== this.track.touches.active) ||
-      // if there is a touchActiveTapOnly prop and more touches than maxTapPoints
-      (this.p.props.touchActiveTapOnly && this.track.touches.active > this.maxTapPoints)
+      // if extraTouchNoTap prop and also touching someplace else on the screen, or
+      (this.p.props.extraTouchNoTap && e.touches.length !== this.track.touches.active) ||
+      // more touches on RI than maxTapPoints
+      (this.track.touches.active > this.maxTapPoints)
     );
 
     // returns true if a touch point has moved more than is allowed for a tap

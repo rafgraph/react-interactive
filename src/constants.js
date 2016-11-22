@@ -119,6 +119,7 @@ export const knownProps = {
   useBrowserOutlineFocus: true,
   useBrowserCursor: true,
   touchActiveTapOnly: true,
+  extraTouchNoTap: true,
   focusToggleOff: true,
   stylePriority: true,
   nonContainedChild: true,

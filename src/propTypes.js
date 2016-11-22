@@ -103,6 +103,7 @@ const propTypes = {
   useBrowserOutlineFocus: PropTypes.bool,
   useBrowserCursor: PropTypes.bool,
   touchActiveTapOnly: PropTypes.bool,
+  extraTouchNoTap: PropTypes.bool,
   focusToggleOff: PropTypes.bool,
   stylePriority: PropTypes.shape(iStatesShape),
   nonContainedChild: PropTypes.bool,
