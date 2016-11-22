@@ -212,6 +212,9 @@ class Interactive extends React.Component {
       this.type = this.topNode.type && this.topNode.type.toLowerCase();
       this.enterKeyTrigger = enterKeyTrigger(this.tagName, this.type);
       this.spaceKeyTrigger = spaceKeyTrigger(this.tagName, this.type);
+      // if as is a react component then won't have access to tag in componentWillReceiveProps,
+      // so check if click listener needs to be set again here (after this.tagName is set)
+      if (this.setClickListener(this.p.props)) this.p.passThroughProps.onClick = this.handleEvent;
       // if node is a new node then call manageFocus to keep browser in sync with RI,
       // note: above assignments can't be in this if statement b/c node could have mutated,
       // node should maintain focus state when mutated
