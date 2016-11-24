@@ -179,7 +179,7 @@ class Interactive extends React.Component {
     return eventHandlers;
   }
 
-  // returns true if a click listener should be set, called from props setup
+  // returns true if a click listener should be set, called from propsSetup and refCallback
   setClickListener(props) {
     // set click listener when there is an onClick prop
     if (props.onClick) return true;
