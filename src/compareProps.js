@@ -1,5 +1,5 @@
 import React from 'react';
-import { stateProps, focusOptionsKeys, iStateOptionsKeys } from './constants';
+import { stateProps, statePropOptionKeys } from './constants';
 
 // shallow compare of two sets of props, can be called recursivly,
 // returns true if the props are the same, and false if they are not the same
@@ -21,13 +21,12 @@ export default function compareProps(propsA, propsB) {
   const pOffset = propsA.forceState ? -1 : 0;
   if ((keysB.length + nextPOffset) !== (Object.keys(propsA).length + pOffset)) return false;
 
-  // if it's an options object, then shallow compare the options for equality
+  // if it's an state prop options object, then shallow compare the options for equality
   const sameStateProp = (stateProp) => {
-    const statePropKeys = stateProp === 'focus' ? focusOptionsKeys : iStateOptionsKeys;
     // if propsB doesn't have any of the options object keys, then return false b/c not options obj
-    if (!statePropKeys.some(key => propsB[stateProp][key])) return false;
+    if (!statePropOptionKeys.some(key => propsB[stateProp][key])) return false;
     // shallow compare the options for equality
-    return statePropKeys.every(key => propsB[stateProp][key] === propsA[stateProp][key]);
+    return statePropOptionKeys.every(key => propsB[stateProp][key] === propsA[stateProp][key]);
   };
 
   // loop through props

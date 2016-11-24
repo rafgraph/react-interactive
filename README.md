@@ -3,7 +3,7 @@
 [Live example](http://react-interactive.rafrex.com)
 - Use **inline styles for all interactive states** - `hover`, `active`, `focus`, etc... (no style tags or CSS added to the page)
 - Separate `active` states for mouse, touch, and keyboard interactions (not possible with CSS)
-- Separate styles for the `focus` state based on how it was entered - from mouse, touch, or tab key (not possible with CSS)
+- Separate `focus` states based on how it was entered - from mouse, touch, or tab key (not possible with CSS)
 - State change hook to easily incorporate the interactive state into your component (not possible with CSS)
 - Built in touch device and keyboard support - a `click` event is generated on mouse click, touch tap (without delay), and enter keydown
 - Option to use class names instead of inline styles if you prefer to write styles separately with CSS
@@ -23,11 +23,9 @@ import Interactive from 'react-interactive';
 
   focus={{ outline: '2px solid green' }}
   // OR
-  focus={{
-    focusFromTabStyle: { outline: '2px solid orange' },
-    focusFromMouseStyle: { outline: '2px solid green' },
-    focusFromTouchStyle: { outline: '2px solid blue' },
-  }}
+  focusFromTab={{ outline: '2px solid orange' }}
+  focusFromMouse={{ outline: '2px solid green' }}
+  focusFromTouch={{ outline: '2px solid blue' }}
 
   // hook called on every state change, receives prevState and nextState objects
   onStateChange={this.handleInteractiveStateChange}
@@ -49,8 +47,7 @@ import Interactive from 'react-interactive';
   - [`as` Prop Type](#as-prop-type)
   - [`state` Object](#state-object)
   - [Default `role` and `tabIndex`](#default-role-and-tabindex)
-  - [`focusFrom` API](#focusfrom-api)
-  - [`focus` State](#focus-state)
+  - [Focus State](#focus-state)
   - [Default Styles](#default-styles)
 - [Interactive State Machine Comparison](#interactive-state-machine-comparison)
   - [React Interactive State Machine](#react-interactive-state-machine)
@@ -66,19 +63,21 @@ import Interactive from 'react-interactive';
 
 ## The Basics
 #### Interactive State Machine
-Interactive state machine as a React component. There are 5 mutually exclusive states, plus 1 boolean state that can be combined with the other 5.
-- The 5 mutually exclusive states are:
+Interactive state machine as a React component. There are 5 mutually exclusive iStates, plus 3 mutually exclusive focus states that can be combined with the 5 iStates (the total number of states that RI can be in is 19, see [State Machine Notes](#state-machine-notes) below).
+- The 5 mutually exclusive iStates are:
   - `normal`
   - `hover`
   - \*`hoverActive`
   - \*`touchActive`
   - \*`keyActive`
-- The 1 boolean state is:
-  - `focus`
+- The 3 mutually exclusive focus states are:
+  - \*\*`focusFromTab`
+  - \*\*`focusFromMouse`
+  - \*\*`focusFromTouch`
 
 \*The 3 separate `[type]Active` states can be treated as a single `active` state if desired. `hoverActive` (mouse on and button down), `touchActive` (touch on screen), `keyActive` (has focus and enter key down).
 
-The `focus` state can be styled 3 separate ways based on how it was entered, from `mouse`, `touch`, or `tab` key.
+\*\*The 3 separate `focusFrom[Type]` states can be treated as a single `focus` state if desired.
 
 Compared to CSS, React Interactive is a simpler state machine with better touch device and keyboard support, and state change hooks. See [comparison below](#interactive-state-machine-comparison).
 
@@ -121,9 +120,8 @@ import { Link } from 'react-router';
   // touch interactions: normal -> touchActive
   touchActive={{ color: 'blue' }}
 
-  // keyboard interactions: normal -> normal with focus -> keyActive with focus
-  // use focusFromTabStyle to only apply the style when focus comes from the keyboard
-  focus={{ focusFromTabStyle: { outline: '2px solid orange' }}}
+  // keyboard interactions: normal -> normal with focusFromTab -> keyActive with focusFromTab
+  focusFromTab={{ outline: '2px solid orange' }}
   keyActive={{ color: 'orange' }}
 
 >This is an interactive link with separate styles for each type of interaction</Interactive>
@@ -136,8 +134,8 @@ import { Link } from 'react-router';
   hoverActive={{ className: 'hover-active-class' }}
   touchActive={{ className: 'touch-active-class' }}
   keyActive={{ className: 'key-active-class' }}
-  // use focusFromTabClassName to only apply the class when focus comes from the keyboard
-  focus={{ focusFromTabClassName: 'tab-focus-class' }}
+  // use focusFromTab to only apply the class when focus comes from the keyboard
+  focusFromTab={{ className: 'tab-focus-class' }}
   className="some-class"
 >This is an interactive div with classes instead of inline styles</Interactive>
 ```
@@ -166,12 +164,15 @@ For the definition of when each state is entered, see the [state machine definit
 |:-----|:-----|:--------|:------------|
 | `as` | string (html tag name) <br /> or <br /> ReactComponent <br> or <br> JSX/ReactElement | `"div"` <br> or <br> `MyComponent` <br> or <br> `<div>...</div>` <br> `<MyComponent />` | What the Interactive component is rendered as. It can be an html tag name (as a string), or it can be a ReactComponent (RI's callbacks are passed down as props to the component), or it can be a JSX/ReactElement (see [`as` prop type](#as-prop-type) notes for more info). Note that `as` is hot-swappable on each render and RI will seamlessly maintain the current interactive state. The `as` prop is required (it is the only required prop). |
 | `normal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: { color: 'black' }, className: 'some-class' }` <br> or <br> `'hover'` | Style or options object for the `normal` state, or a string indicating a state to match. If it's an object, it can be either a style object or an options object with the keys: `style` and `className`. The `style` object is merged with both the `style` prop and the focus state `style` (see [merging styles](#merging-styles-and-classes) for the order that styles are merged in). The `className` is a string of space separated class names and is merged as a union with the `className` prop and the focus state `className`. If the value of the `normal` prop is a string, it must indicate one of the other states, e.g. `'hover'`, and that state's `style` and `className` properties will be used for both states. |
-| `hover` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'green' }` <br> or... (same as above) | Same as `normal`, but for the `hover` state. Note that if there is no `hoverActive` or `active` prop, then the `hover` prop's style and classes are used for the `hoverActive` state. |
+| `hover` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'green' }` <br> or... (same as above) | Same as `normal`, but for the `hover` state. Note that if there is no `hoverActive` or `active` prop, then the `hover` prop's style and classes are used for the `hoverActive` state. This state is entered when the mouse is on the RI element. |
 | `active` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `normal`, but for the `active` state. Note that the `active` state is the union of the `hoverActive`, `touchActive`, and `keyActive` states. The `active` prop is only used in place of the `[type]Active` prop if the respective `[type]Active` prop is not present. |
-| `hoverActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `normal`, but for the `hoverActive` state. Note that if there is no `hoverActive` or `active` prop, then the `hover` prop's style and classes are used for the `hoverActive` state. |
-| `touchActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'blue' }` <br> or... (same as above) | Same as `normal`, but for the `touchActive` state. |
-| `keyActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'yellow' }` <br> or... (same as above) | Same as `normal`, but for the `keyActive` state. |
-| `focus` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ border: '2px dotted green' }` <br> or... (same as above), <br> or see the [`focusFrom` API](#focusfrom-api) for additional options | Same as `normal`, but for the `focus` state, or see the [`focusFrom` API](#focusfrom-api) for additional options. The focus state can be applied to any element, not just inputs, and will toggle on click/tap unless the element is for user input. |
+| `hoverActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `normal`, but for the `hoverActive` state. Note that if there is no `hoverActive` or `active` prop, then the `hover` prop's style and classes are used for the `hoverActive` state. This state is entered when the mouse is on the RI element and the mouse button is down.  |
+| `touchActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'blue' }` <br> or... (same as above) | Same as `normal`, but for the `touchActive` state. This state is entered when a touch point is on the RI element.  |
+| `keyActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'yellow' }` <br> or... (same as above) | Same as `normal`, but for the `keyActive` state. This state is entered when the RI element has focus and the enter key is down.  |
+| `focus` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid green' }` <br> or... (same as above) | Same as `normal`, but for the `focus` state. Note that the `focus` state is the union of the `focusFromTab`, `focusFromTouch`, and `focusFromMouse` states. The `focus` prop is only used in place of the `focusFrom[Type]` prop if the respective `focusFrom[Type]` prop is not present. |
+| `focusFromTab` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid green' }` <br> or... (same as above) | Same as `normal`, but for the `focusFromTab` state. This state is entered if focus is from the tab key (i.e. tabbing through the focusable elements on the page). Also, any focus calls not from a mouse or touch interaction (e.g. from assistive tech) will match with `focusFromTab`. |
+| `focusFromMouse` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid red' }` <br> or... (same as above) | Same as `normal`, but for the `focusFromMouse` state. This state is entered when focus is from a mouse interaction. |
+| `focusFromTouch` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid blue' }` <br> or... (same as above) | Same as `normal`, but for the `focusFromTouch` state. This state is entered when focus is from a touch interaction. |
 | `style` | style object | `{ margin: '10px' }` | Styles that are always applied. Styles are merged with state styles. State styles have priority when there are conflicts. |
 | `className` | string | `"some-class other-class"` | Classes that are always applied to the element, and are merged as a union with state classes. |
 | `onStateChange` | function | `function({ prevState, nextState, event }) {...}` | Function called on each state change. Receives an object with `prevState`, `nextState` and `event` keys as the sole argument. `prevState` and `nextState` are [state objects](#state-object). The `event` is the event that caused the state change (a synthetic React event). |
@@ -179,6 +180,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `onClick` | function | `function(event, clickType) {...}` <br><br> Where `clickType` is one of: <br> `'mouseClick'` <br> `'tapClick'` <br> `'keyClick'` | Function called for mouse clicks, touch taps with 1 touch point/finger (called without delay), enter keydown events (if the element has focus), and synthetic click events. The `event` argument will always be a `click` event (`node.click()` is called to generate a click event if needed). The `clickType` argument will always be one of `mouseClick`, `tapClick`, or `keyClick`. It will be `mouseClick` for mouse clicks and for synthetic click events on mouse only and hybrid devices. It will be `tapClick` for touch taps with 1 touch point and for synthetic click events on touch only devices. It will be `keyClick` if the click event was generated from a enter keydown event (or, for some elements, a space keyup event). Note that RI will call `node.click()` for enter keydown events only if there is an `onClick` prop. |
 | `onTapTwo` | function | `function(event) {...}` | Function called for taps with 2 touch points, e.g. a 2 finger tap. Event passed in is the `touchend` event from last touch point to leave the surface. |
 | `touchActiveTapOnly` | boolean | `touchActiveTapOnly` | Add this prop to only remain in the `touchActive` state while a tap is possible. If the touch is moved more than the tolerance for a tap, or held on the screen longer than the time allowed for a tap, then the `touchActive` state is exited. This is useful when the intention of the `touchActive` state is to indicate to the user that they are tapping something. Note that without this prop React Interactive will remain in the `touchActive` state as long as the touch point is on the screen.
+| `extraTouchNoTap` | boolean | 'extraTouchNoTap' | Add this prop to cancel taps while touching someplace else on the screen. By default RI will ignore extra touches on the screen and allow taps on the RI element regardless of other touches. |
 | `nonContainedChild` | boolean |   `nonContainedChild` | Add this prop if the DOM node's children are not contained inside of it on the page. For example, a child that is absolutely positioned outside of its parent. React Interactive does some quality control checks using `node.getBoundingClientRect()`, and by default the children are assumed to be within the parent's rectangle, but if this is not the case, then add this prop and the children will be checked. |
 | `initialState` | state object | `{ iState: 'normal', focus: true, focusFrom: 'tab' }` | Optional initial state to enter when the component is mounted. A [state object](#state-object) with keys for one or both of `iState` and `focus`, as well as `focusFrom` if focus is true (defaults to `'tab'` if not provided). Note that for an `active` `iState`, you must specify `[type]Active` and not just `active`. Used in the `constructor` to set `iState` and in `componentDidMount` to set `focus` (RI can't set focus until after it has a reference to the DOM node). |
 | `forceState` | state object | `{ iState: 'normal', focus: false, focusFrom: undefined }` | Force enter this state. Same as `initialState` except not used for the initial render. Note that if only one key is present, a shallow merge is done with the current state, for example, use `{ focus: true }` to only focus the element. Only used in `componentWillReceiveProps`. |
@@ -195,7 +197,7 @@ For the definition of when each state is entered, see the [state machine definit
   3. The focus state style if in the focus state
 - If you want an iState style to take precedence over the focus style, then use the `stylePriority` prop and specify which iStates should have priority over focus, e.g. `stylePriority={{ hover: true, hoverActive: true }}`
 - Classes are merged as a union without preference:
-  - `focus` state classes if in the focus state
+  - focus state classes if in the focus state
   - iState classes
   - The `className` prop
 
@@ -231,10 +233,8 @@ For the definition of when each state is entered, see the [state machine definit
 {
   // iState is always 1 of 5 strings
   iState: 'normal' / 'hover' / 'hoverActive' / 'touchActive' / 'keyActive',
-  // focus is always a boolean
-  focus: true / false,
-  // focusFrom is undefined if focus is false, otherwise it's 1 of 3 strings
-  focusFrom: undefined / 'tab' / 'mouse' / 'touch',
+  // focus is always 1 or 4 values
+  focus: false / 'tab' / 'mouse' / 'touch',
 }
 ```
 - In RI's API, the `onStateChange` and `setStateCallback` hooks receive the previous and next state objects when they are called, and the `forceState` and `initialState` props pass in a state object to the RI component.
@@ -244,38 +244,8 @@ For the definition of when each state is entered, see the [state machine definit
 - If you add a `focus` or `onClick` prop without a `tabIndex` prop, then a `tabIndex` of `0` is added to make the element focusable by the browser. If you don't want any `tabIndex` added to the DOM element, then pass in the prop `tabIndex={null}`.
 - Note that for buttons `as="button"` is discouraged because browsers are inconsistent in how they display and handle button interactions. For better consistency, use `as="div"/"span"` and add an `onClick` handler. By default RI will add `role="button"`, `tabIndex="0"`, and a key click handler (which will call `onClick`), so it will work just like a button. You can override these with your own `role` and `tabIndex` if you prefer.
 
-#### `focusFrom` API
-- The `focusFrom` API allows for separate styles and class names based on how the `focus` state is entered (tab key, mouse, or touch).
-- The API is accessed in the `focus` prop options object by adding keys for  `focusFrom[input]Style`, and `focusFrom[input]ClassName`.
-  - `focusFromTabStyle`, `focusFromTabClassName`: use this `style` and `className` for the `focus` state if focus is from the tab key (i.e. tabbing through the focusable elements on the page). Also, any focus calls not from a mouse or touch interaction (e.g. from assistive tech) will match with `focusFromTab`.
-  - `focusFromMouseStyle`, `focusFromMouseClassName`: use this `style` and `className` for the `focus` state when focus is from a mouse interaction.
-  - `focusFromTouchStyle`, `focusFromTouchClassName`: use this `style` and `className` for the `focus` state when focus is from a touch interaction.
-- `focus` options object with the complete `focusFrom` API:
-```javascript
-  <Interactive
-    as="div"
-    focus={{
-      // style to use for the focus state when focus is from the keyboard (i.e. the tab key)
-      focusFromTabStyle: { outline: '2px solid yellow' },
-      // style to use for the focus state when focus is from a mouse interaction
-      focusFromMouseStyle: { outline: '2px solid green' },
-      // style to use for the focus state when focus is from a touch interaction
-      focusFromTouchStyle: { outline: '2px solid blue' },
-
-      // when `focusFrom[input]Style` is not present for an input type,
-      // the `style` key will be used instead, for example:
-      // style: { outline: '2px solid yellow' },
-      // but since all 3 focusFrom styles are present in this example, the style key does nothing
-
-      // same as style, but for class names (as a space separated string)
-      focusFromTabClassName: 'tab-focus-class',
-      focusFromMouseClassName: 'mouse-focus-class',
-      focusFromTouchClassName: 'touch-focus-class',
-    }}
-  >Interactive div with separate focus from styles</Interactive>
-```
-
-#### `focus` State
+#### Focus State
+- The focus state can be applied to any element, not just inputs, and will toggle on click/tap unless the element is for user input.
 - React Interactive's focus state is always kept in sync with the browser's focus state. Added functionality like focus toggle and `focusFrom` are implemented by controlling the browser's focus state.
 - Focus toggle
   - All elements will toggle focus except if the element is for user input, that is, the element's tag name is `input`, `textarea`, or `select`.
@@ -318,7 +288,7 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
 | `hoverActive` | `mouseOn && buttonDown && !touchDown && !focusKeyDown` |
 | `keyActive` | `focusKeyDown && !touchDown` |
 | `touchActive` | `touchDown` |
-The `focus` state boolean can be combined with any of the above states, and the `keyActive` state is only available while in the `focus` state.
+The three `focusFrom` states can be combined with any of the above states, and the `keyActive` state is only available while in the focus state.
 
 ### CSS Interactive State Machine
 Note that since a state machine can only be in one state at a time, to view interactive CSS as a state machine it has to be thought of as a combination of pseudo class selectors that match based on the mouse, keyboard and touch states.
@@ -331,25 +301,25 @@ Note that since a state machine can only be in one state at a time, to view inte
 | `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` &#124;&#124; `(mouseOn && focusKeyDown)` &#124;&#124; `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
 | `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` &#124;&#124; `(focusKeyDown && !mouseOn)` &#124;&#124; `(touchDown but not on the element currently, but not consistent across browsers)` | `.class:active` |
 
-The `focus` state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
+The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
 
 Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted to using CSS selectors. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and in CSS touch and keyboard interactions are not well supported.
 
 ## State Machine Notes
-- The total number of states that the React Interactive state machine can be in is 9.
-- There are 5 mutually exclusive and comprehensive states: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 1 boolean state: `focus`, with the exception of `keyActive`, which is only available while in the `focus` state, for a total of 9 states:
-  - `normal`
-  - `normal` with `focus`
-  - `hover`
-  - `hover` with `focus`
-  - `hoverActive`
-  - `hoverActive` with `focus`
-  - `touchActive`
-  - `touchActive` with `focus`
-  - `keyActive` with `focus`
-- The `onStateChange` callback is called each time a transition occurs between any of the 9 states.
-- The `active` state/prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
-- The `focus` state's `focusFrom` API allows for separate styles and class names based on how the `focus` state was entered (tab, mouse, or touch), but are not considered separate states within the state machine.
+- The total number of states that the React Interactive state machine can be in is 19.
+- There are 5 mutually exclusive and comprehensive iStates: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 4 mutually exclusive and comprehensive focus states: `false`, `tab`, `mouse`, and `touch`, with the exception of `keyActive`, which is only available while focus is not `false`, for a total of 19 states:
+
+| States |   |   |   |
+|:-------|:--|:--|:--|
+| `normal` | `normal` with `focusFromTab` | `normal` with `focusFromMouse` | `normal` with `focusFromTouch` |
+| `hover` | `hover` with `focusFromTab` | `hover` with `focusFromMouse` | `hover` with `focusFromTouch` |
+| `hoverActive` | `hoverActive` with `focusFromTab` | `hoverActive` with `focusFromMouse` | `hoverActive` with `focusFromTouch` |
+| `touchActive` | `touchActive` with `focusFromTab` | `touchActive` with `focusFromMouse` | `touchActive` with `focusFromTouch` |
+| N/A | `keyActive` with `focusFromTab` | `keyActive` with `focusFromMouse` | `keyActive` with `focusFromTouch` |
+
+- The `onStateChange` hook is called each time a transition occurs between any of the 19 states. Note that a transition will never occur between two `focusFrom` states as `focusFrom` is based on how the focus state was entered, so have to transition to focus `false` before transitioning to a different `focusFrom` state.
+- The `active` prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
+- The `focus` prop is just a convenience wrapper around the 3 `focusFrom` states: `tab`, `mouse` and `touch`, and is not a state in its own right.
 
 ## More Examples
 
@@ -364,7 +334,6 @@ class MyComponent extends React.Component {
     this.state = {
       iState: 'normal',
       focus: false,
-      focusFrom: undefined,
     };
   }
 
@@ -374,7 +343,6 @@ class MyComponent extends React.Component {
     // this.setState({
     //   iState: nextState.iState,
     //   focus: nextState.focus,
-    //   focusFrom: nextState.focusFrom,
     // });
   }
 
@@ -389,8 +357,7 @@ class MyComponent extends React.Component {
         {
           // create your component using:
           // this.state.iState === 'normal' / 'hover' / 'hoverActive' / 'touchActive' / 'keyActive'
-          // this.state.focus === true / false
-          // this.state.focusFrom === undefined / 'tab' / 'mouse' / 'touch'
+          // this.state.focus === false / 'tab' / 'mouse' / 'touch'
         }
       </div>
     );
@@ -509,7 +476,7 @@ class MyComponent extends React.Component {
       showInfo:
         nextState.iState === 'hover' ||
         nextState.iState === 'touchActive' ||
-        nextState.focusFrom === 'tab'
+        nextState.focus === 'tab'
     });
   }
 
@@ -561,14 +528,14 @@ class MyComponent extends React.Component {
         onClick={this.loadSomething}
         hover={{ color: 'green' }}
         active={{ color: 'blue' }}
-        focus={{ outline: '2px solid green' }}
+        focusFromTab={{ outline: '2px solid green' }}
       >Load Something</span>
     );
     const currentlyLoading = (
       <span
         hover={{ color: 'gray' }}
         active={{ color: 'lightgray' }}
-        focus={{ outline: '2px solid gray' }}
+        focusFromTab={{ outline: '2px solid gray' }}
       >Loading...</span>
     );
     return (
