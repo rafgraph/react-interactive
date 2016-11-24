@@ -1114,7 +1114,7 @@ class Interactive extends React.Component {
         ) || (
           lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
           this.p.props.type === 'radio' || this.p.props.type === 'submit')
-        ) || lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'select'
+        ) || lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'area' || lowerAs === 'select'
       ) && !(
         this.p.props.disabled
     ))) {
