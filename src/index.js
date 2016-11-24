@@ -509,7 +509,7 @@ class Interactive extends React.Component {
     if (deviceHasTouch) {
       // cancel tap when touch someplace else on the screen
       newState.iState === 'touchActive' ?
-      this.p.props.touchActiveTapOnly && this.p.props.extraTouchNoTap && setNON('touchstart') :
+      this.p.props.extraTouchNoTap && setNON('touchstart') :
       cancelNON('touchstart');
     }
 
@@ -543,7 +543,7 @@ class Interactive extends React.Component {
       case 'touchstart':
         // cancel tap if extra touch point, or when touch someplace else on the screen
         // check topNode and children to make sure they weren't the target
-        if (this.p.props.touchActiveTapOnly && this.p.props.extraTouchNoTap) {
+        if (this.p.props.extraTouchNoTap) {
           if (this.track.touches.active < this.maxTapPoints &&
           recursiveNodeCheck(this.topNode, node => e.target === node)) {
             return 'reNotifyOfNext';
