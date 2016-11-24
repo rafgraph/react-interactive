@@ -36,29 +36,16 @@ export const iStates = {
   keyActive: true,
 };
 
-export const focusFromStates = {
-  tab: true,
-  mouse: true,
-  touch: true,
-};
-
 export const stateProps = {
   ...iStates,
   active: true,
   focus: true,
+  focusFromTab: true,
+  focusFromMouse: true,
+  focusFromTouch: true,
 };
 
-export const iStateOptionsKeys = ['style', 'className'];
-
-export const focusOptionsKeys = [
-  ...iStateOptionsKeys,
-  'focusFromTabStyle',
-  'focusFromMouseStyle',
-  'focusFromTouchStyle',
-  'focusFromTabClassName',
-  'focusFromMouseClassName',
-  'focusFromTouchClassName',
-];
+export const statePropOptionKeys = ['style', 'className'];
 
 // don't toggle focus on these tags
 export const nonBlurrableTags = {

@@ -1,12 +1,12 @@
-import { iStateOptionsKeys, focusOptionsKeys } from './constants';
+import { statePropOptionKeys } from './constants';
 
 // extract and return the style object and className string for the state given
-export default function extractStyle(props, state, focusFrom) {
+export default function extractStyle(props, state) {
   // if no hoverActive prop, then use hover prop for style and classes
   let stateProp = (state === 'hoverActive' && !props.hoverActive) ? 'hover' : state;
   // loop until the state prop to use is found (i.e. it's not a string)
   let times = 0;
-  while (typeof stateProp === 'string' && times < 6) {
+  while (typeof stateProp === 'string' && times < 10) {
     stateProp = props[stateProp];
     times++;
   }
@@ -15,12 +15,9 @@ export default function extractStyle(props, state, focusFrom) {
 
   const extract = {};
   // check if the stateProp is an options object, and extract style and className from the stateProp
-  if (state !== 'focus' && iStateOptionsKeys.some(key => stateProp[key])) {
+  if (statePropOptionKeys.some(key => stateProp[key])) {
     extract.style = stateProp.style || null;
     extract.className = stateProp.className || '';
-  } else if (state === 'focus' && focusOptionsKeys.some(key => stateProp[key])) {
-    extract.style = stateProp[`${focusFrom}Style`] || stateProp.style || null;
-    extract.className = stateProp[`${focusFrom}ClassName`] || stateProp.className || '';
   } else {
     // if the stateProp is not an options object, then it's a style object
     extract.style = stateProp;

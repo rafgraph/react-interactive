@@ -1,5 +1,5 @@
 import { PropTypes } from 'react';
-import { iStates, focusFromStates, stateProps } from './constants';
+import { iStates, stateProps } from './constants';
 
 function statePropsExcept(state) {
   const statePropsCopy = {
@@ -8,21 +8,6 @@ function statePropsExcept(state) {
   delete statePropsCopy[state];
   return Object.keys(statePropsCopy);
 }
-
-const iStateOptionsObjectShape = {
-  style: PropTypes.object,
-  className: PropTypes.string,
-};
-
-const focusOptionsObjectShape = {
-  ...iStateOptionsObjectShape,
-  focusFromTabStyle: PropTypes.object,
-  focusFromMouseStyle: PropTypes.object,
-  focusFromTouchStyle: PropTypes.object,
-  focusFromTabClassName: PropTypes.string,
-  focusFromMouseClassName: PropTypes.string,
-  focusFromTouchClassName: PropTypes.string,
-};
 
 const iStatesShape = {};
 Object.keys(iStates).forEach((iState) => {
@@ -37,42 +22,52 @@ const propTypes = {
   ]).isRequired,
   children: PropTypes.node,
   normal: PropTypes.oneOfType([
-    PropTypes.shape(iStateOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('normal')),
   ]),
   hover: PropTypes.oneOfType([
-    PropTypes.shape(iStateOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('hover')),
   ]),
   active: PropTypes.oneOfType([
-    PropTypes.shape(iStateOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('active')),
   ]),
   hoverActive: PropTypes.oneOfType([
-    PropTypes.shape(iStateOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('hoverActive')),
   ]),
   touchActive: PropTypes.oneOfType([
-    PropTypes.shape(iStateOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('touchActive')),
   ]),
   keyActive: PropTypes.oneOfType([
-    PropTypes.shape(iStateOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('keyActive')),
   ]),
   focus: PropTypes.oneOfType([
-    PropTypes.shape(focusOptionsObjectShape),
+    PropTypes.object,
     PropTypes.oneOf(statePropsExcept('focus')),
+  ]),
+  focusFromTab: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.oneOf(statePropsExcept('focusFromTab')),
+  ]),
+  focusFromTouch: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.oneOf(statePropsExcept('focusFromTouch')),
+  ]),
+  focusFromMouse: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.oneOf(statePropsExcept('focusFromMouse')),
   ]),
   forceState: PropTypes.shape({
     iState: PropTypes.oneOf(Object.keys(iStates)),
-    focus: PropTypes.bool,
-    focusFrom: PropTypes.oneOf(Object.keys(focusFromStates)),
+    focus: PropTypes.oneOf([false, 'tab', 'mouse', 'touch']),
   }),
   initialState: PropTypes.shape({
     iState: PropTypes.oneOf(Object.keys(iStates)),
-    focus: PropTypes.bool,
-    focusFrom: PropTypes.oneOf(Object.keys(focusFromStates)),
+    focus: PropTypes.oneOf([false, 'tab', 'mouse', 'touch']),
   }),
   style: PropTypes.object,
   className: PropTypes.string,
