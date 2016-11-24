@@ -56,9 +56,9 @@ class Interactive extends React.Component {
     this.refNode = null;
     // the actual top DOM node of `as`, needed when `as` is wrapped in a span (is ReactComponent)
     this.topNode = null;
-    // tagName and type properties of topNode
-    this.tagName = '';
-    this.type = '';
+    // tagName and type properties of topNode, updated in refCallback
+    this.tagName = (typeof props.as === 'string' && props.as) || '';
+    this.type = props.type || '';
     // if the topNode is triggered by the enter key, and/or the space bar
     this.enterKeyTrigger = false;
     this.spaceKeyTrigger = false;
@@ -192,10 +192,8 @@ class Interactive extends React.Component {
       if (props.tabIndex) return true;
       // set click listener when the element has a knownRoleTag, i.e. the browser
       // has a click event handler so preventDefault() needs to be called when the
-      // browser sends a click event after RI has canceled tap (e.g. touchTapTimer expired, etc),
-      // note that on the component's first render this.tagName won't be set, so use props.as
-      const tag = (typeof props.as === 'string' && props.as) || this.tagName;
-      if (knownRoleTags[tag]) return true;
+      // browser sends a click event after RI has canceled tap (e.g. touchTapTimer expired, etc)
+      if (knownRoleTags[this.tagName]) return true;
     }
     return false;
   }
