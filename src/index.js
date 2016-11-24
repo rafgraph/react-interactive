@@ -10,7 +10,7 @@ import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import syntheticClick from './syntheticClick';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
   deviceHasTouch, deviceHasMouse, passiveEventSupport, nonBlurrableTags, knownRoleTags,
-  enterKeyTrigger, spaceKeyTrigger } from './constants';
+  enterKeyTrigger, spaceKeyTrigger, queueTime } from './constants';
 
 class Interactive extends React.Component {
   static propTypes = propTypes;
@@ -515,7 +515,7 @@ class Interactive extends React.Component {
       setNON('blur');
       this.manageSetTimeout('elementBlur', () => {
         cancelNON('blur');
-      }, 600);
+      }, queueTime);
     }
   }
 
@@ -566,7 +566,7 @@ class Interactive extends React.Component {
         if (this.track.focus) {
           this.manageSetTimeout('windowFocus', () => {
             this.track.focus = false;
-          }, 600);
+          }, queueTime);
         }
         break;
 
@@ -783,7 +783,7 @@ class Interactive extends React.Component {
       this.track.recentTouch = true;
       this.manageSetTimeout('recentTouchTimer', () => {
         this.track.recentTouch = false;
-      }, 600);
+      }, queueTime);
     };
 
     // returns true if there are extra touches on the screen
@@ -965,12 +965,12 @@ class Interactive extends React.Component {
     this.cancelTimeout('clickType');
 
     // timer to reset the clickType,
-    // when it's left to the browser to call click(), the browser has 600ms
+    // when it's left to the browser to call click(), the browser has queueTime
     // to add the click event to the queue for it to be recognized as a known click event
     const setClickTypeTimer = () => {
       this.manageSetTimeout('clickType', () => {
         this.track.clickType = 'reset';
-      }, 600);
+      }, queueTime);
     };
 
     switch (type) {

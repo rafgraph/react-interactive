@@ -1,5 +1,5 @@
 import { notifyOfAll } from './notifier';
-import { deviceHasTouch } from './constants';
+import { deviceHasTouch, queueTime } from './constants';
 
 let blockClick = false;
 let blockClickTimerID = null;
@@ -19,12 +19,12 @@ export default function syntheticClick(node) {
   blockClick = false;
   node.click();
   blockClick = true;
-  // reset click blocking if subsequent click isn't added to browser's queue w/in 600ms
+  // reset click blocking if subsequent click isn't added to browser's queue w/in queueTime
   blockClickTimerID = window.setTimeout(() => {
     blockClick = false;
     blockClickCounter = 0;
     blockClickTimerID = null;
-  }, 600);
+  }, queueTime);
 }
 
 function handleClick(e) {

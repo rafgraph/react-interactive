@@ -112,6 +112,9 @@ export const knownProps = {
   nonContainedChild: true,
 };
 
+// ms to allow for the browser to add subsequent event to the queue in setTimeouts
+export const queueTime = 600;
+
 export function dummyEvent(type) {
   return {
     type,
