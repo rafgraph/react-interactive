@@ -224,6 +224,7 @@ For the definition of when each state is entered, see the [state machine definit
   ```
   - This will create a `div` with text that reads 'Some jsxElement text' and will be blue on hover and red on active. When the props are merged, `jsxElement`'s `hover` prop and `children` have priority over `Interactive`'s `hover` prop and `children`, but since `jsxElement` didn't specify an `active` prop, `Interactive`'s `active` prop is still valid.
   - After the props are merged, the JSX/ReactElement's type (html tag name or ReactComponent) determines how `as` is processed - either like a string or like a ReactComponent.
+  - Note that when `as` is a ReactElement you cannot attach a `ref` to it (only the `Interactive` element is rendered and you can attach a `ref` to `Interactive` (or use the `refDOMNode` prop), but it is not possible to have two `ref`s to the same element).
   - Note that this is not a very practical example of using a JSX/ReactElement for `as`. For a more practical example see, [Hot Swappable `as`](#hot-swappable-as).
 
 #### `state` Object
