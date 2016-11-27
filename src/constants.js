@@ -110,6 +110,7 @@ export const knownProps = {
   focusToggleOff: true,
   stylePriority: true,
   nonContainedChild: true,
+  interactiveChild: true,
 };
 
 // ms to allow for the browser to add subsequent event to the queue in setTimeouts

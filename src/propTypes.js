@@ -102,6 +102,7 @@ const propTypes = {
   focusToggleOff: PropTypes.bool,
   stylePriority: PropTypes.shape(iStatesShape),
   nonContainedChild: PropTypes.bool,
+  interactiveChild: PropTypes.bool,
 };
 
 export default propTypes;

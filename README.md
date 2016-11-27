@@ -188,6 +188,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `refDOMNode` | function | `function(node) {...}` | Function is passed in a reference to the DOM node, and is called whenever the node changes. You shouldn't need to use this for anything related to React Interactive, but it's available in case you need to use it for other things. Note that if you need to focus/blur the DOM node, use the `forceState` or `initialState` prop and set the focus to true/false instead of calling focus/blur directly on the DOM node. |
 | `focusToggleOff` | boolean | `focusToggleOff` | Add this prop to prevent focus from toggling on mouseup/tap. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event. |
 | `mutableProps` | boolean | `mutableProps` | Add this prop if you are passing in mutable props so the component will always update. By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you're not sure and notice buggy behavior, then add this prop. |
+| `interactiveChild` | boolean | `interactiveChild` | Add this prop if one or more child uses the Interactive Children API. |
 | `...` | anything | `id="some-id"`, `tabIndex="1"`, etc... | All additional props received are passed through. |
 
 #### Merging Styles and Classes

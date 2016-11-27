@@ -113,6 +113,9 @@ class Interactive extends React.Component {
       // return true if props have changed since last render
       (!this.p.sameProps && nextProps !== this.props)
       ||
+      // always update if there are interactive children
+      (nextProps.interactiveChild)
+      ||
       // if `iState` changed, AND the `style` or `className` for the new `iState` is different,
       // prevents renders when switching b/t two states that have the same `style` and `className`
       (nextState.iState !== this.state.iState &&
@@ -1166,6 +1169,49 @@ class Interactive extends React.Component {
     );
   }
 
+  computeChildren() {
+    const computeChildStyle = (props) => {
+      const style = props.style ? { ...props.style } : {};
+      return objectAssign(style, this.state.iState === 'hover' ? props.onParentHover : {});
+    };
+
+    const knownChildProps = {
+      onParentNormal: true,
+      onParentHover: true,
+      onParentActive: true,
+      onParentHoverActive: true,
+      onParentTouchActive: true,
+      onParentKeyActive: true,
+      onParentFocus: true,
+      onParentFocusFromTab: true,
+      onParentFocusFromMouse: true,
+      onParentFocusFromTouch: true,
+    };
+
+    const recursiveMap = children => (
+      React.Children.map(children, (child) => {
+        if (!React.isValidElement(child)) return child;
+
+        const newChildProps = {};
+        Object.keys(child.props).forEach((key) => {
+          if (!knownChildProps[key]) newChildProps[key] = child.props[key];
+        });
+
+        newChildProps.style = computeChildStyle(child.props);
+
+        // can't use cloneElement because not possible to delete existing child prop,
+        // e.g. need to delete the prop onParentHover from the child
+        return React.createElement(
+          child.type,
+          newChildProps,
+          child.type === Interactive ? child.props.children : recursiveMap(child.props.children),
+        );
+      })
+    );
+
+    return recursiveMap(this.p.props.children);
+  }
+
   render() {
     // props to pass down:
     // passThroughProps (includes event handlers)
@@ -1175,15 +1221,17 @@ class Interactive extends React.Component {
     const className = this.computeClassName();
     if (className) this.p.passThroughProps.className = className;
 
+    const children = this.p.props.interactiveChild ? this.computeChildren() : this.p.props.children;
+
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
     if (typeof this.p.props.as === 'string') {
       this.p.passThroughProps.ref = this.refCallback;
-      return React.createElement(this.p.props.as, this.p.passThroughProps, this.p.props.children);
+      return React.createElement(this.p.props.as, this.p.passThroughProps, children);
     }
     // If `as` is a ReactClass or a ReactFunctionalComponent, then wrap it in a span
     // so can access the DOM node without breaking encapsulation
     return React.createElement('span', { ref: this.refCallback },
-      React.createElement(this.p.props.as, this.p.passThroughProps, this.p.props.children),
+      React.createElement(this.p.props.as, this.p.passThroughProps, children),
     );
   }
 }
