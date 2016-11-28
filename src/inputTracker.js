@@ -89,4 +89,11 @@ if (deviceHasMouse) {
 // sign up for notification of enter keydown events for form submission detection
 notifyOfAll(['keydown'], updateEnterKeyDown);
 
+// focus registry used by RI to track events that cause focus/blur calls (e.g. mousedown)
+// so focus/blur is not called twice as event bubbles through nested RIs
+export const focusRegistry = {
+  focus: null,
+  blur: null,
+};
+
 export default input;
