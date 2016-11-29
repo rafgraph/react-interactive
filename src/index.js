@@ -1179,9 +1179,6 @@ class Interactive extends React.Component {
 
         const childPropKeys = Object.keys(child.props);
 
-        // if the child doesn't have any interactive child props, then return the child as is
-        if (!childPropKeys.some(key => childInteractiveProps[key])) return child;
-
         // if the child should not be shown, then return null
         if (child.props.showOnParent) {
           const showOn = child.props.showOnParent.split(' ');
@@ -1191,6 +1188,12 @@ class Interactive extends React.Component {
           ))) {
             return null;
           }
+        }
+
+        // if the child doesn't have any interactive child props, then return the child
+        if (!childPropKeys.some(key => childInteractiveProps[key])) {
+          if (child.type === Interactive) return child;
+          return React.cloneElement(child, {}, recursiveMap(child.props.children));
         }
 
         const newChildProps = {};
