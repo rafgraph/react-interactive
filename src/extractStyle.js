@@ -1,7 +1,7 @@
 import { statePropOptionKeys } from './constants';
 
 // extract and return the style object and className string for the state given
-export default function extractStyle(props, state) {
+export function extractStyle(props, state) {
   // if no hoverActive prop, then use hover prop for style and classes
   let stateProp = (state === 'hoverActive' && !props.hoverActive) ? 'hover' : state;
   // loop until the state prop to use is found (i.e. it's not a string)
@@ -25,4 +25,27 @@ export default function extractStyle(props, state) {
   }
 
   return extract;
+}
+
+export function setActiveAndFocusProps(props) {
+  // use the `active` prop for `[type]Active` if no `[type]Active` prop
+  if (props.active) {
+    if (!props.hoverActive) props.hoverActive = props.active;
+    if (!props.touchActive) props.touchActive = props.active;
+    if (!props.keyActive) props.keyActive = props.active;
+  }
+
+  // use the `focus` prop for `focusFrom[type]` if no `focusFrom[type]` prop
+  if (props.focus) {
+    if (!props.focusFromTab) props.focusFromTab = props.focus;
+    if (!props.focusFromMouse) props.focusFromMouse = props.focus;
+    if (!props.focusFromTouch) props.focusFromTouch = props.focus;
+  }
+}
+
+export function joinClasses(className, iStateClass, focusClass) {
+  let joined = className;
+  joined += (joined && iStateClass) ? ` ${iStateClass}` : `${iStateClass}`;
+  joined += (joined && focusClass) ? ` ${focusClass}` : `${focusClass}`;
+  return joined;
 }

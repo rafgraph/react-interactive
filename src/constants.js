@@ -124,3 +124,17 @@ export function dummyEvent(type) {
     stopPropagation: () => {},
   };
 }
+
+export const childInteractiveProps = {
+  showOnParent: true,
+  onParentNormal: true,
+  onParentHover: true,
+  onParentActive: true,
+  onParentHoverActive: true,
+  onParentTouchActive: true,
+  onParentKeyActive: true,
+  onParentFocus: true,
+  onParentFocusFromTab: true,
+  onParentFocusFromMouse: true,
+  onParentFocusFromTouch: true,
+};

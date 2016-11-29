@@ -3,14 +3,14 @@ import objectAssign from 'object-assign';
 import propTypes from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
-import extractStyle from './extractStyle';
+import { extractStyle, setActiveAndFocusProps, joinClasses } from './extractStyle';
 import recursiveNodeCheck from './recursiveNodeCheck';
 import input, { updateMouseFromRI, focusRegistry } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import syntheticClick from './syntheticClick';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
   deviceHasTouch, deviceHasMouse, passiveEventSupport, nonBlurrableTags, knownRoleTags,
-  enterKeyTrigger, spaceKeyTrigger, queueTime } from './constants';
+  enterKeyTrigger, spaceKeyTrigger, queueTime, childInteractiveProps } from './constants';
 
 class Interactive extends React.Component {
   static propTypes = propTypes;
@@ -217,20 +217,7 @@ class Interactive extends React.Component {
   // setup `this.p`, only called from constructor and componentWillReceiveProps
   propsSetup(props) {
     const { mergedProps, passThroughProps } = mergeAndExtractProps(props, knownProps);
-
-    // use the `active` prop for `[type]Active` if no `[type]Active` prop
-    if (mergedProps.active) {
-      if (!mergedProps.hoverActive) mergedProps.hoverActive = mergedProps.active;
-      if (!mergedProps.touchActive) mergedProps.touchActive = mergedProps.active;
-      if (!mergedProps.keyActive) mergedProps.keyActive = mergedProps.active;
-    }
-
-    // use the `focus` prop for `focusFrom[type]` if no `focusFrom[type]` prop
-    if (mergedProps.focus) {
-      if (!mergedProps.focusFromTab) mergedProps.focusFromTab = mergedProps.focus;
-      if (!mergedProps.focusFromMouse) mergedProps.focusFromMouse = mergedProps.focus;
-      if (!mergedProps.focusFromTouch) mergedProps.focusFromTouch = mergedProps.focus;
-    }
+    setActiveAndFocusProps(mergedProps);
 
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
     if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
@@ -1156,12 +1143,6 @@ class Interactive extends React.Component {
   computeClassName() {
     // build className string, union of class names from className prop, iState className,
     // and focus className (if in the focus state)
-    function joinClasses(className, iStateClass, focusClass) {
-      let joined = className;
-      joined += (joined && iStateClass) ? ` ${iStateClass}` : `${iStateClass}`;
-      joined += (joined && focusClass) ? ` ${focusClass}` : `${focusClass}`;
-      return joined;
-    }
     return joinClasses(
       this.p.props.className || '',
       this.p[`${this.state.iState}Style`].className,
@@ -1170,34 +1151,62 @@ class Interactive extends React.Component {
   }
 
   computeChildren() {
+    const focusFrom = this.state.focus &&
+      `focusFrom${this.state.focus.charAt(0).toUpperCase()}${this.state.focus.slice(1)}`;
+    const iStateStylePriority =
+      this.p.props.stylePriority && this.p.props.stylePriority[this.state.iState];
+
     const computeChildStyle = (props) => {
       const style = props.style ? { ...props.style } : {};
-      return objectAssign(style, this.state.iState === 'hover' ? props.onParentHover : {});
-    };
+      setActiveAndFocusProps(props);
+      const iStateStyle = extractStyle(props, this.state.iState);
+      const focusStyle = this.state.focus && extractStyle(props, focusFrom);
 
-    const knownChildProps = {
-      onParentNormal: true,
-      onParentHover: true,
-      onParentActive: true,
-      onParentHoverActive: true,
-      onParentTouchActive: true,
-      onParentKeyActive: true,
-      onParentFocus: true,
-      onParentFocusFromTab: true,
-      onParentFocusFromMouse: true,
-      onParentFocusFromTouch: true,
+      return {
+        className: joinClasses(
+          props.className || '',
+          iStateStyle.className,
+          (focusStyle && focusStyle.className) || '',
+        ),
+        style: (iStateStylePriority && objectAssign(style, focusStyle.style, iStateStyle.style)) ||
+        objectAssign(style, iStateStyle.style, focusStyle.style),
+      };
     };
 
     const recursiveMap = children => (
       React.Children.map(children, (child) => {
         if (!React.isValidElement(child)) return child;
 
+        const childPropKeys = Object.keys(child.props);
+
+        // if the child doesn't have any interactive child props, then return the child as is
+        if (!childPropKeys.some(key => childInteractiveProps[key])) return child;
+
+        // if the child should not be shown, then return null
+        if (child.props.showOnParent) {
+          const showOn = child.props.showOnParent.split(' ');
+          if (!showOn.some(el => (
+            el === this.state.iState || (/Active/.test(this.state.iState) && el === 'active') ||
+            (this.state.focus && (el === focusFrom || el === 'focus'))
+          ))) {
+            return null;
+          }
+        }
+
         const newChildProps = {};
-        Object.keys(child.props).forEach((key) => {
-          if (!knownChildProps[key]) newChildProps[key] = child.props[key];
+        const childStyleProps = {};
+        childPropKeys.forEach((key) => {
+          if (!childInteractiveProps[key]) newChildProps[key] = child.props[key];
+          else if (key !== 'showOnParent') {
+            childStyleProps[`${key.slice(8).charAt(0).toLowerCase()}${key.slice(9)}`] =
+              child.props[key];
+          }
         });
 
-        newChildProps.style = computeChildStyle(child.props);
+        childStyleProps.style = child.props.style;
+        const { style, className } = computeChildStyle(childStyleProps);
+        newChildProps.style = style;
+        if (className) newChildProps.className = className;
 
         // can't use cloneElement because not possible to delete existing child prop,
         // e.g. need to delete the prop onParentHover from the child
