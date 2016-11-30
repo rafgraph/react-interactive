@@ -3,14 +3,14 @@ import objectAssign from 'object-assign';
 import propTypes from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
-import extractStyle from './extractStyle';
+import { extractStyle, setActiveAndFocusProps, joinClasses } from './extractStyle';
 import recursiveNodeCheck from './recursiveNodeCheck';
 import input, { updateMouseFromRI, focusRegistry } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import syntheticClick from './syntheticClick';
 import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
   deviceHasTouch, deviceHasMouse, passiveEventSupport, nonBlurrableTags, knownRoleTags,
-  enterKeyTrigger, spaceKeyTrigger } from './constants';
+  enterKeyTrigger, spaceKeyTrigger, queueTime, childInteractiveProps } from './constants';
 
 class Interactive extends React.Component {
   static propTypes = propTypes;
@@ -113,6 +113,9 @@ class Interactive extends React.Component {
       // return true if props have changed since last render
       (!this.p.sameProps && nextProps !== this.props)
       ||
+      // always update if there are interactive children
+      (nextProps.interactiveChild)
+      ||
       // if `iState` changed, AND the `style` or `className` for the new `iState` is different,
       // prevents renders when switching b/t two states that have the same `style` and `className`
       (nextState.iState !== this.state.iState &&
@@ -214,20 +217,7 @@ class Interactive extends React.Component {
   // setup `this.p`, only called from constructor and componentWillReceiveProps
   propsSetup(props) {
     const { mergedProps, passThroughProps } = mergeAndExtractProps(props, knownProps);
-
-    // use the `active` prop for `[type]Active` if no `[type]Active` prop
-    if (mergedProps.active) {
-      if (!mergedProps.hoverActive) mergedProps.hoverActive = mergedProps.active;
-      if (!mergedProps.touchActive) mergedProps.touchActive = mergedProps.active;
-      if (!mergedProps.keyActive) mergedProps.keyActive = mergedProps.active;
-    }
-
-    // use the `focus` prop for `focusFrom[type]` if no `focusFrom[type]` prop
-    if (mergedProps.focus) {
-      if (!mergedProps.focusFromTab) mergedProps.focusFromTab = mergedProps.focus;
-      if (!mergedProps.focusFromMouse) mergedProps.focusFromMouse = mergedProps.focus;
-      if (!mergedProps.focusFromTouch) mergedProps.focusFromTouch = mergedProps.focus;
-    }
+    setActiveAndFocusProps(mergedProps);
 
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
     if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
@@ -515,7 +505,7 @@ class Interactive extends React.Component {
       setNON('blur');
       this.manageSetTimeout('elementBlur', () => {
         cancelNON('blur');
-      }, 600);
+      }, queueTime);
     }
   }
 
@@ -566,7 +556,7 @@ class Interactive extends React.Component {
         if (this.track.focus) {
           this.manageSetTimeout('windowFocus', () => {
             this.track.focus = false;
-          }, 600);
+          }, queueTime);
         }
         break;
 
@@ -783,7 +773,7 @@ class Interactive extends React.Component {
       this.track.recentTouch = true;
       this.manageSetTimeout('recentTouchTimer', () => {
         this.track.recentTouch = false;
-      }, 600);
+      }, queueTime);
     };
 
     // returns true if there are extra touches on the screen
@@ -965,12 +955,12 @@ class Interactive extends React.Component {
     this.cancelTimeout('clickType');
 
     // timer to reset the clickType,
-    // when it's left to the browser to call click(), the browser has 600ms
+    // when it's left to the browser to call click(), the browser has queueTime
     // to add the click event to the queue for it to be recognized as a known click event
     const setClickTypeTimer = () => {
       this.manageSetTimeout('clickType', () => {
         this.track.clickType = 'reset';
-      }, 600);
+      }, queueTime);
     };
 
     switch (type) {
@@ -1153,17 +1143,93 @@ class Interactive extends React.Component {
   computeClassName() {
     // build className string, union of class names from className prop, iState className,
     // and focus className (if in the focus state)
-    function joinClasses(className, iStateClass, focusClass) {
-      let joined = className;
-      joined += (joined && iStateClass) ? ` ${iStateClass}` : `${iStateClass}`;
-      joined += (joined && focusClass) ? ` ${focusClass}` : `${focusClass}`;
-      return joined;
-    }
     return joinClasses(
       this.p.props.className || '',
       this.p[`${this.state.iState}Style`].className,
       this.state.focus ? this.p[`${this.state.focus}FocusStyle`].className : '',
     );
+  }
+
+  // compute children when there is an interactiveChild prop, returns the new children
+  computeChildren() {
+    // convert this.state.focus to the string focusFrom[Type] for use later
+    const focusFrom = this.state.focus &&
+      `focusFrom${this.state.focus.charAt(0).toUpperCase()}${this.state.focus.slice(1)}`;
+    // does the current iState style have priority over the focus state style
+    const iStateStylePriority =
+      this.p.props.stylePriority && this.p.props.stylePriority[this.state.iState];
+
+    const computeChildStyle = (props) => {
+      const style = props.style ? { ...props.style } : {};
+      setActiveAndFocusProps(props);
+      const iStateStyle = extractStyle(props, this.state.iState);
+      const focusStyle = this.state.focus && extractStyle(props, focusFrom);
+
+      return {
+        className: joinClasses(
+          props.className || '',
+          iStateStyle.className,
+          (focusStyle && focusStyle.className) || '',
+        ),
+        style: (iStateStylePriority && objectAssign(style, focusStyle.style, iStateStyle.style)) ||
+        objectAssign(style, iStateStyle.style, focusStyle.style),
+      };
+    };
+
+    // recurse and map children, if child is an Interactive component, then don't recurse into
+    // it's children
+    const recursiveMap = children => (
+      React.Children.map(children, (child) => {
+        if (!React.isValidElement(child)) return child;
+
+        // if the child should not be shown, then return null
+        if (child.props.showOnParent) {
+          const showOn = child.props.showOnParent.split(' ');
+          if (!showOn.some(el => (
+            el === this.state.iState || (/Active/.test(this.state.iState) && el === 'active') ||
+            (this.state.focus && (el === focusFrom || el === 'focus'))
+          ))) {
+            return null;
+          }
+        }
+
+        const childPropKeys = Object.keys(child.props);
+
+        // if the child doesn't have any interactive child props, then return the child
+        if (!childPropKeys.some(key => childInteractiveProps[key])) {
+          if (child.type === Interactive) return child;
+          // if the child is not an Interactive component, then still recuse into its children
+          return React.cloneElement(child, {}, recursiveMap(child.props.children));
+        }
+
+        const newChildProps = {};
+        const childStyleProps = {};
+        // separate child props to pass through (newChildProps), from props used
+        // to compute the child's style (childStyleProps)
+        childPropKeys.forEach((key) => {
+          if (!childInteractiveProps[key]) newChildProps[key] = child.props[key];
+          else if (key !== 'showOnParent') {
+            childStyleProps[`${key.slice(8).charAt(0).toLowerCase()}${key.slice(9)}`] =
+              child.props[key];
+          }
+        });
+
+        childStyleProps.style = child.props.style;
+        const { style, className } = computeChildStyle(childStyleProps);
+        newChildProps.style = style;
+        if (className) newChildProps.className = className;
+
+        // can't use cloneElement because not possible to delete existing child prop,
+        // e.g. need to delete the prop onParentHover from the child
+        return React.createElement(
+          child.type,
+          newChildProps,
+          child.type === Interactive ? child.props.children : recursiveMap(child.props.children),
+        );
+      })
+    );
+
+    return recursiveMap(this.p.props.children);
   }
 
   render() {
@@ -1175,15 +1241,17 @@ class Interactive extends React.Component {
     const className = this.computeClassName();
     if (className) this.p.passThroughProps.className = className;
 
+    const children = this.p.props.interactiveChild ? this.computeChildren() : this.p.props.children;
+
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
     if (typeof this.p.props.as === 'string') {
       this.p.passThroughProps.ref = this.refCallback;
-      return React.createElement(this.p.props.as, this.p.passThroughProps, this.p.props.children);
+      return React.createElement(this.p.props.as, this.p.passThroughProps, children);
     }
     // If `as` is a ReactClass or a ReactFunctionalComponent, then wrap it in a span
     // so can access the DOM node without breaking encapsulation
     return React.createElement('span', { ref: this.refCallback },
-      React.createElement(this.p.props.as, this.p.passThroughProps, this.p.props.children),
+      React.createElement(this.p.props.as, this.p.passThroughProps, children),
     );
   }
 }

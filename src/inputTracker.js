@@ -1,5 +1,6 @@
 import { notifyOfAll } from './notifier';
-import { deviceType, deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents } from './constants';
+import { deviceType, deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents,
+queueTime } from './constants';
 
 // the shape of what's being tracked globally
 // the input object is the default export
@@ -31,7 +32,7 @@ function updateTouch(e) {
     touchTimerID = window.setTimeout(() => {
       input.touch.recentTouch = false;
       touchTimerID = null;
-    }, 600);
+    }, queueTime);
   }
 
   if (e.touches.length === 0) {
@@ -63,7 +64,7 @@ function updateEnterKeyDown(e) {
     enterKeyDownTimerID = window.setTimeout(() => {
       input.key.recentEnterKeyDown = false;
       enterKeyDownTimerID = null;
-    }, 600);
+    }, queueTime);
   }
 }
 

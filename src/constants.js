@@ -110,7 +110,11 @@ export const knownProps = {
   focusToggleOff: true,
   stylePriority: true,
   nonContainedChild: true,
+  interactiveChild: true,
 };
+
+// ms to allow for the browser to add subsequent event to the queue in setTimeouts
+export const queueTime = 600;
 
 export function dummyEvent(type) {
   return {
@@ -120,3 +124,17 @@ export function dummyEvent(type) {
     stopPropagation: () => {},
   };
 }
+
+export const childInteractiveProps = {
+  showOnParent: true,
+  onParentNormal: true,
+  onParentHover: true,
+  onParentActive: true,
+  onParentHoverActive: true,
+  onParentTouchActive: true,
+  onParentKeyActive: true,
+  onParentFocus: true,
+  onParentFocusFromTab: true,
+  onParentFocusFromMouse: true,
+  onParentFocusFromTouch: true,
+};
