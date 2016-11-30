@@ -1150,9 +1150,12 @@ class Interactive extends React.Component {
     );
   }
 
+  // compute children when there is an interactiveChild prop, returns the new children
   computeChildren() {
+    // convert this.state.focus to the string focusFrom[Type] for use later
     const focusFrom = this.state.focus &&
       `focusFrom${this.state.focus.charAt(0).toUpperCase()}${this.state.focus.slice(1)}`;
+    // does the current iState style have priority over the focus state style
     const iStateStylePriority =
       this.p.props.stylePriority && this.p.props.stylePriority[this.state.iState];
 
@@ -1173,11 +1176,11 @@ class Interactive extends React.Component {
       };
     };
 
+    // recurse and map children, if child is an Interactive component, then don't recurse into
+    // it's children
     const recursiveMap = children => (
       React.Children.map(children, (child) => {
         if (!React.isValidElement(child)) return child;
-
-        const childPropKeys = Object.keys(child.props);
 
         // if the child should not be shown, then return null
         if (child.props.showOnParent) {
@@ -1190,14 +1193,19 @@ class Interactive extends React.Component {
           }
         }
 
+        const childPropKeys = Object.keys(child.props);
+
         // if the child doesn't have any interactive child props, then return the child
         if (!childPropKeys.some(key => childInteractiveProps[key])) {
           if (child.type === Interactive) return child;
+          // if the child is not an Interactive component, then still recuse into its children
           return React.cloneElement(child, {}, recursiveMap(child.props.children));
         }
 
         const newChildProps = {};
         const childStyleProps = {};
+        // separate child props to pass through (newChildProps), from props used
+        // to compute the child's style (childStyleProps)
         childPropKeys.forEach((key) => {
           if (!childInteractiveProps[key]) newChildProps[key] = child.props[key];
           else if (key !== 'showOnParent') {
