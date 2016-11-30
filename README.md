@@ -362,13 +362,11 @@ Note that you could achieve mutually exclusive hover and active states if you ap
 - The total number of states that the React Interactive state machine can be in is 19.
 - There are 5 mutually exclusive and comprehensive iStates: `normal`, `hover`, `hoverActive`, `touchActive`, and `keyActive`. These are combined with 4 mutually exclusive and comprehensive focus states: `false`, `tab`, `mouse`, and `touch`, with the exception of `keyActive`, which is only available while focus is not `false`, for a total of 19 states:
 
-| States |   |   |   |
-|:-------|:--|:--|:--|
-| `normal` | `normal` with `focusFromTab` | `normal` with `focusFromMouse` | `normal` with `focusFromTouch` |
-| `hover` | `hover` with `focusFromTab` | `hover` with `focusFromMouse` | `hover` with `focusFromTouch` |
-| `hoverActive` | `hoverActive` with `focusFromTab` | `hoverActive` with `focusFromMouse` | `hoverActive` with `focusFromTouch` |
-| `touchActive` | `touchActive` with `focusFromTab` | `touchActive` with `focusFromMouse` | `touchActive` with `focusFromTouch` |
-| N/A | `keyActive` with `focusFromTab` | `keyActive` with `focusFromMouse` | `keyActive` with `focusFromTouch` |
+| `normal` | `hover` | `hoverActive` | `touchActive` | N/A |
+|:---------|:--------|:--------------|:--------------|:----|
+| `normal` with `focusFromTab` | `hover` with `focusFromTab` | `hoverActive` with `focusFromTab` | `touchActive` with `focusFromTab` | `keyActive` with `focusFromTab` |
+| `normal` with `focusFromMouse` | `hover` with `focusFromMouse` | `hoverActive` with `focusFromMouse` | `touchActive` with `focusFromMouse` | `keyActive` with `focusFromMouse` |
+| `normal` with `focusFromTouch` | `hover` with `focusFromTouch` | `hoverActive` with `focusFromTouch` | `touchActive` with `focusFromTouch` | `keyActive` with `focusFromTouch` |
 
 - The `onStateChange` hook is called each time a transition occurs between any of the 19 states. Note that a transition will never occur between two `focusFrom` states as `focusFrom` is based on how the focus state was entered, so have to transition to focus `false` before transitioning to a different `focusFrom` state.
 - The `active` prop is just a convenience wrapper around the 3 specific active states: `hoverActive`, `touchActive`, and `keyActive`, and is not a state in its own right.  
