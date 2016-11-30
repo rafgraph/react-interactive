@@ -49,6 +49,7 @@ import Interactive from 'react-interactive';
   - [Default `role` and `tabIndex`](#default-role-and-tabindex)
   - [Focus State](#focus-state)
   - [Default Styles](#default-styles)
+  - [Interactive Children API](#interactive-children-api)
 - [Interactive State Machine Comparison](#interactive-state-machine-comparison)
   - [React Interactive State Machine](#react-interactive-state-machine)
   - [CSS Interactive State Machine](#css-interactive-state-machine)
@@ -188,7 +189,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `refDOMNode` | function | `function(node) {...}` | Function is passed in a reference to the DOM node, and is called whenever the node changes. You shouldn't need to use this for anything related to React Interactive, but it's available in case you need to use it for other things. Note that if you need to focus/blur the DOM node, use the `forceState` or `initialState` prop and set the focus to true/false instead of calling focus/blur directly on the DOM node. |
 | `focusToggleOff` | boolean | `focusToggleOff` | Add this prop to prevent focus from toggling on mouseup/tap. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event. |
 | `mutableProps` | boolean | `mutableProps` | Add this prop if you are passing in mutable props so the component will always update. By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you're not sure and notice buggy behavior, then add this prop. |
-| `interactiveChild` | boolean | `interactiveChild` | Add this prop if one or more child uses the Interactive Children API. |
+| `interactiveChild` | boolean | `interactiveChild` | Add this prop if Interactive's children use the [Interactive Children API](#interactive-children-api). |
 | `...` | anything | `id="some-id"`, `tabIndex="1"`, etc... | All additional props received are passed through. |
 
 #### Merging Styles and Classes
@@ -265,6 +266,55 @@ For the definition of when each state is entered, see the [state machine definit
 - If a `touchActive` or `active` prop is passed to React Interactive, then RI will prevent the browser's default webkit tap highlight color from being applied.
   - To use the `WebkitTapHighlightColor` for styling, don't provide a `touchActive` or `active` prop and set the `WebkitTapHighlightColor` style in the main `style` prop.
   - Note that if there is no active or touchActive prop, RI will let the browser fully manage what it considers to be a click from a touch interaction. This results in a better match of when the `WebkitTapHighlightColor` is active to what results in a click. RI won't call `node.click()`, so there may be a delay in the click event in some browsers.
+
+### Interactive Children API
+ - Note that you must add the `interactiveChild` prop to `<Interactive />` to use the Interactive Children API (by default RI will not inspect its children and will render them as is).
+ - If you have nested `Interactive` components, the children will be styled based on the state of their closest `Interactive` parent.
+
+```javascript
+function InteractiveChild() {
+  return (
+    <Interactive
+      as="ul"
+      interactiveChild // so Interactive will style the children based on its state
+      focusFromTab={{}} // so the Interactive component is focusable
+      touchActive={{}} // so Interactive will control taps and remove the browser's default style
+    >
+      <li>This list item will not change style based on the state of the Interactive parent.</li>
+
+      <li
+        onParentHover={{ color: 'green' }}
+        onParentHoverActive="hover" // use the onParentHover style for onParentHoverActive
+        onParentTouchActive={{ color: 'blue' }}
+        onParentFocusFromTab={{ outline: '2px solid green' }}
+      >
+        This list item will change style based on the state of the Interactive parent.
+      </li>
+
+      <li
+        showOnParent="hover hoverActive touchActive focusFromTab"
+      >
+        This list item is only rendered when the Interactive parent is in the
+        hover, hoverActive, touchActive or focusFromTab states.
+      </li>
+    </Interactive>
+  );
+}
+```
+
+| Prop | Type | Example | Description |
+|:-----|:-----|:--------|:------------|
+| `showOnParent` | space separated string | `'hover touchActive focusFromTab'` | Add this props to only render the child when the parent is in any of the listed states. Without this prop, RI will always render the child. The acceptable state values are: `hover`, `active` (union of the 3 `[type]Active` states), `hoverActive`, `touchActive`, `keyActive`, `focus` (union of the 3 `focusFrom[Type]` states), `focusFromTab`, `focusFromMouse`, and `focusFromTouch`. List as a space separated string. |
+| `onParentNormal` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'black' }` <br> or <br> `{ style: { color: 'black' }, className: 'some-class' }` <br> or <br> `'hover'` | Style or options object when the parent is in the `normal` state, or a string indicating a state to match. If it's an object, it can be either a `style` object or an options object with the keys `style` and `className`. The `style` object is merged with both the child's `style` prop and the `onParentFocusFrom[Type]` `style` in the same order as the `Interactive` parent. The `className` is a string of space separated class names and is merged as a union with the child's `className` prop and the `onParentFocusFrom[Type]` `className`. If the value of the `onParentNormal` prop is a string, it must indicate one of the other states, e.g. `'hover'` (without the onParent prefix), and that state's `onParent[State]` `style` and `className` properties will be used for both states. Note that the interface is the same as `<Interactive />`'s `normal` prop. |
+| `onParentHover` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'green' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `hover` state. Note that if there is no `onParentHoverActive` or `onParentActive` prop, then the `onParentHover` prop's style and classes are used for the `onParentHoverActive` prop. |
+| `onParentActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `active` state. Note that the `onParentActive` prop is only used in place of the `onParent[Type]Active` prop if the respective `onParent[Type]Active` prop is not present. |
+| `onParentHoverActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'red' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `hoverActive` state. Note that if there is no `onParentHoverActive` or `onParentActive` prop, then the `onParentHover` prop's style and classes are used for the `onParentHoverActive` prop. |
+| `onParentTouchActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'blue' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `touchActive` state. |
+| `onParentKeyActive` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ color: 'yellow' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `keyActive` state. |
+| `onParentFocus` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid green' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `focus` state. Note that the `onParentFocus` prop is only used in place of the `onParentFocusFrom[Type]` prop if the respective `onParentFocusFrom[Type]` prop is not present. |
+| `onParentFocusFromTab` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid green' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `focusFromTab` state. |
+| `onParentFocusFromMouse` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid red' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `focusFromMouse` state. |
+| `onParentFocusFromTouch` | style&nbsp;object <br> or <br> options&nbsp;object <br> or <br> string | `{ outline: '2px solid blue' }` <br> or... (same as above) | Same as `onParentNormal`, but for the parent's `focusFromTouch` state. |
 
 ## Interactive State Machine Comparison
 Compared to CSS, React Interactive is a simpler state machine, with better touch device and keyboard support, and state change hooks.
