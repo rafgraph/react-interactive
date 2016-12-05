@@ -448,15 +448,13 @@ function MyFunctionalComponent() {
     }
   }
 
-  render() {
-    return (
-      <Interactive
-        as="div"
-        onStateChange={handleOnStateChange}
-        // ...and any other props as needed
-      >RI component</Interactive>
-    );
-  }
+  return (
+    <Interactive
+      as="div"
+      onStateChange={handleOnStateChange}
+      // ...and any other props as needed
+    >RI component</Interactive>
+  );
 }
 ```
 
