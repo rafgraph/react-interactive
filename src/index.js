@@ -1215,6 +1215,7 @@ class Interactive extends React.Component {
         });
 
         childStyleProps.style = child.props.style;
+        childStyleProps.className = child.props.className;
         const { style, className } = computeChildStyle(childStyleProps);
         newChildProps.style = style;
         if (className) newChildProps.className = className;
