@@ -336,10 +336,11 @@ Compared to CSS, React Interactive is a simpler state machine, with better touch
 | *base styles* | *Not an interactive state, always applied, everything merges with them* |
 | `normal` | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
 | `hover` | `mouseOn && !buttonDown && !touchDown && !focusKeyDown` |
-| `active` | `hoverActive` &#124;&#124; `keyActive` &#124;&#124; `touchActive` |
+| `active` | `hoverActive` OR `keyActive` OR `touchActive` |
 | `hoverActive` | `mouseOn && buttonDown && !touchDown && !focusKeyDown` |
 | `keyActive` | `focusKeyDown && !touchDown` |
 | `touchActive` | `touchDown` |
+
 The three `focusFrom` states can be combined with any of the above states, and the `keyActive` state is only available while in the focus state.
 
 ### CSS Interactive State Machine
@@ -349,9 +350,9 @@ Note that since a state machine can only be in one state at a time, to view inte
 |:------------------|:-----|:---------------------------------|:----------------|
 | *base styles* | *Always applied, everything merges with them* | *Not an interactive state* | *`.class`* |
 | `normal` | Not commonly used in CSS (zeroing out/overriding base styles is used instead)  | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` | `.class:not(:hover):not(:active)` |
-| `hover` | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` &#124;&#124; `(after touchDown and sticks until you tap someplace else)` - the [sticky hover CSS bug](https://github.com/rafrex/current-input#sticky-hover-problem) on touch devices | `.class:hover` |
-| `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` &#124;&#124; `(mouseOn && focusKeyDown)` &#124;&#124; `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
-| `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` &#124;&#124; `(focusKeyDown && !mouseOn)` &#124;&#124; `(touchDown but not on the element currently, but not consistent across browsers)` | `.class:active` |
+| `hover` | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` OR `(after touchDown and sticks until you tap someplace else)` - the [sticky hover CSS bug](https://github.com/rafrex/current-input#sticky-hover-problem) on touch devices | `.class:hover` |
+| `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` OR `(mouseOn && focusKeyDown)` OR `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
+| `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` OR `(focusKeyDown && !mouseOn)` OR `(touchDown but not on the element currently, but not consistent across browsers)` | `.class:active` |
 
 The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
 
