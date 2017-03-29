@@ -13,7 +13,8 @@ import Interactive from 'react-interactive';
 ...
 <Interactive
   as="div" // what the Interactive component is rendered as, can be anything
-  hover={{ color: 'green' }}
+
+  hover={{ color: 'green' }} // style object, can use any styles you'd like
 
   active={{ color: 'blue' }}
   // OR
