@@ -187,7 +187,7 @@ For the definition of when each state is entered, see the [state machine definit
 | `nonContainedChild` | boolean |   `nonContainedChild` | Add this prop if the DOM node's children are not contained inside of it on the page. For example, a child that is absolutely positioned outside of its parent. React Interactive does some quality control checks using `node.getBoundingClientRect()`, and by default the children are assumed to be within the parent's rectangle, but if this is not the case, then add this prop and the children will be checked. |
 | `initialState` | state object | `{ iState: 'normal', focus: 'tab' }` | Optional initial state to enter when the component is mounted. A [state object](#state-object) with keys for one or both of `iState` and `focus`. Note that for an `active` `iState`, you must specify `[type]Active` and not just `active`. Used in the `constructor` to set `iState` and in `componentDidMount` to set `focus` (RI can't set focus until after it has a reference to the DOM node). |
 | `forceState` | state object | `{ iState: 'normal', focus: false }` | Force enter this state. Same as `initialState` except not used for the initial render. Note that if only one key is present, a shallow merge is done with the current state, for example, use `{ focus: 'tab' }` to only focus the element. Only used in `componentWillReceiveProps`. |
-| `stylePriority` | object | `{ hover: true, hoverActive: true }` | By default the focus state style takes precedence over the iState style when merged. Use this prop to specify specific iStates whose style should take precedence over the focus state style. Note that for an `active` `iState`, you must specify `[type]Active` and not just `active`. |
+| `stylePriority` | object | `{ hover: true, hoverActive: true }` | By default the focus state style takes precedence over the iState style when merged (except for the `keyActive` iState). Use this prop to specify specific iStates whose style should take precedence over the focus state style. Note that for an `active` `iState`, you must specify `[type]Active` and not just `active`. |
 | `refDOMNode` | function | `function(node) {...}` | Function is passed in a reference to the DOM node, and is called whenever the node changes. You shouldn't need to use this for anything related to React Interactive, but it's available in case you need to use it for other things. Note that if you need to focus/blur the DOM node, use the `forceState` or `initialState` prop and set the focus state instead of calling focus/blur directly on the DOM node. |
 | `focusToggleOff` | boolean | `focusToggleOff` | Add this prop to prevent focus from toggling on mouseup/tap. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event. |
 | `mutableProps` | boolean | `mutableProps` | Add this prop if you are passing in mutable props so the component will always update. By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you're not sure and notice buggy behavior, then add this prop. |
@@ -197,8 +197,9 @@ For the definition of when each state is entered, see the [state machine definit
 #### Merging Styles and Classes
 - Styles are merged in the following order (last one takes precedence):
   1. The `style` prop
-  2. The iState style
+  2. The iState style (except `keyActive`)
   3. The focus state style if in the focus state
+  4. The `keyActive` state style
 - If you want an iState style to take precedence over the focus style, then use the `stylePriority` prop and specify which iStates should have priority over focus, e.g. `stylePriority={{ hover: true, hoverActive: true }}`
 - Classes are merged as a union without preference:
   - focus state classes if in the focus state
