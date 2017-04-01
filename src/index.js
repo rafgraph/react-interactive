@@ -987,8 +987,14 @@ class Interactive extends React.Component {
         // then call node.click() directly as the browser won't fire a click event
         // from a keyClick interaction
         } else if (this.p.props.onClick) {
-          this.topNode.click();
-          this.track.clickType = 'reset';
+          // to allow the keyActive state to be shown before calling click on an enter keydown event
+          this.manageSetTimeout('keyClickAfterSetState',
+            () => {
+              this.topNode.click();
+              this.track.clickType = 'reset';
+            },
+            32,
+          );
         }
         break;
       default:
