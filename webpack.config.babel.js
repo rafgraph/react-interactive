@@ -21,7 +21,7 @@ export default {
     ],
   },
 
-  plugins: process.argv.indexOf('-p') === -1 ? null : [
+  plugins: process.argv.indexOf('-p') === -1 ? [] : [
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production'),
     }),
