@@ -36,7 +36,7 @@ class Interactive extends React.Component {
       buttonDown: false,
       clickType: 'reset',
       focus: false,
-      previousFocus: 'reset',
+      previousFocus: false,
       focusTransition: 'reset',
       focusStateOnMouseDown: false,
       spaceKeyDown: false,
@@ -504,6 +504,7 @@ class Interactive extends React.Component {
     if (this.track.state.focus && !newState.focus) {
       setNON('blur');
       this.manageSetTimeout('elementBlur', () => {
+        this.track.previousFocus = false;
         cancelNON('blur');
       }, queueTime);
     }
@@ -553,7 +554,7 @@ class Interactive extends React.Component {
       // window focus event
       case 'focus':
         // if the window focus event is not followed by an element focus event, then reset focus
-        if (this.track.focus) {
+        if (this.track.previousFocus !== false) {
           this.manageSetTimeout('windowFocus', () => {
             this.track.focus = false;
           }, queueTime);
@@ -566,8 +567,6 @@ class Interactive extends React.Component {
         this.cancelTimeout('elementBlur');
         // notifiy of the next window focus event (re-entering the app/window/tab)
         this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
-        // reinstate focus to it's previous value to preserve the focus state
-        this.track.focus = this.track.previousFocus;
         break;
       default:
     }
@@ -1051,6 +1050,8 @@ class Interactive extends React.Component {
             this.track.focus = 'mouse';
           } else if (/touch/.test(focusTransition) || this.track.touchDown) {
             this.track.focus = 'touch';
+          } else if (this.track.previousFocus) {
+            this.track.focus = this.track.previousFocus;
           } else if (!/forceState/.test(focusTransition)) {
             this.track.focus = 'tab';
           }
