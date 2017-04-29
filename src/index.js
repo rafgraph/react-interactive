@@ -295,10 +295,10 @@ class Interactive extends React.Component {
   // force set new state
   forceState(newState) {
     // set this.track properties to match new iState
-    if (newState.iState) this.forceTrackIState(newState.iState);
+    if (newState.iState !== undefined) this.forceTrackIState(newState.iState);
 
     // if new focus state, call manageFocus and return b/c focus calls updateState
-    if (newState.focus !== this.track.state.focus) {
+    if (newState.focus !== undefined && newState.focus !== this.track.state.focus) {
       this.track.focus = newState.focus;
       this.manageFocus(newState.focus ? 'forceStateFocusTrue' : 'forceStateFocusFalse');
       return;
