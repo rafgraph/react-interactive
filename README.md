@@ -1,13 +1,15 @@
 # React Interactive
 
 [Live example](http://react-interactive.rafrex.com)
-- **Separate `active` states for mouse, touch, and keyboard interactions** (not possible with CSS)
-- **Separate `focus` states based on how it was entered - from mouse, touch, or tab key** (not possible with CSS)
-- **State change hook to easily incorporate the interactive state into your component** (not possible with CSS)
+- Style touch interactions in web apps to look like native apps
+- Style keyboad interactions separate from mouse and touch interactions (focus from tab key, etc)
+- Makes every Interactive div/span/etc accessible by default (tab index, role and key click handler added)
 - Use inline styles for all interactive states - `hover`, `active`, `focus`, etc... (no style tags or CSS added to the page), or use class names if you prefer to write styles separately with CSS
-- Built in touch device and keyboard support - a `click` event is generated on mouse click, touch tap (without delay), and enter keydown
-- Makes every interactive div/span/etc accessible by default
+- State change hook to easily incorporate the interactive state into your component (not possible with CSS)
+- Separate `active` states for mouse, touch, and keyboard interactions (not possible with CSS)
+- Separate `focus` states based on how it was entered - from mouse, touch, or tab key (not possible with CSS)
 - Easily style and show/hide children based on the `Interactive` parent's state (only possible with complex CSS selectors)
+- Built in touch device and keyboard support - a `click` event is generated on mouse click, touch tap (without delay), and enter keydown
 
 ```javascript
 import Interactive from 'react-interactive';
@@ -99,7 +101,7 @@ Compared to CSS, React Interactive is a simpler state machine with better touch 
 ```
 ```javascript
 // Interactive as a React Router Link component
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 ...
 <Interactive
   as={Link}
