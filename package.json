@@ -8,7 +8,7 @@
     "build-lib": "rm -rf lib && babel src -d lib",
     "build-dist": "rm -rf dist && webpack src/index.js dist/ReactInteractive.js && webpack -p src/index.js dist/ReactInteractive.min.js",
     "prepublish": "npm run build",
-    "dev-babel": "rm -rf lib && babel src --watch -d lib"
+    "dev": "npm link && babel src --watch -d lib"
   },
   "files": [
     "src",
