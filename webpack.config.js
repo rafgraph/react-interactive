@@ -1,6 +1,6 @@
-import webpack from 'webpack';
+const webpack = require('webpack');
 
-export default {
+module.exports = {
   output: {
     library: 'Interactive',
     libraryTarget: 'umd',
@@ -16,7 +16,7 @@ export default {
   },
 
   module: {
-    loaders: [
+    rules: [
       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' },
     ],
   },

@@ -7,7 +7,8 @@
     "build": "npm run build-lib && npm run build-dist",
     "build-lib": "rm -rf lib && babel src -d lib",
     "build-dist": "rm -rf dist && webpack src/index.js dist/ReactInteractive.js && webpack -p src/index.js dist/ReactInteractive.min.js",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "dev": "npm link && babel src --watch -d lib"
   },
   "files": [
     "src",
@@ -36,20 +37,19 @@
     "react": "^15.5.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.0",
-    "babel-eslint": "^7.2.1",
-    "babel-loader": "^6.4.1",
+    "babel-cli": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-loader": "^7.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-preset-es2015": "^6.24.0",
-    "babel-preset-react": "^6.23.0",
-    "babel-preset-stage-1": "^6.22.0",
+    "babel-preset-env": "^1.4.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-1": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-import": "^2.1.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
-    "react": "^15.4.2",
-    "webpack": "^2.3.2"
+    "webpack": "^2.4.1"
   },
   "dependencies": {
     "detect-it": "^2.1.1",
