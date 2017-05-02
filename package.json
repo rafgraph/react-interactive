@@ -1,6 +1,6 @@
 {
   "name": "react-interactive",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "React Interactive",
   "main": "lib/index.js",
   "scripts": {
