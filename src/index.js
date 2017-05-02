@@ -37,6 +37,7 @@ class Interactive extends React.Component {
       clickType: 'reset',
       focus: false,
       previousFocus: false,
+      reinstateFocus: false,
       focusTransition: 'reset',
       focusStateOnMouseDown: false,
       spaceKeyDown: false,
@@ -553,10 +554,12 @@ class Interactive extends React.Component {
 
       // window focus event
       case 'focus':
-        // if the window focus event is not followed by an element focus event, then reset focus
+        // reinstate previous focus state if this window focus event is followed by
+        // an element focus event, otherwise cancel focus reinstatement
         if (this.track.previousFocus !== false) {
+          this.track.reinstateFocus = true;
           this.manageSetTimeout('windowFocus', () => {
-            this.track.focus = false;
+            this.track.reinstateFocus = false;
           }, queueTime);
         }
         break;
@@ -1033,9 +1036,6 @@ class Interactive extends React.Component {
         // if this instance of RI is not the focus target, then don't enter the focus state
         if (e.target !== this.topNode) return 'terminate';
 
-        // if there was a timer set by a recent window focus event, clear it
-        this.cancelTimeout('windowFocus');
-
         // if this is a known focusTransition or focus is false,
         // then set focus based on the type of focusTransition,
         if (this.track.focusTransition !== 'reset' || !this.track.focus) {
@@ -1044,12 +1044,17 @@ class Interactive extends React.Component {
             this.track.focus = 'mouse';
           } else if (/touch/.test(focusTransition) || this.track.touchDown) {
             this.track.focus = 'touch';
-          } else if (this.track.previousFocus) {
+          } else if (this.track.reinstateFocus) {
             this.track.focus = this.track.previousFocus;
           } else if (!/forceState/.test(focusTransition)) {
             this.track.focus = 'tab';
           }
         }
+
+        // if there was a timer set by a recent window focus event, clear it
+        this.cancelTimeout('windowFocus');
+        // only reinstate focus from window blur/focus for next focus event
+        this.track.reinstateFocus = false;
 
         this.track.focusTransition = 'reset';
         return 'updateState';
