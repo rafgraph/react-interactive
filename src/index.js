@@ -569,7 +569,9 @@ class Interactive extends React.Component {
         // clear the timer set in manageNotifyOfNext that was set to cancel this notification
         this.cancelTimeout('elementBlur');
         // notifiy of the next window focus event (re-entering the app/window/tab)
-        this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+        if (!this.track.notifyOfNext.focus) {
+          this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+        }
         break;
       default:
     }
@@ -1034,7 +1036,8 @@ class Interactive extends React.Component {
     // This is only a problem on Android Chrome because despite not calling focus on link tap,
     // upon returning to the window, focus is called on the element putting it
     // into the focusFromTab state, when it should be in the focusFromTouch state.
-    if (this.p.props.target === '_blank' && this.track.clickType === 'tapClick') {
+    if (this.p.props.target === '_blank' && this.track.clickType === 'tapClick' &&
+    !this.track.notifyOfNext.focus) {
       this.track.previousFocus = 'touch';
       this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
     }
