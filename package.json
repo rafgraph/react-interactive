@@ -52,7 +52,7 @@
     "webpack": "^2.4.1"
   },
   "dependencies": {
-    "detect-it": "^2.1.1",
+    "detect-it": "^3.0.0",
     "object-assign": "^4.1.1",
     "prop-types": "^15.5.8"
   }
