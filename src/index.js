@@ -1067,7 +1067,7 @@ class Interactive extends React.Component {
             this.track.focus = 'touch';
           } else if (this.track.reinstateFocus) {
             this.track.focus = this.track.previousFocus;
-          } else if (!/forceState/.test(focusTransition)) {
+          } else if (!/forcestate/.test(focusTransition)) {
             this.track.focus = 'tab';
           }
         }
