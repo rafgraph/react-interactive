@@ -1311,7 +1311,7 @@ detect-indent@^4.0.0:
   dependencies:
     repeating "^2.0.0"
 
-detect-it@^3.0.0:
+detect-it@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/detect-it/-/detect-it-3.0.1.tgz#8c745eba45c73a8e1748163154da5bbf856f5a1b"
   dependencies:
