@@ -13,7 +13,6 @@ module.exports = {
       { allowShortCircuit: true, allowTernary: true },
     ],
     'no-plusplus': 'off',
-    'no-nested-ternary': 'off',
     'no-param-reassign': ['error', { props: false }],
     'import/no-unresolved': ['error', { ignore: ['^react$'] }],
     'import/extensions': ['error', 'never'],
