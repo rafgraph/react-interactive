@@ -64,13 +64,20 @@ export const knownRoleTags = {
 
 // elements triggered by the enter key
 export function enterKeyTrigger(tag, type) {
-  return (tag !== 'select') && (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'));
+  return (
+    tag !== 'select' &&
+    (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'))
+  );
 }
 
 // elements triggered by the space bar
 export function spaceKeyTrigger(tag, type) {
-  return (tag === 'button') || (tag === 'select') ||
-  (tag === 'input' && (type === 'checkbox' || type === 'radio' || type === 'submit'));
+  return (
+    tag === 'button' ||
+    tag === 'select' ||
+    (tag === 'input' &&
+      (type === 'checkbox' || type === 'radio' || type === 'submit'))
+  );
 }
 
 // known props to not pass through, every prop not on this list is passed through

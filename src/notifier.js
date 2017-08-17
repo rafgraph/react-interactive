@@ -1,5 +1,11 @@
-import { deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents, passiveEventSupport,
-  dummyEvent } from './constants';
+import {
+  deviceHasTouch,
+  deviceHasMouse,
+  mouseEvents,
+  touchEvents,
+  passiveEventSupport,
+  dummyEvent,
+} from './constants';
 
 // list of callbacks that are called every time the event fires
 // only one callback function per eventType b/c notifyOfAll is only used by inputTracker
@@ -53,7 +59,7 @@ export function cancelNotifyOfNext(eType, id) {
 
 // subscribe to notifyOfAll, only used by inputTracker
 export function notifyOfAll(eTypes, callback) {
-  eTypes.forEach((eType) => {
+  eTypes.forEach(eType => {
     notifyOfAllSubs[eType] = callback;
   });
 }
@@ -70,7 +76,7 @@ function handleNotifyNext(e) {
   e.persist = blankFunction;
   const reNotifyOfNext = [];
   const reNotifyOfNextIDs = {};
-  notifyOfNextSubs[e.type].forEach((sub) => {
+  notifyOfNextSubs[e.type].forEach(sub => {
     if (sub.callback(e) === 'reNotifyOfNext') {
       reNotifyOfNextIDs[sub.id] = reNotifyOfNext.push(sub) - 1;
     }
@@ -88,11 +94,17 @@ function handleNotifyAllAndNext(e) {
 function setupEvent(element, eType, handler, capture) {
   notifyOfNextSubs[eType] = [];
   subsIDs[eType] = {};
-  element.addEventListener(eType, handler, passiveEventSupport ? {
-    capture,
-    // don't set click listener as passive because syntheticClick may call preventDefault
-    passive: eType !== 'click',
-  } : capture);
+  element.addEventListener(
+    eType,
+    handler,
+    passiveEventSupport
+      ? {
+          capture,
+          // don't set click listener as passive because syntheticClick may call preventDefault
+          passive: eType !== 'click',
+        }
+      : capture,
+  );
 }
 
 if (deviceHasTouch) {
@@ -100,8 +112,10 @@ if (deviceHasTouch) {
   setupEvent(window, 'click', handleNotifyAll, true);
 
   // if the device has touch, then setup event listeners for touch events
-  Object.keys(touchEvents).forEach((eType) => {
-    setupEvent(document, eType,
+  Object.keys(touchEvents).forEach(eType => {
+    setupEvent(
+      document,
+      eType,
       eType === 'touchstart' ? handleNotifyAllAndNext : handleNotifyAll,
       true,
     );
@@ -112,8 +126,10 @@ if (deviceHasTouch) {
 // see manageNotifyOfNext and handleNotifyOfNext in index.js for more info
 // on why a specific listener is set
 if (deviceHasMouse) {
-  Object.keys(mouseEvents).forEach((eType) => {
-    setupEvent(document, eType,
+  Object.keys(mouseEvents).forEach(eType => {
+    setupEvent(
+      document,
+      eType,
       eType === 'mouseenter' ? handleNotifyAllAndNext : handleNotifyAll,
       // don't use capture for enter/leave so the event only fires when the mouse leaves the doc
       !(eType === 'mouseenter' || eType === 'mouseleave'),
@@ -130,11 +146,16 @@ if (deviceHasMouse) {
   subsIDs.mutation = {};
   const mutationEvent = dummyEvent('mutation');
   const mo = new MutationObserver(handleNotifyNext.bind(null, mutationEvent));
-  mo.observe(document, { childList: true, attributes: true, subtree: true, characterData: true });
+  mo.observe(document, {
+    childList: true,
+    attributes: true,
+    subtree: true,
+    characterData: true,
+  });
 }
 
 // always set focus/blur listener on the window so know when leave/enter the app/window/tab
-['focus', 'blur'].forEach((eType) => {
+['focus', 'blur'].forEach(eType => {
   setupEvent(window, eType, handleNotifyNext, false);
 });
 

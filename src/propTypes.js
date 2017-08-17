@@ -10,16 +10,13 @@ function statePropsExcept(state) {
 }
 
 const iStatesShape = {};
-Object.keys(iStates).forEach((iState) => {
+Object.keys(iStates).forEach(iState => {
   iStatesShape[iState] = PropTypes.bool;
 });
 
 const propTypes = {
-  as: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.func,
-    PropTypes.element,
-  ]).isRequired,
+  as: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.element])
+    .isRequired,
   children: PropTypes.node,
   normal: PropTypes.oneOfType([
     PropTypes.object,

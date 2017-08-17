@@ -49,10 +49,13 @@
     "eslint-plugin-import": "^2.1.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
+    "prettier": "^1.5.3",
     "webpack": "^2.4.1"
   },
   "dependencies": {
     "detect-it": "^3.0.1",
+    "eslint-config-prettier": "^2.3.0",
+    "eslint-plugin-prettier": "^2.2.0",
     "object-assign": "^4.1.1",
     "prop-types": "^15.5.8"
   }
