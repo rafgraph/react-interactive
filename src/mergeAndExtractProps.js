@@ -5,14 +5,14 @@ import React from 'react';
 export default function mergeAndExtractProps(props, knownProps) {
   const mergedProps = {};
   const passThroughProps = {};
-  Object.keys(props).forEach((key) => {
+  Object.keys(props).forEach(key => {
     mergedProps[key] = props[key];
     // pass through all props that are not on the knownProps list
     if (!knownProps[key]) passThroughProps[key] = props[key];
   });
   if (React.isValidElement(props.as)) {
     // if `as` is JSX/ReactElement, then merge in it's props
-    Object.keys(props.as.props).forEach((key) => {
+    Object.keys(props.as.props).forEach(key => {
       mergedProps[key] = props.as.props[key];
       if (!knownProps[key]) passThroughProps[key] = props.as.props[key];
     });

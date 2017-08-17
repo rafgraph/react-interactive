@@ -19,14 +19,17 @@ export default function compareProps(propsA, propsB) {
   // forceState is handled in componentWillReceiveProps
   const nextPOffset = propsB.forceState ? -1 : 0;
   const pOffset = propsA.forceState ? -1 : 0;
-  if ((keysB.length + nextPOffset) !== (Object.keys(propsA).length + pOffset)) return false;
+  if (keysB.length + nextPOffset !== Object.keys(propsA).length + pOffset)
+    return false;
 
   // if it's an state prop options object, then shallow compare the options for equality
-  const sameStateProp = (stateProp) => {
+  const sameStateProp = stateProp => {
     // if propsB doesn't have any of the options object keys, then return false b/c not options obj
     if (!statePropOptionKeys.some(key => propsB[stateProp][key])) return false;
     // shallow compare the options for equality
-    return statePropOptionKeys.every(key => propsB[stateProp][key] === propsA[stateProp][key]);
+    return statePropOptionKeys.every(
+      key => propsB[stateProp][key] === propsA[stateProp][key],
+    );
   };
 
   // loop through props
@@ -38,7 +41,10 @@ export default function compareProps(propsA, propsB) {
       // if the two props aren't equal, do some additional checks before returning false
       if (propsB[keysB[i]] !== propsA[keysB[i]]) {
         if (keysB[i] === 'as') {
-          if (React.isValidElement(propsA.as) && React.isValidElement(propsB.as)) {
+          if (
+            React.isValidElement(propsA.as) &&
+            React.isValidElement(propsB.as)
+          ) {
             // If `as` is JSX/ReactElement, first check to see if `as.type` is the same,
             // e.g. 'div', 'span', ReactClass, ReactFunctionalComponent, and then shallowly
             // compare it's props with a recursive call to sameProps - this should only recurse

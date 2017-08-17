@@ -1,19 +1,38 @@
 import React from 'react';
 import objectAssign from 'object-assign';
-import propTypes from './propTypes';
+import { propTypes, defaultProps } from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
-import { extractStyle, setActiveAndFocusProps, joinClasses } from './extractStyle';
+import {
+  extractStyle,
+  setActiveAndFocusProps,
+  joinClasses,
+} from './extractStyle';
 import recursiveNodeCheck from './recursiveNodeCheck';
 import input, { updateMouseFromRI, focusRegistry } from './inputTracker';
 import { notifyOfNext, cancelNotifyOfNext } from './notifier';
 import syntheticClick from './syntheticClick';
-import { knownProps, mouseEvents, touchEvents, otherEvents, dummyEvent, deviceType,
-  deviceHasTouch, deviceHasMouse, passiveEventSupport, nonBlurrableTags, knownRoleTags,
-  enterKeyTrigger, spaceKeyTrigger, queueTime, childInteractiveProps } from './constants';
+import {
+  knownProps,
+  mouseEvents,
+  touchEvents,
+  otherEvents,
+  dummyEvent,
+  deviceType,
+  deviceHasTouch,
+  deviceHasMouse,
+  passiveEventSupport,
+  nonBlurrableTags,
+  knownRoleTags,
+  enterKeyTrigger,
+  spaceKeyTrigger,
+  queueTime,
+  childInteractiveProps,
+} from './constants';
 
 class Interactive extends React.Component {
   static propTypes = propTypes;
+  static defaultProps = defaultProps;
 
   constructor(props) {
     super(props);
@@ -83,7 +102,10 @@ class Interactive extends React.Component {
   componentDidMount() {
     // enter focus state if initialState.focus - called here instead of constructor
     // because can't call focus until have ref to DOM node
-    if (this.p.props.initialState && this.p.props.initialState.focus !== undefined) {
+    if (
+      this.p.props.initialState &&
+      this.p.props.initialState.focus !== undefined
+    ) {
       this.forceState({ focus: this.p.props.initialState.focus });
     }
   }
@@ -92,8 +114,10 @@ class Interactive extends React.Component {
     // set if the `topNode` needs to be updated in componentDidUpdate => `as` is different
     // and not a string, note that if `as` is a new string, then the `refCallback`
     // will be called by React so no need to do anything in componentDidUpdate
-    this.track.updateTopNode = (this.props.as !== nextProps.as && typeof this.props.as !== 'string'
-    && typeof nextProps.as !== 'string');
+    this.track.updateTopNode =
+      this.props.as !== nextProps.as &&
+      typeof this.props.as !== 'string' &&
+      typeof nextProps.as !== 'string';
 
     // check if nextProps are the same as this.props
     this.p.sameProps = false;
@@ -112,20 +136,18 @@ class Interactive extends React.Component {
     // or statement, returns true on first true value, returns false if all are false
     return (
       // return true if props have changed since last render
-      (!this.p.sameProps && nextProps !== this.props)
-      ||
+      (!this.p.sameProps && nextProps !== this.props) ||
       // always update if there are interactive children
-      (nextProps.interactiveChild)
-      ||
+      nextProps.interactiveChild ||
       // if `iState` changed, AND the `style` or `className` for the new `iState` is different,
       // prevents renders when switching b/t two states that have the same `style` and `className`
       (nextState.iState !== this.state.iState &&
-      (this.p[`${nextState.iState}Style`].style !== this.p[`${this.state.iState}Style`].style ||
-      this.p[`${nextState.iState}Style`].className !==
-      this.p[`${this.state.iState}Style`].className))
-      ||
+        (this.p[`${nextState.iState}Style`].style !==
+          this.p[`${this.state.iState}Style`].style ||
+          this.p[`${nextState.iState}Style`].className !==
+            this.p[`${this.state.iState}Style`].className)) ||
       // if `focus` state changed (always update to work with default style)
-      (nextState.focus !== this.state.focus)
+      nextState.focus !== this.state.focus
     );
   }
 
@@ -140,10 +162,10 @@ class Interactive extends React.Component {
   }
 
   componentWillUnmount() {
-    Object.keys(this.track.notifyOfNext).forEach((eType) => {
+    Object.keys(this.track.notifyOfNext).forEach(eType => {
       cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
     });
-    Object.keys(this.track.timeoutIDs).forEach((timer) => {
+    Object.keys(this.track.timeoutIDs).forEach(timer => {
       window.clearTimeout(this.track.timeoutIDs[timer]);
     });
   }
@@ -151,19 +173,19 @@ class Interactive extends React.Component {
   // determine event handlers to use based on the device type - only determined once in constructor
   setupEventHandlers() {
     const eventHandlers = {};
-    Object.keys(otherEvents).forEach((event) => {
+    Object.keys(otherEvents).forEach(event => {
       eventHandlers[otherEvents[event]] = this.handleEvent;
     });
 
     // if the device has touch, set touch event listeners
     if (deviceHasTouch) {
-      Object.keys(touchEvents).forEach((event) => {
+      Object.keys(touchEvents).forEach(event => {
         eventHandlers[touchEvents[event]] = this.handleEvent;
       });
     }
     // if the device has a mouse, set mouse event listeners
     if (deviceHasMouse) {
-      Object.keys(mouseEvents).forEach((event) => {
+      Object.keys(mouseEvents).forEach(event => {
         eventHandlers[mouseEvents[event]] = this.handleEvent;
       });
     }
@@ -190,7 +212,7 @@ class Interactive extends React.Component {
   }
 
   // find and set the top DOM node of `as`
-  refCallback = (node) => {
+  refCallback = node => {
     this.refNode = node;
     if (node) {
       const prevTopNode = this.topNode;
@@ -203,7 +225,8 @@ class Interactive extends React.Component {
       this.spaceKeyTrigger = spaceKeyTrigger(this.tagName, this.type);
       // if as is a react component then won't have access to tag in componentWillReceiveProps,
       // so check if click listener needs to be set again here (after this.tagName is set)
-      if (this.setClickListener(this.p.props)) this.p.passThroughProps.onClick = this.handleEvent;
+      if (this.setClickListener(this.p.props))
+        this.p.passThroughProps.onClick = this.handleEvent;
       // if node is a new node then call manageFocus to keep browser in sync with RI,
       // note: above assignments can't be in this if statement b/c node could have mutated,
       // node should maintain focus state when mutated
@@ -213,38 +236,60 @@ class Interactive extends React.Component {
         this.p.props.refDOMNode && this.p.props.refDOMNode(this.topNode);
       }
     }
-  }
+  };
 
   // setup `this.p`, only called from constructor and componentWillReceiveProps
   propsSetup(props) {
-    const { mergedProps, passThroughProps } = mergeAndExtractProps(props, knownProps);
+    const { mergedProps, passThroughProps } = mergeAndExtractProps(
+      props,
+      knownProps,
+    );
     setActiveAndFocusProps(mergedProps);
 
     // if focus state prop and no tabIndex, then add a tabIndex so RI is focusable by browser
     if (passThroughProps.tabIndex === null) delete passThroughProps.tabIndex;
-    else if (!passThroughProps.tabIndex && (mergedProps.focus || mergedProps.focusFromTab ||
-    mergedProps.focusFromMouse || mergedProps.focusFromTouch || mergedProps.onClick)) {
+    else if (
+      !passThroughProps.tabIndex &&
+      (mergedProps.focus ||
+        mergedProps.focusFromTab ||
+        mergedProps.focusFromMouse ||
+        mergedProps.focusFromTouch ||
+        mergedProps.onClick)
+    ) {
       mergedProps.tabIndex = '0';
       passThroughProps.tabIndex = '0';
     }
 
     // if onClick prop but it's not clear what the role of the element is then add role="button"
     if (passThroughProps.role === null) delete passThroughProps.role;
-    else if (mergedProps.onClick && !mergedProps.role && typeof mergedProps.as === 'string' &&
-    !knownRoleTags[mergedProps.as]) {
+    else if (
+      mergedProps.onClick &&
+      !mergedProps.role &&
+      typeof mergedProps.as === 'string' &&
+      !knownRoleTags[mergedProps.as]
+    ) {
       mergedProps.role = 'button';
       passThroughProps.role = 'button';
     }
 
     // maximum number of touch points where a tap is still possible
-    this.maxTapPoints = (mergedProps.onTapFour && 4) || (mergedProps.onTapThree && 3) ||
-    (mergedProps.onTapTwo && 2) || 1;
+    this.maxTapPoints =
+      (mergedProps.onTapFour && 4) ||
+      (mergedProps.onTapThree && 3) ||
+      (mergedProps.onTapTwo && 2) ||
+      1;
 
     // add onClick handler to passThroughProps if it's required
-    if (this.setClickListener(mergedProps)) passThroughProps.onClick = this.handleEvent;
+    if (this.setClickListener(mergedProps))
+      passThroughProps.onClick = this.handleEvent;
 
     //  add onTouchMove handler to passThroughProps if it's required
-    if (deviceHasTouch && (mergedProps.touchActiveTapOnly || mergedProps.onTouchMove)) {
+    if (
+      deviceHasTouch &&
+      (mergedProps.touchActiveTapOnly ||
+        mergedProps.onLongPress ||
+        mergedProps.onTouchMove)
+    ) {
       passThroughProps.onTouchMove = this.handleEvent;
     }
 
@@ -299,29 +344,42 @@ class Interactive extends React.Component {
     if (newState.iState !== undefined) this.forceTrackIState(newState.iState);
 
     // if new focus state, call manageFocus and return b/c focus calls updateState
-    if (newState.focus !== undefined && newState.focus !== this.track.state.focus) {
+    if (
+      newState.focus !== undefined &&
+      newState.focus !== this.track.state.focus
+    ) {
       this.track.focus = newState.focus;
-      this.manageFocus(newState.focus ? 'forceStateFocusTrue' : 'forceStateFocusFalse');
+      this.manageFocus(
+        newState.focus ? 'forceStateFocusTrue' : 'forceStateFocusFalse',
+      );
       return;
     }
 
     // update state with new computed state and dummy 'event' that caused state change
-    this.updateState(this.computeState(), this.p.props, dummyEvent('forcestate'));
+    this.updateState(
+      this.computeState(),
+      this.p.props,
+      dummyEvent('forcestate'),
+    );
   }
 
   // compute the state based on what's set in `this.track`, returns a new state object
   // note: use the respective active state when drag is true (i.e. dragging the element)
   computeState() {
     const { mouseOn, buttonDown, touchDown, focus, drag } = this.track;
-    const focusKeyDown = focus && (
-      (this.track.enterKeyDown && this.enterKeyTrigger) ||
-      (this.track.spaceKeyDown && this.spaceKeyTrigger)
-    );
+    const focusKeyDown =
+      focus &&
+      ((this.track.enterKeyDown && this.enterKeyTrigger) ||
+        (this.track.spaceKeyDown && this.spaceKeyTrigger));
     const newState = { focus };
-    if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag) newState.iState = 'normal';
+    if (!mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag)
+      newState.iState = 'normal';
     else if (mouseOn && !buttonDown && !touchDown && !focusKeyDown && !drag) {
       newState.iState = 'hover';
-    } else if ((mouseOn && buttonDown && !touchDown && !focusKeyDown) || (drag && !touchDown)) {
+    } else if (
+      (mouseOn && buttonDown && !touchDown && !focusKeyDown) ||
+      (drag && !touchDown)
+    ) {
       newState.iState = 'hoverActive';
     } else if (focusKeyDown && !touchDown) newState.iState = 'keyActive';
     else if (touchDown || drag) newState.iState = 'touchActive';
@@ -333,8 +391,8 @@ class Interactive extends React.Component {
     if (!dontManageNotifyOfNext) this.manageNotifyOfNext(newState);
     const prevIState = this.track.state.iState;
     const nextIState = newState.iState;
-    const iStateChange = (nextIState !== prevIState);
-    const focusChange = (newState.focus !== this.track.state.focus);
+    const iStateChange = nextIState !== prevIState;
+    const focusChange = newState.focus !== this.track.state.focus;
 
     // early return if state doesn't need to change
     if (!iStateChange && !focusChange) return;
@@ -358,19 +416,24 @@ class Interactive extends React.Component {
     // only place that setState is called
     this.setState(
       newState,
-      props.setStateCallback && props.setStateCallback.bind(this, { prevState, nextState }),
+      props.setStateCallback &&
+        props.setStateCallback.bind(this, { prevState, nextState }),
     );
   }
 
   // handles all events - first checks if it's a valid event, then calls the specific
   // type of event handler (to set the proper this.track properties),
   // and at the end calls this.updateState(...)
-  handleEvent = (e) => {
+  handleEvent = e => {
     if (!this.isValidEvent(e)) return;
 
     if (mouseEvents[e.type]) {
       if (this.handleMouseEvent(e) === 'terminate') return;
-    } else if (touchEvents[e.type] || e.type === 'touchmove' || e.type === 'touchtapcancel') {
+    } else if (
+      touchEvents[e.type] ||
+      e.type === 'touchmove' ||
+      e.type === 'touchtapcancel'
+    ) {
       if (this.handleTouchEvent(e) === 'terminate') return;
     } else if (e.type === 'click') {
       if (this.handleClickEvent(e) === 'terminate') return;
@@ -379,18 +442,22 @@ class Interactive extends React.Component {
     // compute the new state object and pass it as an argument to updateState,
     // which calls setState and state change callbacks if needed
     this.updateState(this.computeState(), this.p.props, e);
-  }
+  };
 
   // checks if the event is a valid event or not, returns true / false respectivly
   isValidEvent(e) {
     // if it's a known click event then return true
     if (e.type === 'click' && this.track.clickType !== 'reset') return true;
     // if it's a focus/blur event and this Interactive instance is not the target then return true
-    if ((e.type === 'focus' || e.type === 'blur') && e.target !== this.topNode) return true;
+    if ((e.type === 'focus' || e.type === 'blur') && e.target !== this.topNode)
+      return true;
 
     // refCallbackFocus calls focus when there is a new top DOM node and RI is already in the
     // focus state to keep the browser's focus state in sync with RI's, so reset and return false
-    if (e.type === 'focus' && this.track.focusTransition === 'refCallbackFocus') {
+    if (
+      e.type === 'focus' &&
+      this.track.focusTransition === 'refCallbackFocus'
+    ) {
       e.stopPropagation();
       this.track.focusTransition = 'reset';
       return false;
@@ -400,7 +467,11 @@ class Interactive extends React.Component {
     // then the force blur is to keep the browser focus state in sync with RI's focus state,
     // so reset the focusTransition and return false, no need to do anything
     // else because the blur event was only for the benefit of the browser, not RI
-    if (e.type === 'blur' && this.track.focusTransition === 'focusForceBlur' && !this.track.state.focus) {
+    if (
+      e.type === 'blur' &&
+      this.track.focusTransition === 'focusForceBlur' &&
+      !this.track.state.focus
+    ) {
       e.stopPropagation();
       this.track.focusTransition = 'reset';
       return false;
@@ -412,16 +483,22 @@ class Interactive extends React.Component {
       // if no active or touchActive prop, then let the browser determine what is a click from touch
       // this allows for edge taps that don't fire touch events on RI (only click events)
       // so the click event is allowed through when WebkitTapHightlightColor indicates a click
-      if (e.type === 'click' && (input.touch.recentTouch || input.touch.touchOnScreen) &&
-      (this.p.props.active || this.p.props.touchActive)) {
+      if (
+        e.type === 'click' &&
+        (input.touch.recentTouch || input.touch.touchOnScreen) &&
+        (this.p.props.active || this.p.props.touchActive)
+      ) {
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
       // reject unknown focus events from touch interactions
       if (e.type === 'focus') {
-        if (this.track.focusTransition === 'reset' && (input.touch.recentTouch ||
-        (!this.track.touchDown && input.touch.touchOnScreen))) {
+        if (
+          this.track.focusTransition === 'reset' &&
+          (input.touch.recentTouch ||
+            (!this.track.touchDown && input.touch.touchOnScreen))
+        ) {
           e.preventDefault();
           e.stopPropagation();
           this.manageFocus('focusForceBlur');
@@ -432,7 +509,10 @@ class Interactive extends React.Component {
 
     if (deviceType === 'hybrid') {
       // reject mouse events from touch interactions
-      if (/mouse/.test(e.type) && (input.touch.touchOnScreen || input.touch.recentTouch)) {
+      if (
+        /mouse/.test(e.type) &&
+        (input.touch.touchOnScreen || input.touch.recentTouch)
+      ) {
         e.preventDefault();
         e.stopPropagation();
         return false;
@@ -450,13 +530,16 @@ class Interactive extends React.Component {
   // O(n), where n is the number of mounted RI components
   manageNotifyOfNext(newState) {
     // set notifyOfNext
-    const setNON = (eType) => {
+    const setNON = eType => {
       if (!this.track.notifyOfNext[eType]) {
-        this.track.notifyOfNext[eType] = notifyOfNext(eType, this.handleNotifyOfNext);
+        this.track.notifyOfNext[eType] = notifyOfNext(
+          eType,
+          this.handleNotifyOfNext,
+        );
       }
     };
     // cancel notifyOfNext
-    const cancelNON = (eType) => {
+    const cancelNON = eType => {
       if (this.track.notifyOfNext[eType]) {
         cancelNotifyOfNext(eType, this.track.notifyOfNext[eType]);
         delete this.track.notifyOfNext[eType];
@@ -494,9 +577,9 @@ class Interactive extends React.Component {
 
     if (deviceHasTouch) {
       // cancel tap when touch someplace else on the screen
-      newState.iState === 'touchActive' ?
-      this.p.props.extraTouchNoTap && setNON('touchstart') :
-      cancelNON('touchstart');
+      newState.iState === 'touchActive'
+        ? this.p.props.extraTouchNoTap && setNON('touchstart')
+        : cancelNON('touchstart');
     }
 
     // notify of next setup for maintaining correct focusFrom when switching apps/windows,
@@ -504,14 +587,18 @@ class Interactive extends React.Component {
     // event if it immediately follows this event, otherwise cancel the notify of next
     if (this.track.state.focus && !newState.focus) {
       setNON('blur');
-      this.manageSetTimeout('elementBlur', () => {
-        this.track.previousFocus = false;
-        cancelNON('blur');
-      }, queueTime);
+      this.manageSetTimeout(
+        'elementBlur',
+        () => {
+          this.track.previousFocus = false;
+          cancelNON('blur');
+        },
+        queueTime,
+      );
     }
   }
 
-  handleNotifyOfNext = (e) => {
+  handleNotifyOfNext = e => {
     let updateState = false;
 
     switch (e.type) {
@@ -531,11 +618,14 @@ class Interactive extends React.Component {
         // cancel tap if extra touch point, or when touch someplace else on the screen
         // check topNode and children to make sure they weren't the target
         if (this.p.props.extraTouchNoTap) {
-          if (this.track.touches.active < this.maxTapPoints &&
-          recursiveNodeCheck(this.topNode, node => e.target === node)) {
+          if (
+            this.track.touches.active < this.maxTapPoints &&
+            recursiveNodeCheck(this.topNode, node => e.target === node)
+          ) {
             return 'reNotifyOfNext';
           }
-          updateState = this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState';
+          updateState =
+            this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState';
         }
         break;
 
@@ -544,12 +634,16 @@ class Interactive extends React.Component {
         // so w/o timeout when this intance of RI is dragged it would go:
         // active -> force normal from notifier drag -> active from RI's drag event,
         // but the timeout will allow time for RI's drag event to fire before force normal
-        this.manageSetTimeout('dragstart', () => {
-          if (!this.track.drag) {
-            this.forceTrackIState('normal');
-            this.updateState(this.computeState(), this.p.props, e, true);
-          }
-        }, 30);
+        this.manageSetTimeout(
+          'dragstart',
+          () => {
+            if (!this.track.drag) {
+              this.forceTrackIState('normal');
+              this.updateState(this.computeState(), this.p.props, e, true);
+            }
+          },
+          30,
+        );
         break;
 
       // window focus event
@@ -558,9 +652,13 @@ class Interactive extends React.Component {
         // an element focus event, otherwise cancel focus reinstatement
         if (this.track.previousFocus !== false) {
           this.track.reinstateFocus = true;
-          this.manageSetTimeout('windowFocus', () => {
-            this.track.reinstateFocus = false;
-          }, queueTime);
+          this.manageSetTimeout(
+            'windowFocus',
+            () => {
+              this.track.reinstateFocus = false;
+            },
+            queueTime,
+          );
         }
         break;
 
@@ -570,16 +668,20 @@ class Interactive extends React.Component {
         this.cancelTimeout('elementBlur');
         // notifiy of the next window focus event (re-entering the app/window/tab)
         if (!this.track.notifyOfNext.focus) {
-          this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+          this.track.notifyOfNext.focus = notifyOfNext(
+            'focus',
+            this.handleNotifyOfNext,
+          );
         }
         break;
       default:
     }
 
-    if (updateState) this.updateState(this.computeState(), this.p.props, e, true);
+    if (updateState)
+      this.updateState(this.computeState(), this.p.props, e, true);
     delete this.track.notifyOfNext[e.type];
     return null;
-  }
+  };
 
   // check the mouse position relative to the RI element on the page
   checkMousePosition(e) {
@@ -590,10 +692,10 @@ class Interactive extends React.Component {
     function mouseOnNode(node) {
       const rect = node.getBoundingClientRect();
       return (
-        mouseX >= (rect.left - 1) &&
-        mouseX <= (rect.right + 1) &&
-        mouseY >= (rect.top - 1) &&
-        mouseY <= (rect.bottom + 1)
+        mouseX >= rect.left - 1 &&
+        mouseX <= rect.right + 1 &&
+        mouseY >= rect.top - 1 &&
+        mouseY <= rect.bottom + 1
       );
     }
 
@@ -637,10 +739,12 @@ class Interactive extends React.Component {
   manageFocus(type, e) {
     // if this exact event has already been used for focus/blur by another instance of Interactive
     // i.e. a child and the event is bubbling, then don't manage focus and return updateState
-    if (e && (focusRegistry.focus === e || focusRegistry.blur === e)) return 'updateState';
+    if (e && (focusRegistry.focus === e || focusRegistry.blur === e))
+      return 'updateState';
 
     // is the DOM node tag blurable for toggle focus
-    const tagIsBlurable = !nonBlurrableTags[this.tagName] && !this.p.props.focusToggleOff;
+    const tagIsBlurable =
+      !nonBlurrableTags[this.tagName] && !this.p.props.focusToggleOff;
     // is the node focusable, if there is a focus or tabIndex prop, or it's non-blurable, then it is
     const tagIsFocusable = this.p.props.tabIndex || knownRoleTags[this.tagName];
 
@@ -649,17 +753,23 @@ class Interactive extends React.Component {
     // returns 'updateState' if not allowed to make specified transition, so RI will continue
     // to updateState this time through handleEvent
     const focusTransition = (event, transitionAs, force) => {
-      if (force === 'force' ||
-      (event === 'focus' && tagIsFocusable) ||
-      (event === 'blur' && tagIsBlurable)) {
+      if (
+        force === 'force' ||
+        (event === 'focus' && tagIsFocusable) ||
+        (event === 'blur' && tagIsBlurable)
+      ) {
         // if the manageFocus call is from a browser event (i.e. will bubble), register it
         if (e) {
           focusRegistry[event] = e;
           // reset event registry after bubbling has finished because React reuses events so
           // future event equality checks may give a false positive if not reset
-          this.manageSetTimeout('focusRegistry', () => {
-            focusRegistry[event] = null;
-          }, 0);
+          this.manageSetTimeout(
+            'focusRegistry',
+            () => {
+              focusRegistry[event] = null;
+            },
+            0,
+          );
         }
         this.track.focusTransition = transitionAs;
         this.topNode[event]();
@@ -674,7 +784,8 @@ class Interactive extends React.Component {
 
     // toggles focus by calling focusTransition, returns focusTransition's return
     const toggleFocus = (toggleAs, force) => {
-      if (this.track.state.focus) return focusTransition('blur', `${toggleAs}Blur`, force);
+      if (this.track.state.focus)
+        return focusTransition('blur', `${toggleAs}Blur`, force);
       return focusTransition('focus', `${toggleAs}Focus`, force);
     };
 
@@ -683,7 +794,8 @@ class Interactive extends React.Component {
         return focusTransition('focus', 'mouseDownFocus');
       case 'mouseup':
         // blur only if focus was not initiated on the preceding mousedown,
-        if (this.track.focusStateOnMouseDown) return focusTransition('blur', 'mouseUpBlur');
+        if (this.track.focusStateOnMouseDown)
+          return focusTransition('blur', 'mouseUpBlur');
         this.track.focusTransition = 'reset';
         return 'updateState';
       case 'touchclick':
@@ -692,20 +804,31 @@ class Interactive extends React.Component {
         // setTimeout because React misses focus calls made during componentWillReceiveProps,
         // which is where forceState calls come from (the browser receives the focus call
         // but not React), so have to call focus asyncrounsly so React receives it
-        this.manageSetTimeout('forceStateFocusTrue', () => {
-          !this.track.state.focus && focusTransition('focus', 'forceStateFocus', 'force');
-        }, 0);
+        this.manageSetTimeout(
+          'forceStateFocusTrue',
+          () => {
+            !this.track.state.focus &&
+              focusTransition('focus', 'forceStateFocus', 'force');
+          },
+          0,
+        );
         return 'terminate';
       case 'forceStateFocusFalse':
         // same as forceStateFocusTrue, but for focus false
-        this.manageSetTimeout('forceStateFocusFalse', () => {
-          this.track.state.focus && focusTransition('blur', 'forceStateBlur', 'force');
-        }, 0);
+        this.manageSetTimeout(
+          'forceStateFocusFalse',
+          () => {
+            this.track.state.focus &&
+              focusTransition('blur', 'forceStateBlur', 'force');
+          },
+          0,
+        );
         return 'terminate';
       case 'refCallback':
         // if in the focus state and RI has a new topDOMNode, then call focus() on `this.topNode`
         // to keep the browser focus state in sync with RI's focus state
-        if (this.track.state.focus) return focusTransition('focus', 'refCallbackFocus', 'force');
+        if (this.track.state.focus)
+          return focusTransition('focus', 'refCallbackFocus', 'force');
         this.track.focusTransition = 'reset';
         return 'terminate';
       case 'focusForceBlur':
@@ -733,7 +856,8 @@ class Interactive extends React.Component {
       case 'mousemove':
         this.p.props.onMouseMove && this.p.props.onMouseMove(e);
         // early return for mouse move
-        if (this.track.mouseOn && this.track.buttonDown === (e.buttons === 1)) return 'terminate';
+        if (this.track.mouseOn && this.track.buttonDown === (e.buttons === 1))
+          return 'terminate';
         this.track.mouseOn = true;
         this.track.buttonDown = e.buttons === 1;
         return 'updateState';
@@ -775,29 +899,34 @@ class Interactive extends React.Component {
     // track recent touch, called from touchend and touchcancel
     const recentTouch = () => {
       this.track.recentTouch = true;
-      this.manageSetTimeout('recentTouchTimer', () => {
-        this.track.recentTouch = false;
-      }, queueTime);
+      this.manageSetTimeout(
+        'recentTouchTimer',
+        () => {
+          this.track.recentTouch = false;
+        },
+        queueTime,
+      );
     };
 
     // returns true if there are extra touches on the screen
-    const extraTouches = () => (
+    const extraTouches = () =>
       // if extraTouchNoTap prop and also touching someplace else on the screen, or
-      (this.p.props.extraTouchNoTap && e.touches.length !== this.track.touches.active) ||
+      (this.p.props.extraTouchNoTap &&
+        e.touches.length !== this.track.touches.active) ||
       // more touches on RI than maxTapPoints
-      (this.track.touches.active > this.maxTapPoints)
-    );
+      this.track.touches.active > this.maxTapPoints;
 
     // returns true if a touch point has moved more than is allowed for a tap
-    const touchMoved = (endTouch, startTouch, numberOfPoints) => (
-      Math.abs(endTouch.clientX - startTouch.startX) >= 15 + (3 * numberOfPoints) ||
-      Math.abs(endTouch.clientY - startTouch.startY) >= 15 + (3 * numberOfPoints)
-    );
+    const touchMoved = (endTouch, startTouch, numberOfPoints) =>
+      Math.abs(endTouch.clientX - startTouch.startX) >=
+        15 + 3 * numberOfPoints ||
+      Math.abs(endTouch.clientY - startTouch.startY) >= 15 + 3 * numberOfPoints;
 
     // log touch position for each touch point that is part of the touch event
-    const logTouchCoordsAs = (logAs) => {
+    const logTouchCoordsAs = logAs => {
       for (let i = 0; i < e.changedTouches.length; i++) {
-        const point = this.track.touches.points[e.changedTouches[i].identifier] || {};
+        const point =
+          this.track.touches.points[e.changedTouches[i].identifier] || {};
         point[`${logAs}X`] = e.changedTouches[i].clientX;
         point[`${logAs}Y`] = e.changedTouches[i].clientY;
         this.track.touches.points[e.changedTouches[i].identifier] = point;
@@ -816,19 +945,26 @@ class Interactive extends React.Component {
         if (this.track.touches.touchend || extraTouches()) {
           // recursively call handleTouchEvent with a touchtapcancel event to set track properties,
           // call handleTouchEvent directly don't go through handleEvent so updateState isn't called
-          return (
-            this.handleTouchEvent({ type: 'touchtapcancel' }) === 'updateState' || newTouchDown ?
-            'updateState' : 'terminate'
-          );
+          return this.handleTouchEvent({ type: 'touchtapcancel' }) ===
+            'updateState' || newTouchDown
+            ? 'updateState'
+            : 'terminate';
         }
 
         // if going from no touch to touch, set touchTapTimer
         if (newTouchDown) {
-          this.manageSetTimeout('touchTapTimer', () => {
-            // if the timer finishes then fire a touchtapcancel event to cancel the tap,
-            // because this goes through handleEvent, updateState will be called if needed
-            this.handleEvent(dummyEvent('touchtapcancel'));
-          }, 600);
+          e.persist();
+          this.manageSetTimeout(
+            'touchTapTimer',
+            () => {
+              // if the timer finishes then call onLongPress callback and
+              // fire a touchtapcancel event to cancel the tap,
+              // because this goes through handleEvent, updateState will be called if needed
+              this.p.props.onLongPress && this.p.props.onLongPress(e);
+              this.handleEvent(dummyEvent('touchtapcancel'));
+            },
+            this.p.props.tapTimeCutoff,
+          );
         }
 
         // log touch start position
@@ -840,13 +976,20 @@ class Interactive extends React.Component {
         this.p.props.onTouchMove && this.p.props.onTouchMove(e);
         if (this.track.touches.tapCanceled) return 'terminate';
         // cancel tap if there are extra touches
-        if (extraTouches()) return this.handleTouchEvent({ type: 'touchtapcancel' });
+        if (extraTouches())
+          return this.handleTouchEvent({ type: 'touchtapcancel' });
 
-        // if touchActiveTapOnly prop, check to see if the touch moved enough to cancel tap
-        if (this.p.props.touchActiveTapOnly) {
+        // if touchActiveTapOnly or onLongPress prop,
+        // check to see if the touch moved enough to cancel tap
+        if (this.p.props.touchActiveTapOnly || this.p.props.onLongPress) {
           for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = this.track.touches.points[e.changedTouches[i].identifier];
-            if (touch && touchMoved(e.changedTouches[i], touch, this.maxTapPoints)) {
+            const touch = this.track.touches.points[
+              e.changedTouches[i].identifier
+            ];
+            if (
+              touch &&
+              touchMoved(e.changedTouches[i], touch, this.maxTapPoints)
+            ) {
               return this.handleTouchEvent({ type: 'touchtapcancel' });
             }
           }
@@ -861,8 +1004,10 @@ class Interactive extends React.Component {
         this.track.touches.active -= e.changedTouches.length;
         // if a touch event was dropped somewhere, i.e.
         // cumulative length of changed touches for touchstarts !== touchends, then reset
-        if ((this.track.touches.active < 0) ||
-        (e.touches.length === 0 && this.track.touches.active > 0)) {
+        if (
+          this.track.touches.active < 0 ||
+          (e.touches.length === 0 && this.track.touches.active > 0)
+        ) {
           resetTouchInteraction();
           return 'updateState';
         }
@@ -871,11 +1016,15 @@ class Interactive extends React.Component {
         this.track.touches.touchend = true;
 
         // check to see if tap is already canceled or should be canceled
-        if (this.track.touches.active === 0 && (this.track.touches.tapCanceled || extraTouches())) {
+        if (
+          this.track.touches.active === 0 &&
+          (this.track.touches.tapCanceled || extraTouches())
+        ) {
           resetTouchInteraction();
           return 'updateState';
         } else if (this.track.touches.tapCanceled) return 'terminate';
-        else if (extraTouches()) return this.handleTouchEvent({ type: 'touchtapcancel' });
+        else if (extraTouches())
+          return this.handleTouchEvent({ type: 'touchtapcancel' });
 
         // log touch end position
         logTouchCoordsAs('client');
@@ -888,9 +1037,11 @@ class Interactive extends React.Component {
 
           // determine if there was a tap and number of touch points for the tap
           // if every touch point hasn't moved, set tapTouchPoints to count
-          const tapTouchPoints =
-            touchKeys.every(touch => (!touchMoved(touches[touch], touches[touch], count))) ?
-            count : 0;
+          const tapTouchPoints = touchKeys.every(
+            touch => !touchMoved(touches[touch], touches[touch], count),
+          )
+            ? count
+            : 0;
 
           // reset the touch interaction
           resetTouchInteraction();
@@ -962,9 +1113,13 @@ class Interactive extends React.Component {
     // when it's left to the browser to call click(), the browser has queueTime
     // to add the click event to the queue for it to be recognized as a known click event
     const setClickTypeTimer = () => {
-      this.manageSetTimeout('clickType', () => {
-        this.track.clickType = 'reset';
-      }, queueTime);
+      this.manageSetTimeout(
+        'clickType',
+        () => {
+          this.track.clickType = 'reset';
+        },
+        queueTime,
+      );
     };
 
     switch (type) {
@@ -987,9 +1142,9 @@ class Interactive extends React.Component {
         if (knownRoleTags[this.tagName]) {
           setClickTypeTimer();
 
-        // if the element doesn't have a known interactive role, but there is an onClick prop,
-        // then call node.click() directly as the browser won't fire a click event
-        // from a keyClick interaction
+          // if the element doesn't have a known interactive role, but there is an onClick prop,
+          // then call node.click() directly as the browser won't fire a click event
+          // from a keyClick interaction
         } else if (this.p.props.onClick) {
           this.topNode.click();
           this.track.clickType = 'reset';
@@ -1013,14 +1168,20 @@ class Interactive extends React.Component {
       // is considered to be a keyClick (when you press enter to submit a form
       // but focus is not on the submit button)
       const enterKeyFormSubmit =
-      this.tagName === 'input' && this.type === 'submit' && input.key.recentEnterKeyDown;
+        this.tagName === 'input' &&
+        this.type === 'submit' &&
+        input.key.recentEnterKeyDown;
       if (enterKeyFormSubmit) this.track.clickType = 'keyClick';
-      // if there is a recent touch on the document,
-      // or this is a unknown synthetic click event on a touchOnly device
-      else if (input.touch.recentTouch || input.touch.touchOnScreen || deviceType === 'touchOnly') {
+      else if (
+        input.touch.recentTouch ||
+        input.touch.touchOnScreen ||
+        deviceType === 'touchOnly'
+      ) {
+        // if there is a recent touch on the document,
+        // or this is a unknown synthetic click event on a touchOnly device
         returnValue = this.manageFocus('touchclick', e);
         this.track.keyClick = 'tapClick';
-      // else this is a unknown synthetic click event on a mouseOnly or hybrid device
+        // else this is a unknown synthetic click event on a mouseOnly or hybrid device
       } else this.track.keyClick = 'mouseClick';
     }
 
@@ -1036,10 +1197,16 @@ class Interactive extends React.Component {
     // This is only a problem on Android Chrome because despite not calling focus on link tap,
     // upon returning to the window, focus is called on the element putting it
     // into the focusFromTab state, when it should be in the focusFromTouch state.
-    if (this.p.props.target === '_blank' && this.track.clickType === 'tapClick' &&
-    !this.track.notifyOfNext.focus) {
+    if (
+      this.p.props.target === '_blank' &&
+      this.track.clickType === 'tapClick' &&
+      !this.track.notifyOfNext.focus
+    ) {
       this.track.previousFocus = 'touch';
-      this.track.notifyOfNext.focus = notifyOfNext('focus', this.handleNotifyOfNext);
+      this.track.notifyOfNext.focus = notifyOfNext(
+        'focus',
+        this.handleNotifyOfNext,
+      );
     }
 
     // call onClick handler and pass in clickType (mouseClick, tapClick, keyClick) as 2nd argument
@@ -1125,8 +1292,11 @@ class Interactive extends React.Component {
     // add default styles first:
     // if focusFromTab prop provided, then reset browser focus style,
     // otherwise only reset it when focus is not from tab
-    if (!this.p.props.useBrowserOutlineFocus &&
-    (this.p.props.focusFromTab || (this.state.focus !== 'tab' && !nonBlurrableTags[this.tagName]))) {
+    if (
+      !this.p.props.useBrowserOutlineFocus &&
+      (this.p.props.focusFromTab ||
+        (this.state.focus !== 'tab' && !nonBlurrableTags[this.tagName]))
+    ) {
       style.outline = 0;
       style.outlineOffset = 0;
     }
@@ -1135,19 +1305,24 @@ class Interactive extends React.Component {
       style.WebkitTapHighlightColor = 'rgba(0, 0, 0, 0)';
     }
     // set cursor to pointer if clicking does something
-    const lowerAs = typeof this.p.props.as === 'string' && this.p.props.as.toLowerCase();
-    if (!this.p.props.useBrowserCursor && (
-      (this.p.props.onClick ||
-        (
-          lowerAs !== 'input' && this.p.props.tabIndex &&
-          (this.p.mouseFocusStyle.style || this.p.mouseFocusStyle.className)
-        ) || (
-          lowerAs === 'input' && (this.p.props.type === 'checkbox' ||
-          this.p.props.type === 'radio' || this.p.props.type === 'submit')
-        ) || lowerAs === 'button' || lowerAs === 'a' || lowerAs === 'area' || lowerAs === 'select'
-      ) && !(
-        this.p.props.disabled
-    ))) {
+    const lowerAs =
+      typeof this.p.props.as === 'string' && this.p.props.as.toLowerCase();
+    if (
+      !this.p.props.useBrowserCursor &&
+      ((this.p.props.onClick ||
+        (lowerAs !== 'input' &&
+          this.p.props.tabIndex &&
+          (this.p.mouseFocusStyle.style || this.p.mouseFocusStyle.className)) ||
+        (lowerAs === 'input' &&
+          (this.p.props.type === 'checkbox' ||
+            this.p.props.type === 'radio' ||
+            this.p.props.type === 'submit')) ||
+        lowerAs === 'button' ||
+        lowerAs === 'a' ||
+        lowerAs === 'area' ||
+        lowerAs === 'select') &&
+        !this.p.props.disabled)
+    ) {
       style.cursor = 'pointer';
     }
 
@@ -1156,10 +1331,14 @@ class Interactive extends React.Component {
 
     // add iState and focus state styles third:
     // focus has priority over iState styles unless overridden in stylePriority
-    const hasPriority = this.state.iState === 'keyActive' ||
-      (this.p.props.stylePriority && this.p.props.stylePriority[this.state.iState]);
+    const hasPriority =
+      this.state.iState === 'keyActive' ||
+      (this.p.props.stylePriority &&
+        this.p.props.stylePriority[this.state.iState]);
     const iStateStyle = this.p[`${this.state.iState}Style`].style;
-    const focusStyle = this.state.focus ? this.p[`${this.state.focus}FocusStyle`].style : null;
+    const focusStyle = this.state.focus
+      ? this.p[`${this.state.focus}FocusStyle`].style
+      : null;
     if (hasPriority) {
       objectAssign(style, focusStyle, iStateStyle);
     } else {
@@ -1181,13 +1360,17 @@ class Interactive extends React.Component {
   // compute children when there is an interactiveChild prop, returns the new children
   computeChildren() {
     // convert this.state.focus to the string focusFrom[Type] for use later
-    const focusFrom = this.state.focus &&
-      `focusFrom${this.state.focus.charAt(0).toUpperCase()}${this.state.focus.slice(1)}`;
+    const focusFrom =
+      this.state.focus &&
+      `focusFrom${this.state.focus
+        .charAt(0)
+        .toUpperCase()}${this.state.focus.slice(1)}`;
     // does the current iState style have priority over the focus state style
     const iStateStylePriority =
-      this.p.props.stylePriority && this.p.props.stylePriority[this.state.iState];
+      this.p.props.stylePriority &&
+      this.p.props.stylePriority[this.state.iState];
 
-    const computeChildStyle = (props) => {
+    const computeChildStyle = props => {
       const style = props.style ? { ...props.style } : {};
       setActiveAndFocusProps(props);
       const iStateStyle = extractStyle(props, this.state.iState);
@@ -1199,24 +1382,30 @@ class Interactive extends React.Component {
           iStateStyle.className,
           (focusStyle && focusStyle.className) || '',
         ),
-        style: (iStateStylePriority && objectAssign(style, focusStyle.style, iStateStyle.style)) ||
-        objectAssign(style, iStateStyle.style, focusStyle.style),
+        style:
+          (iStateStylePriority &&
+            objectAssign(style, focusStyle.style, iStateStyle.style)) ||
+          objectAssign(style, iStateStyle.style, focusStyle.style),
       };
     };
 
     // recurse and map children, if child is an Interactive component, then don't recurse into
     // it's children
-    const recursiveMap = children => (
-      React.Children.map(children, (child) => {
+    const recursiveMap = children =>
+      React.Children.map(children, child => {
         if (!React.isValidElement(child)) return child;
 
         // if the child should not be shown, then return null
         if (child.props.showOnParent) {
           const showOn = child.props.showOnParent.split(' ');
-          if (!showOn.some(el => (
-            el === this.state.iState || (/Active/.test(this.state.iState) && el === 'active') ||
-            (this.state.focus && (el === focusFrom || el === 'focus'))
-          ))) {
+          if (
+            !showOn.some(
+              el =>
+                el === this.state.iState ||
+                (/Active/.test(this.state.iState) && el === 'active') ||
+                (this.state.focus && (el === focusFrom || el === 'focus')),
+            )
+          ) {
             return null;
           }
         }
@@ -1227,17 +1416,24 @@ class Interactive extends React.Component {
         if (!childPropKeys.some(key => childInteractiveProps[key])) {
           if (child.type === Interactive) return child;
           // if the child is not an Interactive component, then still recuse into its children
-          return React.cloneElement(child, {}, recursiveMap(child.props.children));
+          return React.cloneElement(
+            child,
+            {},
+            recursiveMap(child.props.children),
+          );
         }
 
         const newChildProps = {};
         const childStyleProps = {};
         // separate child props to pass through (newChildProps), from props used
         // to compute the child's style (childStyleProps)
-        childPropKeys.forEach((key) => {
-          if (!childInteractiveProps[key]) newChildProps[key] = child.props[key];
+        childPropKeys.forEach(key => {
+          if (!childInteractiveProps[key])
+            newChildProps[key] = child.props[key];
           else if (key !== 'showOnParent') {
-            childStyleProps[`${key.slice(8).charAt(0).toLowerCase()}${key.slice(9)}`] =
+            childStyleProps[
+              `${key.slice(8).charAt(0).toLowerCase()}${key.slice(9)}`
+            ] =
               child.props[key];
           }
         });
@@ -1253,10 +1449,11 @@ class Interactive extends React.Component {
         return React.createElement(
           child.type,
           newChildProps,
-          child.type === Interactive ? child.props.children : recursiveMap(child.props.children),
+          child.type === Interactive
+            ? child.props.children
+            : recursiveMap(child.props.children),
         );
-      })
-    );
+      });
 
     return recursiveMap(this.p.props.children);
   }
@@ -1270,16 +1467,24 @@ class Interactive extends React.Component {
     const className = this.computeClassName();
     if (className) this.p.passThroughProps.className = className;
 
-    const children = this.p.props.interactiveChild ? this.computeChildren() : this.p.props.children;
+    const children = this.p.props.interactiveChild
+      ? this.computeChildren()
+      : this.p.props.children;
 
     // if `as` is a string (i.e. DOM tag name), then add the ref to props and render `as`
     if (typeof this.p.props.as === 'string') {
       this.p.passThroughProps.ref = this.refCallback;
-      return React.createElement(this.p.props.as, this.p.passThroughProps, children);
+      return React.createElement(
+        this.p.props.as,
+        this.p.passThroughProps,
+        children,
+      );
     }
     // If `as` is a ReactClass or a ReactFunctionalComponent, then wrap it in a span
     // so can access the DOM node without breaking encapsulation
-    return React.createElement('span', { ref: this.refCallback },
+    return React.createElement(
+      'span',
+      { ref: this.refCallback },
       React.createElement(this.p.props.as, this.p.passThroughProps, children),
     );
   }

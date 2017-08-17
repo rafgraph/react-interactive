@@ -64,13 +64,20 @@ export const knownRoleTags = {
 
 // elements triggered by the enter key
 export function enterKeyTrigger(tag, type) {
-  return (tag !== 'select') && (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'));
+  return (
+    tag !== 'select' &&
+    (tag !== 'input' || (type !== 'checkbox' && type !== 'radio'))
+  );
 }
 
 // elements triggered by the space bar
 export function spaceKeyTrigger(tag, type) {
-  return (tag === 'button') || (tag === 'select') ||
-  (tag === 'input' && (type === 'checkbox' || type === 'radio' || type === 'submit'));
+  return (
+    tag === 'button' ||
+    tag === 'select' ||
+    (tag === 'input' &&
+      (type === 'checkbox' || type === 'radio' || type === 'submit'))
+  );
 }
 
 // known props to not pass through, every prop not on this list is passed through
@@ -86,6 +93,7 @@ export const knownProps = {
   onTapTwo: true,
   onTapThree: true,
   onTapFour: true,
+  onLongPress: true,
   onMouseEnter: true,
   onMouseLeave: true,
   onMouseMove: true,
@@ -115,6 +123,8 @@ export const knownProps = {
 
 // ms to allow for the browser to add subsequent event to the queue in setTimeouts
 export const queueTime = 600;
+
+export const defaultTapTimeCutoff = 500;
 
 export function dummyEvent(type) {
   return {

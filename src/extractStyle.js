@@ -3,7 +3,8 @@ import { statePropOptionKeys } from './constants';
 // extract and return the style object and className string for the state given
 export function extractStyle(props, state) {
   // if no hoverActive prop, then use hover prop for style and classes
-  let stateProp = (state === 'hoverActive' && !props.hoverActive) ? 'hover' : state;
+  let stateProp =
+    state === 'hoverActive' && !props.hoverActive ? 'hover' : state;
   // loop until the state prop to use is found (i.e. it's not a string)
   let times = 0;
   while (typeof stateProp === 'string' && times < 10) {
@@ -45,7 +46,7 @@ export function setActiveAndFocusProps(props) {
 
 export function joinClasses(className, iStateClass, focusClass) {
   let joined = className;
-  joined += (joined && iStateClass) ? ` ${iStateClass}` : `${iStateClass}`;
-  joined += (joined && focusClass) ? ` ${focusClass}` : `${focusClass}`;
+  joined += joined && iStateClass ? ` ${iStateClass}` : `${iStateClass}`;
+  joined += joined && focusClass ? ` ${focusClass}` : `${focusClass}`;
   return joined;
 }

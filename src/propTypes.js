@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { iStates, stateProps } from './constants';
+import { iStates, stateProps, defaultTapTimeCutoff } from './constants';
 
 function statePropsExcept(state) {
   const statePropsCopy = {
@@ -10,16 +10,13 @@ function statePropsExcept(state) {
 }
 
 const iStatesShape = {};
-Object.keys(iStates).forEach((iState) => {
+Object.keys(iStates).forEach(iState => {
   iStatesShape[iState] = PropTypes.bool;
 });
 
 const propTypes = {
-  as: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.func,
-    PropTypes.element,
-  ]).isRequired,
+  as: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.element])
+    .isRequired,
   children: PropTypes.node,
   normal: PropTypes.oneOfType([
     PropTypes.object,
@@ -77,6 +74,7 @@ const propTypes = {
   onTapTwo: PropTypes.func,
   onTapThree: PropTypes.func,
   onTapFour: PropTypes.func,
+  tapTimeCutoff: PropTypes.number,
 
   onMouseEnter: PropTypes.func,
   onMouseLeave: PropTypes.func,
@@ -105,4 +103,8 @@ const propTypes = {
   interactiveChild: PropTypes.bool,
 };
 
-export default propTypes;
+const defaultProps = {
+  tapTimeCutoff: defaultTapTimeCutoff,
+};
+
+export { propTypes, defaultProps };

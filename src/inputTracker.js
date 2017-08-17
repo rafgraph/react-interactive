@@ -1,6 +1,12 @@
 import { notifyOfAll } from './notifier';
-import { deviceType, deviceHasTouch, deviceHasMouse, mouseEvents, touchEvents,
-queueTime } from './constants';
+import {
+  deviceType,
+  deviceHasTouch,
+  deviceHasMouse,
+  mouseEvents,
+  touchEvents,
+  queueTime,
+} from './constants';
 
 // the shape of what's being tracked globally
 // the input object is the default export
@@ -84,7 +90,10 @@ if (deviceHasTouch) {
 
 // sign up for notification of mouse events if the device has a mouse
 if (deviceHasMouse) {
-  notifyOfAll(Object.keys(mouseEvents), deviceType === 'hybrid' ? updateHybridMouse : updateMouse);
+  notifyOfAll(
+    Object.keys(mouseEvents),
+    deviceType === 'hybrid' ? updateHybridMouse : updateMouse,
+  );
 }
 
 // sign up for notification of enter keydown events for form submission detection
