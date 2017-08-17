@@ -93,6 +93,7 @@ export const knownProps = {
   onTapTwo: true,
   onTapThree: true,
   onTapFour: true,
+  onLongPress: true,
   onMouseEnter: true,
   onMouseLeave: true,
   onMouseMove: true,
@@ -122,6 +123,8 @@ export const knownProps = {
 
 // ms to allow for the browser to add subsequent event to the queue in setTimeouts
 export const queueTime = 600;
+
+export const defaultTapTimeCutoff = 500;
 
 export function dummyEvent(type) {
   return {

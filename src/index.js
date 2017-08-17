@@ -1,6 +1,6 @@
 import React from 'react';
 import objectAssign from 'object-assign';
-import propTypes from './propTypes';
+import { propTypes, defaultProps } from './propTypes';
 import compareProps from './compareProps';
 import mergeAndExtractProps from './mergeAndExtractProps';
 import {
@@ -32,6 +32,7 @@ import {
 
 class Interactive extends React.Component {
   static propTypes = propTypes;
+  static defaultProps = defaultProps;
 
   constructor(props) {
     super(props);
@@ -285,7 +286,9 @@ class Interactive extends React.Component {
     //  add onTouchMove handler to passThroughProps if it's required
     if (
       deviceHasTouch &&
-      (mergedProps.touchActiveTapOnly || mergedProps.onTouchMove)
+      (mergedProps.touchActiveTapOnly ||
+        mergedProps.onLongPress ||
+        mergedProps.onTouchMove)
     ) {
       passThroughProps.onTouchMove = this.handleEvent;
     }
@@ -950,14 +953,17 @@ class Interactive extends React.Component {
 
         // if going from no touch to touch, set touchTapTimer
         if (newTouchDown) {
+          e.persist();
           this.manageSetTimeout(
             'touchTapTimer',
             () => {
-              // if the timer finishes then fire a touchtapcancel event to cancel the tap,
+              // if the timer finishes then call onLongPress callback and
+              // fire a touchtapcancel event to cancel the tap,
               // because this goes through handleEvent, updateState will be called if needed
+              this.p.props.onLongPress && this.p.props.onLongPress(e);
               this.handleEvent(dummyEvent('touchtapcancel'));
             },
-            600,
+            this.p.props.tapTimeCutoff,
           );
         }
 
@@ -973,8 +979,9 @@ class Interactive extends React.Component {
         if (extraTouches())
           return this.handleTouchEvent({ type: 'touchtapcancel' });
 
-        // if touchActiveTapOnly prop, check to see if the touch moved enough to cancel tap
-        if (this.p.props.touchActiveTapOnly) {
+        // if touchActiveTapOnly or onLongPress prop,
+        // check to see if the touch moved enough to cancel tap
+        if (this.p.props.touchActiveTapOnly || this.p.props.onLongPress) {
           for (let i = 0; i < e.changedTouches.length; i++) {
             const touch = this.track.touches.points[
               e.changedTouches[i].identifier

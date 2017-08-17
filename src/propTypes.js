@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { iStates, stateProps } from './constants';
+import { iStates, stateProps, defaultTapTimeCutoff } from './constants';
 
 function statePropsExcept(state) {
   const statePropsCopy = {
@@ -74,6 +74,7 @@ const propTypes = {
   onTapTwo: PropTypes.func,
   onTapThree: PropTypes.func,
   onTapFour: PropTypes.func,
+  tapTimeCutoff: PropTypes.number,
 
   onMouseEnter: PropTypes.func,
   onMouseLeave: PropTypes.func,
@@ -102,4 +103,8 @@ const propTypes = {
   interactiveChild: PropTypes.bool,
 };
 
-export default propTypes;
+const defaultProps = {
+  tapTimeCutoff: defaultTapTimeCutoff,
+};
+
+export { propTypes, defaultProps };
