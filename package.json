@@ -50,7 +50,7 @@
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3",
     "prettier": "^1.5.3",
-    "webpack": "^2.4.1"
+    "webpack": "^3.5.5"
   },
   "dependencies": {
     "detect-it": "^3.0.1",
