@@ -94,6 +94,7 @@ export const knownProps = {
   onTapThree: true,
   onTapFour: true,
   onLongPress: true,
+  tapTimeCutoff: true,
   onMouseEnter: true,
   onMouseLeave: true,
   onMouseMove: true,
