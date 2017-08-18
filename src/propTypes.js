@@ -68,6 +68,8 @@ const propTypes = {
   }),
   style: PropTypes.object,
   className: PropTypes.string,
+  wrapperStyle: PropTypes.object,
+  wrapperClassName: PropTypes.string,
   onStateChange: PropTypes.func,
   setStateCallback: PropTypes.func,
   onClick: PropTypes.func,

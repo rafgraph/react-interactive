@@ -198,6 +198,8 @@ For the definition of when each state is entered, see the [state machine definit
 | `focusToggleOff` | boolean | `focusToggleOff` | Add this prop to prevent focus from toggling on mouseup/tap. With this prop RI will enter the focus state normally and will remain in the focus state until the browser sends a blur event. |
 | `mutableProps` | boolean | `mutableProps` | Add this prop if you are passing in mutable props so the component will always update. By default it's assumed that props passed in are immutable. A shallow compare is done, and if the props are the same, the component will not update. If you're not sure and notice buggy behavior, then add this prop. |
 | `interactiveChild` | boolean | `interactiveChild` | Add this prop if Interactive's children use the [Interactive Children API](#interactive-children-api). |
+| `wrapperStyle` | style object | `{ display: 'block' }` | Styles that are applied to the `span` wrapper if `as` is a ReactComponent. |
+| `wrapperClassName` | string | `"ri-wrapper-class other-class"` | Classes that are applied to the `span` wrapper if `as` is a ReactComponent. |
 | `...` | anything | `id="some-id"`, `tabIndex="1"`, etc... | All additional props received are passed through. |
 
 #### Merging Styles and Classes
@@ -222,6 +224,7 @@ For the definition of when each state is entered, see the [state machine definit
   - Strictly speaking this means that `as` is either a ReactClass or a ReactFunctionalComponent as defined in the [React Glossary](https://facebook.github.io/react/docs/glossary.html#classes-and-components).
   - In order for React Interactive to work `as` a ReactComponent, the component must pass down the props it receives from React Interactive to the top DOM node that it renders, and it cannot override any of the passed down event handlers, e.g. `onMouseEnter`. Also, the component cannot replace its top DOM node once it's rendered unless the replacement is the result of new props (note that mutations are okay, e.g. changing style, classes, children, etc is fine). This is because React Interactive keeps a reference to the component's top DOM node so it can do things like call `focus()`, and if the top DOM node is replaced without React Interactive's knowledge, then things start to break. Note that React Router's Link component meets these requirements.
   - When `as` is a ReactComponent it is wrapped in a `<span>` in order for React Interactive to maintain a reference to the top DOM node without breaking encapsulation. Without the span wrapper the only way to access the top DOM node would be through using `ReactDOM.findDOMNode(component)`, which breaks encapsulation and is discouraged, and also doesn't work with stateless functional components.
+    - The `<span>` wrapper can be styled by passing down the props `wrapperClassName` (class string) and `wrapperStyle` (style object).
 - If `as` is a JSX/ReactElement:
   - E.g. `as={<div>...</div>}` or `as={<MyComponent />}`
   - The props of the top ReactElement are merged with, and have priority over, Interactive's props. For example:
