@@ -87,6 +87,8 @@ export const knownProps = {
   as: true,
   style: true,
   className: true,
+  wrapperStyle: true,
+  wrapperClassName: true,
   onStateChange: true,
   setStateCallback: true,
   onClick: true,

@@ -1484,7 +1484,11 @@ class Interactive extends React.Component {
     // so can access the DOM node without breaking encapsulation
     return React.createElement(
       'span',
-      { ref: this.refCallback },
+      {
+        ref: this.refCallback,
+        style: this.p.props.wrapperStyle,
+        className: this.p.props.wrapperClassName,
+      },
       React.createElement(this.p.props.as, this.p.passThroughProps, children),
     );
   }
