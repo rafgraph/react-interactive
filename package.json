@@ -57,6 +57,6 @@
   "dependencies": {
     "detect-it": "^3.0.3",
     "object-assign": "^4.1.1",
-    "prop-types": "^15.5.8"
+    "prop-types": "^15.6.0"
   }
 }
