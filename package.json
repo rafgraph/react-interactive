@@ -34,7 +34,7 @@
     "url": "https://github.com/rafrex/react-interactive/issues"
   },
   "peerDependencies": {
-    "react": "^15.5.0"
+    "react": ">=15"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
