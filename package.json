@@ -55,7 +55,7 @@
     "webpack": "^3.5.5"
   },
   "dependencies": {
-    "detect-it": "^3.0.1",
+    "detect-it": "^3.0.3",
     "object-assign": "^4.1.1",
     "prop-types": "^15.5.8"
   }
