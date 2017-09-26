@@ -39,7 +39,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-eslint": "^7.2.3",
-    "babel-loader": "^7.0.0",
+    "babel-loader": "^7.1.2",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-env": "^1.4.0",
     "babel-preset-react": "^6.24.1",
@@ -52,7 +52,7 @@
     "eslint-plugin-prettier": "^2.2.0",
     "eslint-plugin-react": "^7.2.1",
     "prettier": "^1.5.3",
-    "webpack": "^3.5.5"
+    "webpack": "^3.6.0"
   },
   "dependencies": {
     "detect-it": "^3.0.3",
