@@ -145,7 +145,9 @@ if (deviceHasMouse) {
   notifyOfNextSubs.mutation = [];
   subsIDs.mutation = {};
   const mutationEvent = dummyEvent('mutation');
-  const mo = new MutationObserver(handleNotifyNext.bind(null, mutationEvent));
+  const mo = window.MutationObserver
+    ? new MutationObserver(handleNotifyNext.bind(null, mutationEvent))
+    : { observe: () => {} };
   mo.observe(document, {
     childList: true,
     attributes: true,
