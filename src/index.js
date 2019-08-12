@@ -110,7 +110,7 @@ class Interactive extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     // set if the `topNode` needs to be updated in componentDidUpdate => `as` is different
     // and not a string, note that if `as` is a new string, then the `refCallback`
     // will be called by React so no need to do anything in componentDidUpdate
