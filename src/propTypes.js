@@ -15,8 +15,7 @@ Object.keys(iStates).forEach(iState => {
 });
 
 const propTypes = {
-  as: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.element])
-    .isRequired,
+  as: PropTypes.any.isRequired,
   children: PropTypes.node,
   normal: PropTypes.oneOfType([
     PropTypes.object,
