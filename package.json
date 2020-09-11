@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rafrex/react-interactive.git"
+    "url": "git+https://github.com/rafgraph/react-interactive.git"
   },
   "keywords": [
     "react",
@@ -28,10 +28,10 @@
     "focus",
     "keyboard"
   ],
-  "author": "Rafael Pedicini <code@rafrex.com>",
+  "author": "Rafael Pedicini <rafael@rafgraph.dev>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rafrex/react-interactive/issues"
+    "url": "https://github.com/rafgraph/react-interactive/issues"
   },
   "peerDependencies": {
     "react": ">=16.3"
@@ -55,7 +55,7 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "detect-it": "^3.0.3",
+    "detect-it": "^3.0.6",
     "object-assign": "^4.1.1",
     "prop-types": "^15.6.0"
   }

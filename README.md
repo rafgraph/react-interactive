@@ -1,6 +1,10 @@
 # React Interactive
 
-[Live example](http://react-interactive.rafrex.com)
+[Demo website](https://react-interactive.rafgraph.dev) (demo code on [`gh-pages` branch](https://github.com/rafgraph/react-interactive/tree/gh-pages))
+
+[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive)
+
+#### Key features:
 - Style touch interactions in web apps to look like native apps
 - Style keyboad interactions separate from mouse and touch interactions (focus from tab key, etc)
 - Makes every Interactive div/span/etc accessible by default (tab index, role and key click handler added)
@@ -40,7 +44,7 @@ import Interactive from 'react-interactive';
 
 ## Table of Contents
 - [React Interactive](#react-interactive)
-  - [Live Example](http://react-interactive.rafrex.com)
+  - [Live Example](https://react-interactive.rafgraph.dev)
 - [The Basics](#the-basics)
   - [Interactive State Machine](#interactive-state-machine)
   - [Basic Examples](#basic-examples)
@@ -362,13 +366,13 @@ Note that since a state machine can only be in one state at a time, to view inte
 |:------------------|:-----|:---------------------------------|:----------------|
 | *base styles* | *Always applied, everything merges with them* | *Not an interactive state* | *`.class`* |
 | `normal` | Not commonly used in CSS (zeroing out/overriding base styles is used instead)  | `!mouseOn && !buttonDown && !touchDown && !focusKeyDown` | `.class:not(:hover):not(:active)` |
-| `hover` | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` OR `(after touchDown and sticks until you tap someplace else)` - the [sticky hover CSS bug](https://github.com/rafrex/current-input#sticky-hover-problem) on touch devices | `.class:hover` |
+| `hover` | Only hover styles applied | `(mouseOn && !buttonDown && !focusKeyDown)` OR `(after touchDown and sticks until you tap someplace else)` - the [sticky hover CSS bug](https://github.com/rafgraph/current-input#sticky-hover-problem) on touch devices | `.class:hover` |
 | `hoverActive` | Both hover and active styles applied | `(mouseOn && buttonDown)` OR `(mouseOn && focusKeyDown)` OR `(touchDown, but not consistent across browsers)` | `.class:hover`, `.class:active` |
 | `active` | Only active styles applied | `(buttonDown && !mouseOn currently, but had mouseOn when buttonDown started)` OR `(focusKeyDown && !mouseOn)` OR `(touchDown but not on the element currently, but not consistent across browsers)` | `.class:active` |
 
 The focus state can be combined with any of the above CSS interactive states to double the total number of states that the CSS interactive state machine can be in.
 
-Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted to using CSS selectors. You could also create a touch active state by using [Current Input](https://github.com/rafrex/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and in CSS touch and keyboard interactions are not well supported.
+Note that you could achieve mutually exclusive hover and active states if you apply hover styles with the `.class:hover:not(:active)` selector, and there are other states that you could generate if you wanted to using CSS selectors. You could also create a touch active state by using [Current Input](https://github.com/rafgraph/current-input), so CSS has some flexibility, but it comes at the cost of simplicity, and in CSS touch and keyboard interactions are not well supported.
 
 ## State Machine Notes
 - The total number of states that the React Interactive state machine can be in is 19.
