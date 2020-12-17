@@ -7,7 +7,7 @@
     "build": "yarn build-lib && yarn build-dist",
     "build-lib": "rm -rf lib && babel src -d lib",
     "build-dist": "rm -rf dist && webpack src/index.js dist/ReactInteractive.js && webpack -p src/index.js dist/ReactInteractive.min.js",
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build",
     "dev": "yarn link && babel src -d lib --watch"
   },
   "files": [
