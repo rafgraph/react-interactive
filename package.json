@@ -55,8 +55,12 @@
     "webpack": "^3.6.0"
   },
   "dependencies": {
-    "detect-it": "^3.0.6",
+    "detect-it": "^4.0.0",
     "object-assign": "^4.1.1",
     "prop-types": "^15.6.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
   }
 }

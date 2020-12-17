@@ -1,9 +1,12 @@
-import detectIt from 'detect-it';
+import {
+  deviceType as detectItDeviceType,
+  supportsPassiveEvents,
+} from 'detect-it';
 
-export const deviceType = detectIt.deviceType;
-export const deviceHasTouch = detectIt.hasTouch;
-export const deviceHasMouse = detectIt.hasMouse;
-export const passiveEventSupport = detectIt.passiveEvents;
+export const deviceType = detectItDeviceType;
+export const deviceHasTouch = detectItDeviceType !== 'mouseOnly';
+export const deviceHasMouse = detectItDeviceType !== 'touchOnly';
+export const passiveEventSupport = supportsPassiveEvents;
 
 export const mouseEvents = {
   mouseenter: 'onMouseEnter',
