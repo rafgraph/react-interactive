@@ -1,6 +1,6 @@
-# React Interactive
+# React Interactive v0
 
-[Demo website](https://react-interactive.rafgraph.dev) (demo code on [`gh-pages` branch](https://github.com/rafgraph/react-interactive/tree/gh-pages))
+[Demo website](https://react-interactive-v0.rafgraph.dev) (code in the [demo repo](https://github.com/rafgraph/react-interactive-v0-demo))
 
 [![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive)
 
@@ -44,7 +44,7 @@ import Interactive from 'react-interactive';
 
 ## Table of Contents
 - [React Interactive](#react-interactive)
-  - [Live Example](https://react-interactive.rafgraph.dev)
+  - [Live Example](https://react-interactive-v0.rafgraph.dev)
 - [The Basics](#the-basics)
   - [Interactive State Machine](#interactive-state-machine)
   - [Basic Examples](#basic-examples)
