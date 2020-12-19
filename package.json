@@ -1,0 +1,65 @@
+{
+  "name": "react-interactive",
+  "version": "1.0.0-next",
+  "description": "Better interactive states than CSS pseudo classes and a callback when the interactive state changes",
+  "main": "dist/react-interactive.cjs.js",
+  "module": "dist/react-interactive.esm.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "npm link && npm run watch && npm unlink -g",
+    "build": "rollpkg build",
+    "watch": "rollpkg watch",
+    "prepublishOnly": "npm run lint && npm test && npm run build",
+    "lint": "eslint src",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "coverage": "npx live-server coverage/lcov-report",
+    "lintStaged": "lint-staged"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafgraph/react-interactive.git"
+  },
+  "keywords": [
+    "react",
+    "interactive",
+    "touch",
+    "hover",
+    "active",
+    "focus",
+    "keyboard",
+    "accessibility"
+  ],
+  "author": "Rafael Pedicini <rafael@rafgraph.dev>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafgraph/react-interactive/issues"
+  },
+  "homepage": "https://react-interactive.rafgraph.dev",
+  "devDependencies": {
+    "lint-staged": "^10.5.3",
+    "pre-commit": "^1.2.2",
+    "rollpkg": "^0.2.1",
+    "typescript": "^4.1.3"
+  },
+  "pre-commit": "lintStaged",
+  "lint-staged": {
+    "src/**/*": [
+      "eslint",
+      "prettier --write --ignore-unknown"
+    ]
+  },
+  "prettier": "rollpkg/configs/prettier.json",
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/rollpkg/configs/eslint"
+    ]
+  },
+  "jest": {
+    "preset": "rollpkg"
+  }
+}
