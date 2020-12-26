@@ -7,7 +7,6 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "dev": "npm link && npm run watch && npm unlink -g",
     "build": "rollpkg build",
     "watch": "rollpkg watch",
     "prepublishOnly": "npm run lint && npm test && npm run build",
@@ -55,6 +54,10 @@
     "src/**/*": [
       "eslint",
       "prettier --write --ignore-unknown"
+    ],
+    "demo/src/**/*": [
+      "eslint",
+      "prettier --write --ignore-unknown"
     ]
   },
   "prettier": "rollpkg/configs/prettier.json",
@@ -64,6 +67,7 @@
     ]
   },
   "jest": {
-    "preset": "rollpkg"
+    "preset": "rollpkg",
+    "testPathIgnorePatterns": ["/node_modules/", "/demo/"]
   }
 }
