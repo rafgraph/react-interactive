@@ -1,6 +1,6 @@
 import React from 'react';
 import useDarkMode from 'use-dark-mode';
-import { Interactive, InteractiveState } from 'react-interactive';
+import { Interactive, InteractiveStateChange } from 'react-interactive';
 import { styled, globalStyles, darkThemeClass } from './stitches.config';
 import { StyledLink, StyledDarkModeToggle } from './Interactive';
 
@@ -21,6 +21,42 @@ const P = styled('p', {
   margin: '12px 0',
 });
 
+const StateLogContainer = styled('div', {
+  height: '300px',
+  padding: '0 5px',
+  border: '1px solid $highContrast',
+  overflow: 'scroll',
+});
+
+const StateLogItem = styled('div', {
+  marginBottom: '10px',
+});
+
+const ItemTitle = styled('div', {
+  color: '$lowContrast',
+});
+
+const StyledUl = styled('ul', {
+  listStyle: 'none',
+});
+
+const Li = styled('li', {
+  variants: {
+    changed: {
+      false: { color: '$lowContrast' },
+    },
+  },
+});
+
+const StyledLi: React.VFC<{
+  children: string | string[];
+  changed: boolean;
+}> = ({ children, changed }) => (
+  <Li changed={changed}>
+    <code>{children}</code>
+  </Li>
+);
+
 export const App = () => {
   globalStyles();
 
@@ -28,11 +64,16 @@ export const App = () => {
     classNameDark: darkThemeClass,
   });
 
-  const [iState, updateIState] = React.useState<InteractiveState>({
-    hover: false,
-    active: false,
-    focus: false,
-    disabled: false,
+  const [iStateLog, updateIStateLog] = React.useState<InteractiveStateChange[]>(
+    [],
+  );
+
+  const eventLogEl = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (eventLogEl && eventLogEl.current) {
+      eventLogEl.current.scrollTop = eventLogEl.current.scrollHeight;
+    }
   });
 
   return (
@@ -56,13 +97,33 @@ export const App = () => {
       </P>
       <div>
         <Interactive
-          onStateChange={({ state }) => {
-            updateIState(state);
+          onStateChange={(state) => {
+            updateIStateLog((prevState) => [...prevState, state]);
           }}
         >
           hover me
         </Interactive>
-        <div>hover: {`${iState.hover}`}</div>
+        <StateLogContainer ref={eventLogEl}>
+          {iStateLog.map(({ state, prevState }, idx) => (
+            <StateLogItem key={idx}>
+              <ItemTitle>State Change {idx + 1}</ItemTitle>
+              <StyledUl>
+                <StyledLi changed={state.hover !== prevState.hover}>
+                  hover: {`${state.hover}`} ({`${prevState.hover}`})
+                </StyledLi>
+                <StyledLi changed={state.active !== prevState.active}>
+                  active: {`${state.active}`} ({`${prevState.active}`})
+                </StyledLi>
+                <StyledLi changed={state.focus !== prevState.focus}>
+                  focus: {`${state.focus}`} ({`${prevState.focus}`})
+                </StyledLi>
+                <StyledLi changed={state.disabled !== prevState.disabled}>
+                  disabled: {`${state.disabled}`} ({`${prevState.disabled}`})
+                </StyledLi>
+              </StyledUl>
+            </StateLogItem>
+          ))}
+        </StateLogContainer>
       </div>
     </AppDiv>
   );

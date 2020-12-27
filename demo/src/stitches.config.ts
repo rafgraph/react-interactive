@@ -27,7 +27,7 @@ export const globalStyles = css.global({
   'button, input': {
     all: 'unset',
   },
-  'body, div, span, a, p, h1, h2, h3, code, button, form, input': {
+  'body, div, span, a, p, h1, h2, h3, code, button, form, input, ul, li': {
     margin: 0,
     border: 0,
     padding: 0,
