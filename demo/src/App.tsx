@@ -1,6 +1,6 @@
 import React from 'react';
 import useDarkMode from 'use-dark-mode';
-import { Interactive } from 'react-interactive';
+import { Interactive, InteractiveState } from 'react-interactive';
 import { styled, globalStyles, darkThemeClass } from './stitches.config';
 import { StyledLink, StyledDarkModeToggle } from './Interactive';
 
@@ -28,6 +28,13 @@ export const App = () => {
     classNameDark: darkThemeClass,
   });
 
+  const [iState, updateIState] = React.useState<InteractiveState>({
+    hover: false,
+    active: false,
+    focus: false,
+    disabled: false,
+  });
+
   return (
     <AppDiv>
       <H1>
@@ -47,9 +54,16 @@ export const App = () => {
         </StyledLink>
         .
       </P>
-      <P>
-        <Interactive />
-      </P>
+      <div>
+        <Interactive
+          onStateChange={({ state }) => {
+            updateIState(state);
+          }}
+        >
+          hover me
+        </Interactive>
+        <div>hover: {`${iState.hover}`}</div>
+      </div>
     </AppDiv>
   );
 };
