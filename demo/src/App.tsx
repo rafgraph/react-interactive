@@ -149,9 +149,6 @@ export const App = () => {
                 <StyledLi changed={state.focus !== prevState.focus}>
                   focus: {`${state.focus}`} ({`${prevState.focus}`})
                 </StyledLi>
-                <StyledLi changed={state.disabled !== prevState.disabled}>
-                  disabled: {`${state.disabled}`} ({`${prevState.disabled}`})
-                </StyledLi>
               </StyledUl>
             </StateLogItem>
           ))}

@@ -13,10 +13,9 @@ export interface InteractiveState {
   hover: boolean;
   active: ActiveState;
   focus: FocusState;
-  disabled: boolean;
 }
 
-export type InteractiveStateKey = 'hover' | 'active' | 'focus' | 'disabled';
+export type InteractiveStateKey = 'hover' | 'active' | 'focus';
 
 export interface InteractiveStateChange {
   state: InteractiveState;
@@ -27,14 +26,12 @@ const initialState: InteractiveState = {
   hover: false,
   active: false,
   focus: false,
-  disabled: false,
 };
 
 const stateChanged = ({ state, prevState }: InteractiveStateChange) =>
   state.hover !== prevState.hover ||
   state.active !== prevState.active ||
-  state.focus !== prevState.focus ||
-  state.disabled !== prevState.disabled;
+  state.focus !== prevState.focus;
 
 const eventMap: Record<string, any> = {
   mouseenter: 'onMouseEnter',
@@ -59,6 +56,7 @@ interface InteractiveProps {
   // don't add 'as' prop to interface, it is provided by type AsProp as part of PolymorphicComponentProps
   children?: React.ReactNode | ((state: InteractiveState) => React.ReactNode);
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
+  disabled?: boolean;
 }
 
 export const Interactive: <C extends React.ElementType = 'button'>(
@@ -73,6 +71,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           as,
           children,
           onStateChange,
+          disabled,
           ...restProps
         }: PolymorphicComponentProps<C, InteractiveProps>,
         ref: typeof restProps.ref,
@@ -97,12 +96,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
             }
           },
           // eslint-disable-next-line react-hooks/exhaustive-deps
-          [
-            iState.state.hover,
-            iState.state.active,
-            iState.state.focus,
-            iState.state.disabled,
-          ],
+          [iState.state.hover, iState.state.active, iState.state.focus],
         );
 
         const keyTracking = React.useRef<{
@@ -133,65 +127,40 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           state: FocusState;
           action: 'enter' | 'exit';
         }
-        interface DisabledStateChange {
-          iKey: 'disabled';
-          state: boolean;
-          action: 'enter' | 'exit';
-        }
         type StateChangeFunction = (
-          changes: (
-            | HoverStateChange
-            | ActiveStateChange
-            | FocusStateChange
-            | DisabledStateChange
-          )[],
+          changes: (HoverStateChange | ActiveStateChange | FocusStateChange)[],
         ) => void;
         // stateChange is idempotent so event handlers can be dumb (don't need to know current state)
         // for example mousedown and pointerdown event handlers
         // will both call stateChange with action enter mouseActive state
         const stateChange: StateChangeFunction = React.useCallback(
           (changes) => {
-            // first check if changes are different from current state
-            if (
-              changes.some(({ iKey, state, action }) =>
-                action === 'enter'
-                  ? iState.state[iKey] !== state
-                  : iState.state[iKey] === state,
-              )
-            ) {
-              setIState((previous) => {
-                const newState = { ...previous.state };
-                changes.forEach(({ iKey, state, action }) => {
-                  if (action === 'enter') {
-                    // TS should known that iKey and state values are matched to each other
-                    // based on the StateChangeFunction type above, but TS doesn't understand this
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    newState[iKey] = state;
-                  } else if (
-                    action === 'exit' &&
-                    previous.state[iKey] === state
-                  ) {
-                    newState[iKey] = false;
-                  }
-                });
-                const newInteractiveStateChange = {
-                  state: newState,
-                  prevState: previous.state,
-                };
-                return stateChanged(newInteractiveStateChange)
-                  ? newInteractiveStateChange
-                  : previous;
+            setIState((previous) => {
+              const newState = { ...previous.state };
+              changes.forEach(({ iKey, state, action }) => {
+                if (action === 'enter') {
+                  // TS should known that iKey and state values are matched to each other
+                  // based on the StateChangeFunction type above, but TS doesn't understand this
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  newState[iKey] = state;
+                } else if (
+                  action === 'exit' &&
+                  previous.state[iKey] === state
+                ) {
+                  newState[iKey] = false;
+                }
               });
-            }
+              const newInteractiveStateChange = {
+                state: newState,
+                prevState: previous.state,
+              };
+              return stateChanged(newInteractiveStateChange)
+                ? newInteractiveStateChange
+                : previous;
+            });
           },
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          [
-            iState.state.hover,
-            iState.state.active,
-            iState.state.focus,
-            iState.state.disabled,
-          ],
+          [],
         );
 
         const handleEvent = React.useCallback(
@@ -238,6 +207,13 @@ export const Interactive: <C extends React.ElementType = 'button'>(
             ),
           [handleEvent],
         );
+
+        // blur focused element when disabled
+        React.useEffect(() => {
+          if (disabled && iState.state.focus && localRef.current) {
+            localRef.current.blur();
+          }
+        }, [disabled, iState.state.focus]);
 
         // support ref prop as object or callback, and track ref locally
         const localRef = React.useRef<HTMLElement | null>(null);
