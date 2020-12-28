@@ -84,8 +84,10 @@ export const App = () => {
     }
   });
 
-  const buttonRef = React.useRef<HTMLButtonElement>(null);
-  console.log(buttonRef);
+  const buttonRefCallback = React.useCallback((val) => {
+    return;
+  }, []);
+  const anchorRef = React.useRef<HTMLAnchorElement>(null);
 
   return (
     <AppDiv>
@@ -110,16 +112,22 @@ export const App = () => {
         <Interactive
           as="button"
           // disabled
-          ref={buttonRef}
+          ref={buttonRefCallback}
           onClick={() => console.log('interactive button click')}
         >
           interactive button
         </Interactive>
-        <Interactive as="a" href="#top">
+        <Interactive as="a" href="#top" ref={anchorRef}>
           interactive link to #top
         </Interactive>
         <Interactive as={ExampleComponent} />
+        <Interactive as="div">
+          {(state) => (
+            <div>children as a function, hover state: {`${state.hover}`}</div>
+          )}
+        </Interactive>
         <Interactive
+          // onMouseLeave={(e: React.MouseEvent) => console.log(e)}
           as="div"
           onStateChange={(state) => {
             updateIStateLog((prevState) => [...prevState, state]);

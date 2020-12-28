@@ -34,10 +34,28 @@ const stateChanged = ({ state, prevState }: InteractiveStateChange) =>
   state.focus !== prevState.focus ||
   state.disabled !== prevState.disabled;
 
+const eventMap: Record<string, any> = {
+  mouseenter: 'onMouseEnter',
+  mouseleave: 'onMouseLeave',
+  mousedown: 'onMouseDown',
+  mouseup: 'onMouseUp',
+  pointerenter: 'onPointerEnter',
+  pointerleave: 'onPointerLeave',
+  pointerdown: 'onPointerDown',
+  pointerup: 'onPointerUp',
+  pointercancel: 'onPointerCancel',
+  touchstart: 'onTouchStart',
+  touchend: 'onTouchEnd',
+  touchcancel: 'onTouchCancel',
+  keydown: 'onKeyDown',
+  keyup: 'onKeyUp',
+  focus: 'onFocus',
+  blur: 'onBlur',
+};
+
 interface InteractiveProps {
   // don't add 'as' prop to interface, it is provided by type AsProp as part of PolymorphicComponentProps
-  // don't add children prop to interface, e.g. children?: React.ReactNode;
-  // let 'as' prop type determine if children are supported/required
+  children?: React.ReactNode | ((state: InteractiveState) => React.ReactNode);
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
 }
 
@@ -75,31 +93,63 @@ export const Interactive: <C extends React.ElementType = 'button'>(
       ],
     );
 
-    const handleMouseEnter = (e: React.MouseEvent<unknown, MouseEvent>) => {
-      if (eventFrom(e) !== 'mouse') return;
-      updateIState((previous) => ({
-        state: { ...previous.state, hover: true },
-        prevState: previous.state,
-      }));
+    const handleEvent = (e: React.UIEvent) => {
+      // call event handler for the current event if it is passed in as a prop
+      if (restProps[eventMap[e.type]]) {
+        restProps[eventMap[e.type]](e);
+      }
+
+      // TODO nested switch
+
+      if (eventFrom(e) === 'mouse') {
+        if (e.type === 'mouseenter') {
+          updateIState((previous) => ({
+            state: { ...previous.state, hover: true },
+            prevState: previous.state,
+          }));
+        } else if (e.type === 'mouseleave') {
+          updateIState((previous) => ({
+            state: { ...previous.state, hover: false },
+            prevState: previous.state,
+          }));
+        }
+      }
     };
 
-    const handleMouseLeave = (e: React.MouseEvent<unknown, MouseEvent>) => {
-      if (eventFrom(e) !== 'mouse') return;
-      updateIState((previous) => ({
-        state: { ...previous.state, hover: false },
-        prevState: previous.state,
-      }));
-    };
+    // create object with event listeners to pass to <As>
+    const eventListeners = Object.keys(eventMap).reduce(
+      (
+        objWithListeners: Record<string, React.EventHandler<any>>,
+        listenerPropName,
+      ) => {
+        objWithListeners[eventMap[listenerPropName]] = handleEvent;
+        return objWithListeners;
+      },
+      {},
+    );
+
+    // support ref prop as object or callback, and track ref locally
+    const localRef = React.useRef<HTMLElement | null>(null);
+    const callbackRef = React.useCallback(
+      (node: HTMLElement | null) => {
+        localRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+      },
+      [ref],
+    );
 
     return (
       <As
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        ref={ref}
+        ref={callbackRef}
         {...restProps}
+        {...eventListeners}
         style={{ color: 'blue', display: 'block' }}
       >
-        {children}
+        {typeof children === 'function' ? children(iState.state) : children}
       </As>
     );
   },
