@@ -57,6 +57,14 @@ const StyledLi: React.VFC<{
   </Li>
 );
 
+const ExampleComponent: React.VFC = React.forwardRef<HTMLDivElement>(
+  (props, ref) => (
+    <div {...props} ref={ref}>
+      as example component
+    </div>
+  ),
+);
+
 export const App = () => {
   globalStyles();
 
@@ -75,6 +83,9 @@ export const App = () => {
       eventLogEl.current.scrollTop = eventLogEl.current.scrollHeight;
     }
   });
+
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  console.log(buttonRef);
 
   return (
     <AppDiv>
@@ -97,6 +108,19 @@ export const App = () => {
       </P>
       <div>
         <Interactive
+          as="button"
+          // disabled
+          ref={buttonRef}
+          onClick={() => console.log('interactive button click')}
+        >
+          interactive button
+        </Interactive>
+        <Interactive as="a" href="#top">
+          interactive link to #top
+        </Interactive>
+        <Interactive as={ExampleComponent} />
+        <Interactive
+          as="div"
           onStateChange={(state) => {
             updateIStateLog((prevState) => [...prevState, state]);
           }}

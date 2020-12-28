@@ -39,6 +39,9 @@
     "url": "https://github.com/rafgraph/react-interactive/issues"
   },
   "homepage": "https://react-interactive.rafgraph.dev",
+  "dependencies": {
+    "event-from": "^0.3.0"
+  },
   "devDependencies": {
     "@types/react": "^17.0.0",
     "lint-staged": "^10.5.3",
