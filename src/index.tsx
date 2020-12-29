@@ -33,6 +33,21 @@ const stateChanged = ({ state, prevState }: InteractiveStateChange) =>
   state.active !== prevState.active ||
   state.focus !== prevState.focus;
 
+// elements triggered by the enter key
+const enterKeyTrigger = ({ tagName, type }: Record<string, any>) =>
+  tagName !== 'SELECT' &&
+  (tagName !== 'INPUT' ||
+    (type.toLowerCase() !== 'checkbox' && type.toLowerCase() !== 'radio'));
+
+// elements triggered by the space bar
+const spaceKeyTrigger = ({ tagName, type }: Record<string, any>) =>
+  tagName === 'BUTTON' ||
+  tagName === 'SELECT' ||
+  (tagName === 'INPUT' &&
+    (type.toLowerCase() === 'checkbox' ||
+      type.toLowerCase() === 'radio' ||
+      type.toLowerCase() === 'submit'));
+
 const eventMap: Record<string, any> = {
   mouseenter: 'onMouseEnter',
   mouseleave: 'onMouseLeave',
@@ -99,19 +114,6 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           [iState.state.hover, iState.state.active, iState.state.focus],
         );
 
-        const keyTracking = React.useRef<{
-          enterKeyDown: boolean;
-          spaceKeyDown: boolean;
-        }>({ enterKeyDown: false, spaceKeyDown: false });
-
-        const touchActiveTimeoutId = React.useRef<number | undefined>(
-          undefined,
-        );
-        React.useEffect(
-          () => () => window.clearTimeout(touchActiveTimeoutId.current),
-          [],
-        );
-
         interface HoverStateChange {
           iKey: 'hover';
           state: boolean;
@@ -128,13 +130,17 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           action: 'enter' | 'exit';
         }
         type StateChangeFunction = (
-          changes: (HoverStateChange | ActiveStateChange | FocusStateChange)[],
+          ...changes: (
+            | HoverStateChange
+            | ActiveStateChange
+            | FocusStateChange
+          )[]
         ) => void;
         // stateChange is idempotent so event handlers can be dumb (don't need to know current state)
         // for example mousedown and pointerdown event handlers
         // will both call stateChange with action enter mouseActive state
         const stateChange: StateChangeFunction = React.useCallback(
-          (changes) => {
+          (...changes) => {
             setIState((previous) => {
               const newState = { ...previous.state };
               changes.forEach(({ iKey, state, action }) => {
@@ -163,21 +169,172 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           [],
         );
 
+        const keyTracking = React.useRef<{
+          enterKeyDown: boolean;
+          spaceKeyDown: boolean;
+        }>({ enterKeyDown: false, spaceKeyDown: false });
+
+        const touchActiveTimeoutId = React.useRef<number | undefined>(
+          undefined,
+        );
+        React.useEffect(
+          () => () => window.clearTimeout(touchActiveTimeoutId.current),
+          [],
+        );
+
         const handleEvent = React.useCallback(
-          (e: React.UIEvent) => {
+          (e: Record<string, any>) => {
+            const focusFromLookup: {
+              mouse: 'focusFromMouse';
+              touch: 'focusFromTouch';
+              key: 'focusFromKey';
+            } = {
+              mouse: 'focusFromMouse',
+              touch: 'focusFromTouch',
+              key: 'focusFromKey',
+            };
+
+            switch (e.type) {
+              case 'focus':
+                stateChange({
+                  iKey: 'focus',
+                  state: focusFromLookup[eventFrom(e)],
+                  action: 'enter',
+                });
+                break;
+              case 'blur':
+                keyTracking.current.enterKeyDown = false;
+                keyTracking.current.spaceKeyDown = false;
+                stateChange(
+                  {
+                    iKey: 'focus',
+                    state: false,
+                    action: 'enter',
+                  },
+                  {
+                    iKey: 'active',
+                    state: 'keyActive',
+                    action: 'exit',
+                  },
+                );
+                break;
+              case 'keydown':
+              case 'keyup':
+                if (e.key === ' ') {
+                  keyTracking.current.spaceKeyDown = e.type === 'keydown';
+                } else if (e.key === 'Enter') {
+                  keyTracking.current.enterKeyDown = e.type === 'keydown';
+                } else {
+                  break;
+                }
+                stateChange({
+                  iKey: 'active',
+                  state: 'keyActive',
+                  action:
+                    (keyTracking.current.enterKeyDown &&
+                      enterKeyTrigger(localRef.current || {})) ||
+                    (keyTracking.current.spaceKeyDown &&
+                      spaceKeyTrigger(localRef.current || {}))
+                      ? 'enter'
+                      : 'exit',
+                });
+                break;
+              default:
+                switch (eventFrom(e)) {
+                  case 'mouse':
+                    switch (e.type) {
+                      case 'mouseenter':
+                      case 'pointerenter':
+                        stateChange({
+                          iKey: 'hover',
+                          state: true,
+                          action: 'enter',
+                        });
+                        break;
+                      case 'mouseleave':
+                      case 'pointerleave':
+                        stateChange(
+                          {
+                            iKey: 'hover',
+                            state: false,
+                            action: 'enter',
+                          },
+                          {
+                            iKey: 'active',
+                            state: 'mouseActive',
+                            action: 'exit',
+                          },
+                        );
+                        break;
+                      case 'mousedown':
+                      case 'pointerdown':
+                        stateChange({
+                          iKey: 'active',
+                          state: 'mouseActive',
+                          action: 'enter',
+                        });
+                        break;
+                      case 'mouseup':
+                      case 'pointerup':
+                      case 'pointercancel':
+                        stateChange({
+                          iKey: 'active',
+                          state: 'mouseActive',
+                          action: 'exit',
+                        });
+                        break;
+                    }
+                    break;
+                  case 'touch':
+                    switch (e.type) {
+                      case 'touchstart':
+                      case 'pointerdown':
+                        if (!touchActiveTimeoutId.current) {
+                          touchActiveTimeoutId.current = window.setTimeout(
+                            () => {
+                              touchActiveTimeoutId.current = undefined;
+                              stateChange({
+                                iKey: 'active',
+                                state: 'touchActive',
+                                action: 'exit',
+                              });
+                            },
+                            1000,
+                          );
+                        }
+                        stateChange({
+                          iKey: 'active',
+                          state: 'touchActive',
+                          action: 'enter',
+                        });
+                        break;
+                      case 'touchend':
+                      case 'touchcancel':
+                      case 'pointerup':
+                      case 'pointercancel':
+                      case 'mouseenter':
+                      case 'mouseleave':
+                      case 'mousedown':
+                      case 'mouseup':
+                        if (touchActiveTimeoutId.current) {
+                          window.clearTimeout(touchActiveTimeoutId.current);
+                          touchActiveTimeoutId.current = undefined;
+                        }
+                        stateChange({
+                          iKey: 'active',
+                          state: 'touchActive',
+                          action: 'exit',
+                        });
+                        break;
+                    }
+                    break;
+                }
+                break;
+            }
+
             // call event handler for the current event if it is passed in as a prop
             if (restProps[eventMap[e.type]]) {
               restProps[eventMap[e.type]](e);
-            }
-
-            // TODO nested switch
-
-            if (eventFrom(e) === 'mouse') {
-              if (e.type === 'mouseenter') {
-                stateChange([{ iKey: 'hover', state: true, action: 'enter' }]);
-              } else if (e.type === 'mouseleave') {
-                stateChange([{ iKey: 'hover', state: false, action: 'enter' }]);
-              }
             }
           },
           // handleEvent is only dependent on event handler props that are also in eventMap
