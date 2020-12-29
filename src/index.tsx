@@ -36,17 +36,17 @@ const stateChanged = ({ state, prevState }: InteractiveStateChange) =>
 // elements triggered by the enter key
 const enterKeyTrigger = ({ tagName, type }: Record<string, any>) =>
   tagName !== 'SELECT' &&
-  (tagName !== 'INPUT' ||
-    (type.toLowerCase() !== 'checkbox' && type.toLowerCase() !== 'radio'));
+  (tagName !== 'INPUT' || (type !== 'checkbox' && type !== 'radio'));
 
 // elements triggered by the space bar
 const spaceKeyTrigger = ({ tagName, type }: Record<string, any>) =>
-  tagName === 'BUTTON' ||
-  tagName === 'SELECT' ||
-  (tagName === 'INPUT' &&
-    (type.toLowerCase() === 'checkbox' ||
-      type.toLowerCase() === 'radio' ||
-      type.toLowerCase() === 'submit'));
+  ['BUTTON', 'SELECT'].includes(tagName) ||
+  (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
+
+// elements that should have cursor: pointer
+const cursorPointerElement = ({ tagName, type }: Record<string, any>) =>
+  ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName) ||
+  (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
 
 const eventMap: Record<string, any> = {
   mouseenter: 'onMouseEnter',
@@ -72,6 +72,26 @@ interface InteractiveProps {
   children?: React.ReactNode | ((state: InteractiveState) => React.ReactNode);
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
   disabled?: boolean;
+  hoverClassName?: string;
+  commonActiveClassName?: string;
+  mouseActiveClassName?: string;
+  touchActiveClassName?: string;
+  keyActiveClassName?: string;
+  commonFocusClassName?: string;
+  focusFromKeyClassName?: string;
+  focusFromMouseClassName?: string;
+  focusFromTouchClassName?: string;
+  disabledClassName?: string;
+  hoverStyle?: React.CSSProperties;
+  commonActiveStyle?: React.CSSProperties;
+  mouseActiveStyle?: React.CSSProperties;
+  touchActiveStyle?: React.CSSProperties;
+  keyActiveStyle?: React.CSSProperties;
+  commonFocusStyle?: React.CSSProperties;
+  focusFromKeyStyle?: React.CSSProperties;
+  focusFromMouseStyle?: React.CSSProperties;
+  focusFromTouchStyle?: React.CSSProperties;
+  disabledStyle?: React.CSSProperties;
 }
 
 export const Interactive: <C extends React.ElementType = 'button'>(
@@ -87,6 +107,26 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           children,
           onStateChange,
           disabled,
+          hoverClassName = 'hover',
+          commonActiveClassName = 'active',
+          mouseActiveClassName = 'mouseActive',
+          touchActiveClassName = 'touchActive',
+          keyActiveClassName = 'keyActive',
+          commonFocusClassName = 'focus',
+          focusFromKeyClassName = 'focusFromKey',
+          focusFromMouseClassName = 'focusFromMouse',
+          focusFromTouchClassName = 'focusFromTouch',
+          disabledClassName = 'disabled',
+          hoverStyle,
+          commonActiveStyle,
+          mouseActiveStyle,
+          touchActiveStyle,
+          keyActiveStyle,
+          commonFocusStyle,
+          focusFromKeyStyle,
+          focusFromMouseStyle,
+          focusFromTouchStyle,
+          disabledStyle,
           ...restProps
         }: PolymorphicComponentProps<C, InteractiveProps>,
         ref: typeof restProps.ref,
@@ -115,17 +155,17 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         );
 
         interface HoverStateChange {
-          iKey: 'hover';
+          iStateKey: 'hover';
           state: boolean;
           action: 'enter' | 'exit';
         }
         interface ActiveStateChange {
-          iKey: 'active';
+          iStateKey: 'active';
           state: ActiveState;
           action: 'enter' | 'exit';
         }
         interface FocusStateChange {
-          iKey: 'focus';
+          iStateKey: 'focus';
           state: FocusState;
           action: 'enter' | 'exit';
         }
@@ -143,18 +183,18 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           (...changes) => {
             setIState((previous) => {
               const newState = { ...previous.state };
-              changes.forEach(({ iKey, state, action }) => {
+              changes.forEach(({ iStateKey, state, action }) => {
                 if (action === 'enter') {
-                  // TS should known that iKey and state values are matched to each other
+                  // TS should known that iStateKey and state values are matched to each other
                   // based on the StateChangeFunction type above, but TS doesn't understand this
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-ignore
-                  newState[iKey] = state;
+                  newState[iStateKey] = state;
                 } else if (
                   action === 'exit' &&
-                  previous.state[iKey] === state
+                  previous.state[iStateKey] === state
                 ) {
-                  newState[iKey] = false;
+                  newState[iStateKey] = false;
                 }
               });
               const newInteractiveStateChange = {
@@ -194,25 +234,39 @@ export const Interactive: <C extends React.ElementType = 'button'>(
               key: 'focusFromKey',
             };
 
+            // switch
+            //   focus/blur
+            //   keydown/up
+            //   default switch
+            //     eventFrom mouse
+            //       mouse/pointer enter
+            //       mouse/pointer leave
+            //       mouse/pointer down
+            //       mouse/pointer up, pointercancel
+            //     eventFrom touch
+            //       touchstart/pointerdown
+            //       touchend/pointerup, touchcancel, pointercancel, any mouse event from touch
             switch (e.type) {
               case 'focus':
-                stateChange({
-                  iKey: 'focus',
-                  state: focusFromLookup[eventFrom(e)],
-                  action: 'enter',
-                });
+                if (e.target === localRef.current) {
+                  stateChange({
+                    iStateKey: 'focus',
+                    state: focusFromLookup[eventFrom(e)],
+                    action: 'enter',
+                  });
+                }
                 break;
               case 'blur':
                 keyTracking.current.enterKeyDown = false;
                 keyTracking.current.spaceKeyDown = false;
                 stateChange(
                   {
-                    iKey: 'focus',
+                    iStateKey: 'focus',
                     state: false,
                     action: 'enter',
                   },
                   {
-                    iKey: 'active',
+                    iStateKey: 'active',
                     state: 'keyActive',
                     action: 'exit',
                   },
@@ -228,7 +282,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                   break;
                 }
                 stateChange({
-                  iKey: 'active',
+                  iStateKey: 'active',
                   state: 'keyActive',
                   action:
                     (keyTracking.current.enterKeyDown &&
@@ -246,7 +300,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                       case 'mouseenter':
                       case 'pointerenter':
                         stateChange({
-                          iKey: 'hover',
+                          iStateKey: 'hover',
                           state: true,
                           action: 'enter',
                         });
@@ -255,12 +309,12 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                       case 'pointerleave':
                         stateChange(
                           {
-                            iKey: 'hover',
+                            iStateKey: 'hover',
                             state: false,
                             action: 'enter',
                           },
                           {
-                            iKey: 'active',
+                            iStateKey: 'active',
                             state: 'mouseActive',
                             action: 'exit',
                           },
@@ -269,7 +323,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                       case 'mousedown':
                       case 'pointerdown':
                         stateChange({
-                          iKey: 'active',
+                          iStateKey: 'active',
                           state: 'mouseActive',
                           action: 'enter',
                         });
@@ -278,7 +332,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                       case 'pointerup':
                       case 'pointercancel':
                         stateChange({
-                          iKey: 'active',
+                          iStateKey: 'active',
                           state: 'mouseActive',
                           action: 'exit',
                         });
@@ -294,16 +348,16 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                             () => {
                               touchActiveTimeoutId.current = undefined;
                               stateChange({
-                                iKey: 'active',
+                                iStateKey: 'active',
                                 state: 'touchActive',
                                 action: 'exit',
                               });
                             },
-                            1000,
+                            750,
                           );
                         }
                         stateChange({
-                          iKey: 'active',
+                          iStateKey: 'active',
                           state: 'touchActive',
                           action: 'enter',
                         });
@@ -321,7 +375,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                           touchActiveTimeoutId.current = undefined;
                         }
                         stateChange({
-                          iKey: 'active',
+                          iStateKey: 'active',
                           state: 'touchActive',
                           action: 'exit',
                         });
@@ -386,12 +440,110 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           [ref],
         );
 
+        const defaultStyle: React.CSSProperties = {};
+        if (
+          !disabled &&
+          (restProps.onClick ||
+            restProps.onClickCapture ||
+            restProps.onDoubleClick ||
+            restProps.onDoubleClickCapture ||
+            cursorPointerElement(localRef.current || {}))
+        ) {
+          defaultStyle.cursor = 'pointer';
+        }
+        if (
+          typeof window === 'undefined' ||
+          window.CSS.supports('-webkit-tap-highlight-color: transparent')
+        ) {
+          defaultStyle.WebkitTapHighlightColor = 'transparent';
+        }
+
+        const style: React.CSSProperties = {
+          ...defaultStyle,
+          ...restProps.style,
+        };
+        let className = restProps.className || '';
+
+        const addToClassNameAndStyle = (
+          newClassName: string,
+          newStyle?: React.CSSProperties,
+        ) => {
+          className = [className, newClassName].filter((cN) => cN).join(' ');
+          Object.assign(style, newStyle);
+        };
+
+        if (disabled) {
+          addToClassNameAndStyle(disabledClassName, disabledStyle);
+        } else {
+          if (iState.state.hover) {
+            addToClassNameAndStyle(hoverClassName, hoverStyle);
+          }
+
+          if (iState.state.active) {
+            addToClassNameAndStyle(commonActiveClassName, commonActiveStyle);
+            switch (iState.state.active) {
+              case 'mouseActive':
+                addToClassNameAndStyle(mouseActiveClassName, mouseActiveStyle);
+                break;
+              case 'touchActive':
+                addToClassNameAndStyle(touchActiveClassName, touchActiveStyle);
+                break;
+              case 'keyActive':
+                addToClassNameAndStyle(keyActiveClassName, keyActiveStyle);
+                break;
+            }
+          }
+
+          if (iState.state.focus) {
+            addToClassNameAndStyle(commonFocusClassName, commonFocusStyle);
+            switch (iState.state.focus) {
+              case 'focusFromMouse':
+                addToClassNameAndStyle(
+                  focusFromMouseClassName,
+                  focusFromMouseStyle,
+                );
+                break;
+              case 'focusFromTouch':
+                addToClassNameAndStyle(
+                  focusFromTouchClassName,
+                  focusFromTouchStyle,
+                );
+                break;
+              case 'focusFromKey':
+                addToClassNameAndStyle(
+                  focusFromKeyClassName,
+                  focusFromKeyStyle,
+                );
+                break;
+            }
+          }
+        }
+
+        let disabledProps: Record<string, unknown> | null = null;
+        if (disabled) {
+          disabledProps = {
+            onClick: undefined,
+            onClickCapture: undefined,
+            onDoubleClick: undefined,
+            onDoubleClickCapture: undefined,
+            href: undefined,
+          };
+          if (
+            typeof As === 'string' &&
+            ['button', 'input', 'select', 'textarea'].includes(As as string)
+          ) {
+            disabledProps.disabled = true;
+          }
+        }
+
         return (
           <As
-            ref={callbackRef}
             {...restProps}
             {...eventListeners}
-            style={{ color: 'blue', display: 'block' }}
+            {...disabledProps}
+            className={className === '' ? undefined : className}
+            style={style}
+            ref={callbackRef}
           >
             {typeof children === 'function' ? children(iState.state) : children}
           </As>
