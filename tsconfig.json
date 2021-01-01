@@ -1,6 +1,6 @@
 {
   "extends": "rollpkg/configs/tsconfig.json",
   "compilerOptions": {
-    "lib": ["DOM", "ES5", "ES2015.Core", "ES2016.Array.Include"]
+    "lib": ["DOM", "ES5", "ES2015.Core", "ES2016.Array.Include", "ES2017.Object"]
   }
 }

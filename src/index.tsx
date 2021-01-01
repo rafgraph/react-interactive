@@ -58,6 +58,18 @@ const cursorPointerElement = ({ tagName, type }: Record<string, any>) =>
   ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName) ||
   (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
 
+// used for useExtendedTouchActive which needs to set user-select: none
+// to prevent the browser from selecting text on long touch
+// note that it needs to be set on the body not the RI element
+// because iOS will still select nearby text
+const setUserSelectOnBody = (value: 'none' | '') => {
+  if (window.CSS.supports('user-select: none')) {
+    document.body.style.userSelect = value;
+  } else if (window.CSS.supports('-webkit-user-select: none')) {
+    document.body.style.webkitUserSelect = value;
+  }
+};
+
 // event listeners set by RI
 const eventMap: Record<string, any> = {
   mouseenter: 'onMouseEnter',
@@ -78,13 +90,14 @@ const eventMap: Record<string, any> = {
   blur: 'onBlur',
 };
 
-const eventMapKeys = Object.keys(eventMap);
+const eventListenerPropNames = Object.values(eventMap);
 
 interface InteractiveProps {
   // don't add 'as' prop to interface, it is provided by type AsProp as part of PolymorphicComponentProps
   children?: React.ReactNode | ((state: InteractiveState) => React.ReactNode);
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
   disabled?: boolean;
+  useExtendedTouchActive?: boolean;
   hoverClassName?: string;
   commonActiveClassName?: string;
   mouseActiveClassName?: string;
@@ -119,6 +132,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           children,
           onStateChange,
           disabled,
+          useExtendedTouchActive,
           hoverClassName = 'hover',
           commonActiveClassName = 'active',
           mouseActiveClassName = 'mouseActive',
@@ -154,6 +168,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           state: initialState,
           prevState: initialState,
         });
+
+        // used as a dependency for useEffect, as well as for logic involving useExtendedTouchActive
+        const inTouchActiveState = iState.state.active === 'touchActive';
 
         ////////////////////////////////////
 
@@ -193,18 +210,6 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           enterKeyDown: boolean;
           spaceKeyDown: boolean;
         }>({ enterKeyDown: false, spaceKeyDown: false });
-
-        ////////////////////////////////////
-
-        // track touchActive timer id as ref
-        const touchActiveTimeoutId = React.useRef<number | undefined>(
-          undefined,
-        );
-        // clear timer when component leaves the UI
-        React.useEffect(
-          () => () => window.clearTimeout(touchActiveTimeoutId.current),
-          [],
-        );
 
         ////////////////////////////////////
 
@@ -279,23 +284,24 @@ export const Interactive: <C extends React.ElementType = 'button'>(
 
         ////////////////////////////////////
 
-        // handleEvent handles all events and is the only event handler used by RI
+        // handleEvent handles all events that change the interactive state of the component
         // for example <As onMouseEnter={handleEvent} onPointerEnter={handleEvent} etc...>
 
         // always set all pointer/mouse/touch event listeners
         // instead of just pointer event listeners (when supported by the browser)
-        // or mouse and touch listeners when pointer events is not supported
+        // or mouse and touch listeners when pointer events are not supported
         // because
         //   - 1. the pointer events implementation is buggy on some devices
         //        so pointer events on its own is not a good option
         //        for example, on iPadOS pointer events from mouse will cease to fire for the entire page
         //        after using mouse and touch input at the same time on the same element (note that mouse events are unaffected)
-        //   - 2. some browsers don't support touch events, so the only way to listen for touch input is via pointer events
-        //        so only using mouse and touch events is not a good option
-        //   - 3. the pointercancel event is incredibly useful for syncing the touchActive state with browser generated click events
+        //   - 2. the pointercancel event is useful for syncing the touchActive state with browser generated click events
         //        as it fires as soon as the browser uses the touch interaction for another purpose (e.g. scrolling)
         //        and this can't be replicated with touch events (touchcancel behaves differently)
-        // so instead of trying to identify and work around all of the edge cases and bugs
+        //   - 3. the touchend/cancel event is useful to support useExtendedTouchActive as it won't fire until the
+        //        the touch point is removed from the screen, which can only be replicated with pointer events
+        //        if touch-action: none is set on the element, which has unwanted side effects (e.g. can't scroll if the touch started on the element)
+        // so instead of trying to identify and work around all of the edge cases and bugs and set different listeners in each situation
         // the solution is to always set all listeners and make the stateChange function idempotent
         // and bail on updating state in setIState if the state hasn't changed to prevent unnecessary renders
         // also note that setting listeners for events not supported by the browser has no effect
@@ -430,24 +436,6 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                     switch (e.type) {
                       case 'touchstart':
                       case 'pointerdown':
-                        // to sync the touchActive state with the click event fired by the browser
-                        // only stay in the touchActive state for a max of 750ms
-                        // note that most of the time another event (up/end/cancel) will exit touchActive before the timer finishes
-                        // if the touchActive timer is not running, then start a new one
-                        // don't reset a running timer since adding more touches shouldn't extend the touchActive state
-                        if (!touchActiveTimeoutId.current) {
-                          touchActiveTimeoutId.current = window.setTimeout(
-                            () => {
-                              touchActiveTimeoutId.current = undefined;
-                              stateChange({
-                                iStateKey: 'active',
-                                state: 'touchActive',
-                                action: 'exit',
-                              });
-                            },
-                            750,
-                          );
-                        }
                         stateChange({
                           iStateKey: 'active',
                           state: 'touchActive',
@@ -466,17 +454,18 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                       case 'mouseleave':
                       case 'mousedown':
                       case 'mouseup':
-                        // clear the touchActive timer so it can be restarted if the user double taps
-                        // or any rapid tapping that is faster than the touchActive timer
-                        if (touchActiveTimeoutId.current) {
-                          window.clearTimeout(touchActiveTimeoutId.current);
-                          touchActiveTimeoutId.current = undefined;
+                        // if useExtendedTouchActive then only exit touchActive on touchend and touchcancel events
+                        // which won't fire until the touch point is removed from the screen
+                        if (
+                          !useExtendedTouchActive ||
+                          ['touchend', 'touchcancel'].includes(e.type)
+                        ) {
+                          stateChange({
+                            iStateKey: 'active',
+                            state: 'touchActive',
+                            action: 'exit',
+                          });
                         }
-                        stateChange({
-                          iStateKey: 'active',
-                          state: 'touchActive',
-                          action: 'exit',
-                        });
                         break;
                     }
                     break;
@@ -493,27 +482,86 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           // for example, restProps.onMouseEnter, restProps.onTouchStart, etc
           // this generates an array of event handler props that are also in eventMap
           // handleEvent is also dependent on stateChange, but this will always be referentially equivalent
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-          [...eventMapKeys.map((key) => restProps[eventMap[key]]), stateChange],
+          [
+            ...eventListenerPropNames.map(
+              (listenerPropName) => restProps[listenerPropName],
+            ),
+            useExtendedTouchActive,
+            stateChange,
+          ],
         );
 
         ////////////////////////////////////
 
-        // create object with event listeners to pass to <As>
-        const eventListeners = React.useMemo(
-          () =>
-            eventMapKeys.reduce(
-              (
-                objWithListeners: Record<string, React.EventHandler<any>>,
-                eventMapKey,
-              ) => {
-                objWithListeners[eventMap[eventMapKey]] = handleEvent;
-                return objWithListeners;
-              },
-              {},
-            ),
-          [handleEvent],
+        // prevent the context menu from popping up on long touch when useExtendedTouchActive is true
+        const handleContextMenuEvent = React.useCallback(
+          (e: Record<string, any>) => {
+            if (inTouchActiveState && useExtendedTouchActive) {
+              e.preventDefault();
+            }
+            if (restProps.onContextMenu) {
+              restProps.onContextMenu(e);
+            }
+          },
+          [inTouchActiveState, useExtendedTouchActive, restProps.onContextMenu],
         );
+
+        ////////////////////////////////////
+
+        // create object with event listeners to pass to <As {...eventListeners}>
+        const eventListeners = React.useMemo(() => {
+          const eventListenersObj: Record<string, React.EventHandler<any>> = {
+            onContextMenu: handleContextMenuEvent,
+          };
+          eventListenerPropNames.forEach((listenerPropName) => {
+            eventListenersObj[listenerPropName] = handleEvent;
+          });
+          return eventListenersObj;
+        }, [handleEvent, handleContextMenuEvent]);
+
+        ////////////////////////////////////
+
+        // to sync the touchActive state with the click event fired by the browser
+        // only stay in the touchActive state for a max of 750ms
+        // note that most of the time another event (up/end/cancel) will exit touchActive before the timer finishes
+        // in which case the effect clean up will run (because inTouchActiveState state changed)
+        // and the timer will be cleared
+
+        // track touchActive timer id as ref
+        const touchActiveTimeoutId = React.useRef<number | undefined>(
+          undefined,
+        );
+
+        // effect run on touchActive state change, or if useExtendedTouchActive prop changes
+        // it will always clear the existing timer before potentially setting a new one
+        React.useEffect(() => {
+          if (inTouchActiveState && !useExtendedTouchActive) {
+            touchActiveTimeoutId.current = window.setTimeout(() => {
+              stateChange({
+                iStateKey: 'active',
+                state: 'touchActive',
+                action: 'exit',
+              });
+            }, 750);
+
+            return () => window.clearTimeout(touchActiveTimeoutId.current);
+          }
+          return;
+        }, [inTouchActiveState, useExtendedTouchActive, stateChange]);
+
+        ////////////////////////////////////
+
+        // set user-select: none when useExtendedTouchActive and in the touchActive state
+        // to prevent the browser from selecting text on long touch
+        // note that it needs to be set on the body not the RI element
+        // because iOS will still select nearby text if it is only set on the element
+        React.useEffect(() => {
+          if (inTouchActiveState && useExtendedTouchActive) {
+            setUserSelectOnBody('none');
+            return () => setUserSelectOnBody('');
+          }
+          return;
+        }, [inTouchActiveState, useExtendedTouchActive]);
 
         ////////////////////////////////////
 
@@ -542,6 +590,15 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           window.CSS.supports('-webkit-tap-highlight-color: transparent')
         ) {
           style.WebkitTapHighlightColor = 'transparent';
+        }
+        if (
+          // set webkit-touch-callout: none to prevent the iOS "context menu" from popping up on long touch
+          // note that iOS doesn't fire contextmenu events so need to set webkit-touch-callout
+          inTouchActiveState &&
+          useExtendedTouchActive &&
+          window.CSS.supports('-webkit-touch-callout: none')
+        ) {
+          style.WebkitTouchCallout = 'none';
         }
 
         // add style prop passed to RI
@@ -625,13 +682,13 @@ export const Interactive: <C extends React.ElementType = 'button'>(
             href: undefined,
           };
 
-          // if As supports the disabled prop, then pass through the disabled prop
-          // don't pass disabled prop if As is a component because don't know if the component supports it
-          // for example, <SomeButton> component may not support the disabled prop even though it renders a <button> tag that does
-          // which is why localRef.current.tagName is not used to determine if the disabled prop is supported
+          // if the As DOM element supports the disabled prop, then pass through the disabled prop
           if (
-            typeof As === 'string' &&
-            ['button', 'input', 'select', 'textarea'].includes(As as string)
+            (['button', 'input', 'select', 'textarea'] as any[]).includes(
+              typeof As === 'string'
+                ? As
+                : localRef.current && localRef.current.tagName.toLowerCase(),
+            )
           ) {
             disabledProps.disabled = true;
           }
@@ -648,6 +705,11 @@ export const Interactive: <C extends React.ElementType = 'button'>(
 
         return (
           <As
+            // if useExtendedTouchActive then prevent long touch from dragging links
+            // allow draggable to be overridden by passed in draggable prop from restProps
+            draggable={
+              inTouchActiveState && useExtendedTouchActive ? false : undefined
+            }
             {...restProps}
             {...eventListeners}
             {...disabledProps}
