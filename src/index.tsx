@@ -63,11 +63,8 @@ const cursorPointerElement = ({ tagName, type }: Record<string, any>) =>
 // note that it needs to be set on the body not the RI element
 // because iOS will still select nearby text
 const setUserSelectOnBody = (value: 'none' | '') => {
-  if (window.CSS.supports('user-select: none')) {
-    document.body.style.userSelect = value;
-  } else if (window.CSS.supports('-webkit-user-select: none')) {
-    document.body.style.webkitUserSelect = value;
-  }
+  document.body.style.userSelect = value;
+  document.body.style.webkitUserSelect = value;
 };
 
 // event listeners set by RI
@@ -575,6 +572,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         const style: React.CSSProperties = {};
 
         // add default styles
+        style.WebkitTapHighlightColor = 'transparent';
         if (
           // if clicking does something and RI is not disabled, then set the cursor to pointer for better UX
           !disabled &&
@@ -585,18 +583,10 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           style.cursor = 'pointer';
         }
         if (
-          // remove webkit-tap-highlight-color if the browser uses it, or if server rendering (don't know if the browser uses it)
-          typeof window === 'undefined' ||
-          window.CSS.supports('-webkit-tap-highlight-color: transparent')
-        ) {
-          style.WebkitTapHighlightColor = 'transparent';
-        }
-        if (
           // set webkit-touch-callout: none to prevent the iOS "context menu" from popping up on long touch
           // note that iOS doesn't fire contextmenu events so need to set webkit-touch-callout
           inTouchActiveState &&
-          useExtendedTouchActive &&
-          window.CSS.supports('-webkit-touch-callout: none')
+          useExtendedTouchActive
         ) {
           style.WebkitTouchCallout = 'none';
         }
