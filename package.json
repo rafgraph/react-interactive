@@ -55,11 +55,7 @@
   },
   "pre-commit": "lintStaged",
   "lint-staged": {
-    "src/**/*": [
-      "eslint",
-      "prettier --write --ignore-unknown"
-    ],
-    "demo/src/**/*": [
+    "(src/**/*|demo/src/**/*)": [
       "eslint",
       "prettier --write --ignore-unknown"
     ]
