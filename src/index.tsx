@@ -95,6 +95,7 @@ interface InteractiveProps {
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
   disabled?: boolean;
   useExtendedTouchActive?: boolean;
+  useWebkitTapHighlightColor?: boolean;
   hoverClassName?: string;
   commonActiveClassName?: string;
   mouseActiveClassName?: string;
@@ -130,6 +131,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           onStateChange,
           disabled,
           useExtendedTouchActive,
+          useWebkitTapHighlightColor,
           hoverClassName = 'hover',
           commonActiveClassName = 'active',
           mouseActiveClassName = 'mouseActive',
@@ -572,7 +574,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         const style: React.CSSProperties = {};
 
         // add default styles
-        style.WebkitTapHighlightColor = 'transparent';
+        if (!useWebkitTapHighlightColor) {
+          style.WebkitTapHighlightColor = 'transparent';
+        }
         if (
           // if clicking does something and RI is not disabled, then set the cursor to pointer for better UX
           !disabled &&
