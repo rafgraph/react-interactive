@@ -131,9 +131,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           as,
           children,
           onStateChange,
-          disabled,
-          useExtendedTouchActive,
-          useWebkitTapHighlightColor,
+          disabled = false,
+          useExtendedTouchActive = false,
+          useWebkitTapHighlightColor = false,
           hoverClassName = 'hover',
           commonActiveClassName = 'active',
           mouseActiveClassName = 'mouseActive',
@@ -510,15 +510,12 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         ////////////////////////////////////
 
         // create object with event listeners to pass to <As {...eventListeners}>
-        const eventListeners = React.useMemo(() => {
-          const eventListenersObj: Record<string, React.EventHandler<any>> = {
-            onContextMenu: handleContextMenuEvent,
-          };
-          eventListenerPropNames.forEach((listenerPropName) => {
-            eventListenersObj[listenerPropName] = handleEvent;
-          });
-          return eventListenersObj;
-        }, [handleEvent, handleContextMenuEvent]);
+        const eventListeners: Record<string, React.EventHandler<any>> = {
+          onContextMenu: handleContextMenuEvent,
+        };
+        eventListenerPropNames.forEach((listenerPropName) => {
+          eventListeners[listenerPropName] = handleEvent;
+        });
 
         ////////////////////////////////////
 
