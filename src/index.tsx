@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { eventFrom } from 'event-from';
+import { eventFrom, setEventFrom } from 'event-from';
 import { PolymorphicComponentProps } from './polymorphicAsType';
+
+export { eventFrom, setEventFrom };
 
 export type ActiveState = 'mouseActive' | 'touchActive' | 'keyActive' | false;
 export type FocusState =
