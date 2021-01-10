@@ -87,6 +87,8 @@ const eventMap: Record<string, any> = {
   keyup: 'onKeyUp',
   focus: 'onFocus',
   blur: 'onBlur',
+  dragstart: 'onDragStart',
+  dragend: 'onDragEnd',
 };
 
 const eventListenerPropNames = Object.values(eventMap);
@@ -212,9 +214,15 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           spaceKeyDown: boolean;
         }>({ enterKeyDown: false, spaceKeyDown: false });
 
+        // track if the element is being dragged
+        // used to stay in the respective active state while dragging
+        const dragTracking = React.useRef<{
+          isDragging: boolean;
+        }>({ isDragging: false });
+
         ////////////////////////////////////
 
-        // centralized stateChange function that takes an object payload indicating the state change:
+        // centralized stateChange function that takes a payload indicating the state change:
         // - iStateKey: hover | active | focus
         // - state: the state value to change
         // - action: enter | exit, if the change is to enter or exit the specified state (are treated differently)
@@ -264,7 +272,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                 } else if (
                   // only exit a state (to false) if currently in that state
                   action === 'exit' &&
-                  previous.state[iStateKey] === state
+                  previous.state[iStateKey] === state &&
+                  // if currently dragging the element, then don't exit the active state
+                  (!dragTracking.current.isDragging || iStateKey !== 'active')
                 ) {
                   newState[iStateKey] = false;
                 }
@@ -318,6 +328,8 @@ export const Interactive: <C extends React.ElementType = 'button'>(
             //   blur -> focus: enter false, active: exit keyActive
             //   keydown -> active: enter keyActive
             //   keyup -> active: exit keyActive
+            //   dragstart -> active: enter `${eventFrom(e)}Active`
+            //   dragend -> active: enter false
             //   default switch on eventFrom(e)
             //     eventFrom mouse
             //       switch on e.type
@@ -381,6 +393,22 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                       spaceKeyTrigger(localRef.current || {}))
                       ? 'enter'
                       : 'exit',
+                });
+                break;
+              case 'dragstart':
+                dragTracking.current.isDragging = true;
+                stateChange({
+                  iStateKey: 'active',
+                  state: `${eventFrom(e)}Active` as ActiveState,
+                  action: 'enter',
+                });
+                break;
+              case 'dragend':
+                dragTracking.current.isDragging = false;
+                stateChange({
+                  iStateKey: 'active',
+                  state: false,
+                  action: 'enter',
                 });
                 break;
               default:
