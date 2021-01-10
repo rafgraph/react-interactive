@@ -655,6 +655,15 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           }
         }
 
+        // memoize style object so it remains referentially equivalent if the style hasn't changed
+        const memoizedStyle = React.useMemo(
+          () => style,
+          // join styles into string b/c react errors if the dependency array is not the same length each render
+          // so can't do Object.values(style)
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+          [Object.entries(style).join()],
+        );
+
         ////////////////////////////////////
 
         // disable RI when it is passed a disabled prop
@@ -707,7 +716,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
             {...eventListeners}
             {...disabledProps}
             className={className === '' ? undefined : className}
-            style={style}
+            style={memoizedStyle}
             ref={callbackRef}
           >
             {
