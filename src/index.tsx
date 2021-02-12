@@ -1,10 +1,18 @@
 import * as React from 'react';
 import { eventFrom, setEventFrom } from 'event-from';
+import {
+  stateChanged,
+  enterKeyTrigger,
+  spaceKeyTrigger,
+  cursorPointerElement,
+  setUserSelectOnBody,
+} from './utils';
 import { PolymorphicComponentProps } from './polymorphicAsType';
 
 export { eventFrom, setEventFrom };
 
 export type ActiveState = 'mouseActive' | 'touchActive' | 'keyActive' | false;
+
 export type FocusState =
   | 'focusFromMouse'
   | 'focusFromTouch'
@@ -28,45 +36,6 @@ const initialState: InteractiveState = {
   hover: false,
   active: false,
   focus: false,
-};
-
-const stateChanged = ({ state, prevState }: InteractiveStateChange) =>
-  state.hover !== prevState.hover ||
-  state.active !== prevState.active ||
-  state.focus !== prevState.focus;
-
-const focusFromLookup: {
-  mouse: 'focusFromMouse';
-  touch: 'focusFromTouch';
-  key: 'focusFromKey';
-} = {
-  mouse: 'focusFromMouse',
-  touch: 'focusFromTouch',
-  key: 'focusFromKey',
-};
-
-// elements triggered by the enter key, used to determine the keyActive state
-const enterKeyTrigger = ({ tagName, type }: Record<string, any>) =>
-  tagName !== 'SELECT' &&
-  (tagName !== 'INPUT' || (type !== 'checkbox' && type !== 'radio'));
-
-// elements triggered by the space bar, used to determine the keyActive state
-const spaceKeyTrigger = ({ tagName, type }: Record<string, any>) =>
-  ['BUTTON', 'SELECT'].includes(tagName) ||
-  (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
-
-// elements that should have cursor: pointer b/c clicking does something
-const cursorPointerElement = ({ tagName, type }: Record<string, any>) =>
-  ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName) ||
-  (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
-
-// used for useExtendedTouchActive which needs to set user-select: none
-// to prevent the browser from selecting text on long touch
-// note that it needs to be set on the body not the RI element
-// because iOS will still select nearby text
-const setUserSelectOnBody = (value: 'none' | '') => {
-  document.body.style.userSelect = value;
-  document.body.style.webkitUserSelect = value;
 };
 
 // event listeners set by RI
@@ -225,8 +194,8 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         // centralized stateChange function that takes a payload indicating the state change:
         // - iStateKey: hover | active | focus
         // - state: the state value to change
-        // - action: enter | exit, if the change is to enter or exit the specified state (are treated differently)
-        // action: enter - always enter that state (result of enter/down/start events)
+        // - action: enter | exit
+        // action: enter - always enter that state
         // action: exit - exit that state (to false) only if currently in the specified state, otherwise do nothing
         // note that entering a state happens as a result of enter/down/start events,
         // while exiting a state happens as a result of leave/up/end/cancel events (and some others)
@@ -318,7 +287,6 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         // also note that setting listeners for events not supported by the browser has no effect
 
         // useCallback so event handlers passed to <As> are referentially equivalent between renders
-        // unless the event handlers received in props have changed (useCallback is dependent on them)
         const handleEvent = React.useCallback(
           (e: Record<string, any>) => {
             // nested switch statement to determine the appropriate stateChange
@@ -347,7 +315,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
                 if (e.target === localRef.current) {
                   stateChange({
                     iStateKey: 'focus',
-                    state: focusFromLookup[eventFrom(e)],
+                    state: `focusFrom${eventFrom(e).replace(/^\w/, (c) =>
+                      c.toUpperCase(),
+                    )}` as FocusState,
                     action: 'enter',
                   });
                 }
@@ -613,12 +583,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         ) {
           style.cursor = 'pointer';
         }
-        if (
+        if (inTouchActiveState && useExtendedTouchActive) {
           // set webkit-touch-callout: none to prevent the iOS "context menu" from popping up on long touch
           // note that iOS doesn't fire contextmenu events so need to set webkit-touch-callout
-          inTouchActiveState &&
-          useExtendedTouchActive
-        ) {
           style.WebkitTouchCallout = 'none';
         }
 
@@ -635,7 +602,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         };
 
         // if disabled, add disabled className and style props,
-        // otherwise add hover, active, and focus className/style props (only add those if not disabled)
+        // otherwise add hover, active, and focus className/style props
         if (disabled) {
           addToClassAndStyleProps(disabledClassName, disabledStyle);
         } else {
@@ -687,7 +654,6 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         const memoizedStyle = React.useMemo(
           () => style,
           // join styles into string b/c react errors if the dependency array is not the same length each render
-          // so can't do Object.values(style)
           // eslint-disable-next-line react-hooks/exhaustive-deps
           [Object.entries(style).join()],
         );
@@ -758,7 +724,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
   );
 
 if (process.env.NODE_ENV !== 'production') {
-  // TODO get displayName working with polymorphic props, maybe use new lib https://github.com/kripod/react-polymorphic-types
+  // TODO get displayName working with polymorphic types, maybe use new lib https://github.com/kripod/react-polymorphic-types
   // for some reason using polymorphic props typing doesn't allow displayName to be added
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
