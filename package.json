@@ -40,15 +40,15 @@
   },
   "homepage": "https://react-interactive.rafgraph.dev",
   "dependencies": {
-    "event-from": "^0.5.1"
+    "event-from": "^0.6.0"
   },
   "devDependencies": {
-    "@types/react": "^17.0.0",
-    "lint-staged": "^10.5.3",
+    "@types/react": "^17.0.1",
+    "lint-staged": "^10.5.4",
     "pre-commit": "^1.2.2",
-    "react": "./demo/node_modules/react",
-    "rollpkg": "^0.3.0",
-    "typescript": "^4.1.3"
+    "react": "file:demo/node_modules/react",
+    "rollpkg": "^0.4.2",
+    "typescript": "^4.1.5"
   },
   "peerDependencies": {
     "react": ">=16.8"
