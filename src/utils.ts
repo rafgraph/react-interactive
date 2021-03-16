@@ -8,29 +8,29 @@ export const stateChanged = ({
   state.active !== prevState.active ||
   state.focus !== prevState.focus;
 
+interface ElementTagNameAndType {
+  (element: { tagName?: string; type?: string }): boolean;
+}
+
 // elements triggered by the enter key, used to determine the keyActive state
-export const enterKeyTrigger = ({
-  tagName,
-  type,
-}: Record<string, any>): boolean =>
+export const enterKeyTrigger: ElementTagNameAndType = ({ tagName, type }) =>
   tagName !== 'SELECT' &&
   (tagName !== 'INPUT' || (type !== 'checkbox' && type !== 'radio'));
 
 // elements triggered by the space bar, used to determine the keyActive state
-export const spaceKeyTrigger = ({
-  tagName,
-  type,
-}: Record<string, any>): boolean =>
-  ['BUTTON', 'SELECT'].includes(tagName) ||
-  (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
+export const spaceKeyTrigger: ElementTagNameAndType = ({ tagName, type }) =>
+  ['BUTTON', 'SELECT'].includes(tagName as string) ||
+  (tagName === 'INPUT' &&
+    ['checkbox', 'radio', 'submit'].includes(type as string));
 
 // elements that should have cursor: pointer b/c clicking does something
-export const cursorPointerElement = ({
+export const cursorPointerElement: ElementTagNameAndType = ({
   tagName,
   type,
-}: Record<string, any>): boolean =>
-  ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName) ||
-  (tagName === 'INPUT' && ['checkbox', 'radio', 'submit'].includes(type));
+}) =>
+  ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName as string) ||
+  (tagName === 'INPUT' &&
+    ['checkbox', 'radio', 'submit'].includes(type as string));
 
 // used for useExtendedTouchActive which needs to set user-select: none
 // to prevent the browser from selecting text on long touch

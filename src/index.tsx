@@ -39,7 +39,7 @@ const initialState: InteractiveState = {
 };
 
 // event listeners set by RI
-const eventMap: Record<string, any> = {
+const eventMap: Record<string, string> = {
   mouseenter: 'onMouseEnter',
   mouseleave: 'onMouseLeave',
   mousedown: 'onMouseDown',
@@ -288,7 +288,15 @@ export const Interactive: <C extends React.ElementType = 'button'>(
 
         // useCallback so event handlers passed to <As> are referentially equivalent between renders
         const handleEvent = React.useCallback(
-          (e: Record<string, any>) => {
+          (
+            e:
+              | React.MouseEvent
+              | React.PointerEvent
+              | React.TouchEvent
+              | React.KeyboardEvent
+              | React.FocusEvent
+              | React.DragEvent,
+          ) => {
             // nested switch statement to determine the appropriate stateChange
             // uses both e.type and eventFrom(e) in its routing logic
             // switch on e.type
@@ -342,9 +350,9 @@ export const Interactive: <C extends React.ElementType = 'button'>(
               case 'keydown':
               case 'keyup':
                 // update keyTracking and bail if the event is not from the space or enter key
-                if (e.key === ' ') {
+                if ((e as React.KeyboardEvent).key === ' ') {
                   keyTracking.current.spaceKeyDown = e.type === 'keydown';
-                } else if (e.key === 'Enter') {
+                } else if ((e as React.KeyboardEvent).key === 'Enter') {
                   keyTracking.current.enterKeyDown = e.type === 'keydown';
                 } else {
                   // break (bail out) if e.key is not the space or enter key so stateChange isn't called
@@ -473,17 +481,19 @@ export const Interactive: <C extends React.ElementType = 'button'>(
             }
 
             // call event handler prop for the current event if the prop is passed in
-            if (restProps[eventMap[e.type]]) {
-              restProps[eventMap[e.type]](e);
+            if (restProps[eventMap[e.type] as any]) {
+              restProps[eventMap[e.type] as any](e);
             }
           },
           // handleEvent is dependent on event handler props that are also in eventMap
           // for example, restProps.onMouseEnter, restProps.onTouchStart, etc
           // this generates an array of event handler props that are also in eventMap
           // handleEvent is also dependent on stateChange, but this will always be referentially equivalent
+          // eslint-disable-next-line react-hooks/exhaustive-deps
           [
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             ...eventListenerPropNames.map(
-              (listenerPropName) => restProps[listenerPropName],
+              (listenerPropName) => restProps[listenerPropName as any],
             ),
             useExtendedTouchActive,
             stateChange,
@@ -493,22 +503,23 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         ////////////////////////////////////
 
         // prevent the context menu from popping up on long touch when useExtendedTouchActive is true
+        const { onContextMenu } = restProps;
         const handleContextMenuEvent = React.useCallback(
-          (e: Record<string, any>) => {
+          (e: React.MouseEvent) => {
             if (inTouchActiveState && useExtendedTouchActive) {
               e.preventDefault();
             }
-            if (restProps.onContextMenu) {
-              restProps.onContextMenu(e);
+            if (onContextMenu) {
+              (onContextMenu as React.MouseEventHandler)(e);
             }
           },
-          [inTouchActiveState, useExtendedTouchActive, restProps.onContextMenu],
+          [inTouchActiveState, useExtendedTouchActive, onContextMenu],
         );
 
         ////////////////////////////////////
 
         // create object with event listeners to pass to <As {...eventListeners}>
-        const eventListeners: Record<string, React.EventHandler<any>> = {
+        const eventListeners: Record<string, React.ReactEventHandler> = {
           onContextMenu: handleContextMenuEvent,
         };
         eventListenerPropNames.forEach((listenerPropName) => {
@@ -666,7 +677,7 @@ export const Interactive: <C extends React.ElementType = 'button'>(
         // and click event handlers and href props will be removed
 
         // disable certain props by setting the value to undefined if RI is disabled
-        let disabledProps: Record<string, unknown> | null = null;
+        let disabledProps: Record<string, undefined | boolean> | null = null;
         if (disabled) {
           disabledProps = {
             onClick: undefined,
@@ -680,10 +691,12 @@ export const Interactive: <C extends React.ElementType = 'button'>(
 
           // if the As DOM element supports the disabled prop, then pass through the disabled prop
           if (
-            (['button', 'input', 'select', 'textarea'] as any[]).includes(
+            ['button', 'input', 'select', 'textarea'].includes(
               typeof As === 'string'
-                ? As
-                : localRef.current && localRef.current.tagName.toLowerCase(),
+                ? (As as string)
+                : localRef.current
+                ? localRef.current.tagName.toLowerCase()
+                : '',
             )
           ) {
             disabledProps.disabled = true;
