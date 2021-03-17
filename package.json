@@ -1,7 +1,7 @@
 {
   "name": "react-interactive",
   "version": "1.0.0-next",
-  "description": "Better interactive states than CSS pseudo classes and a callback when the interactive state changes",
+  "description": "Better interactive states than CSS pseudo classes and a callback for interactive state changes",
   "main": "dist/react-interactive.cjs.js",
   "module": "dist/react-interactive.esm.js",
   "types": "dist/index.d.ts",
@@ -43,12 +43,12 @@
     "event-from": "^0.6.0"
   },
   "devDependencies": {
-    "@types/react": "^17.0.1",
+    "@types/react": "^17.0.3",
     "lint-staged": "^10.5.4",
     "pre-commit": "^1.2.2",
     "react": "file:demo/node_modules/react",
-    "rollpkg": "^0.4.2",
-    "typescript": "^4.1.5"
+    "rollpkg": "^0.5.0",
+    "typescript": "^4.2.3"
   },
   "peerDependencies": {
     "react": ">=16.8"
