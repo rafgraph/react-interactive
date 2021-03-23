@@ -127,7 +127,6 @@ export const App = () => {
           )}
         </Interactive>
         <Interactive
-          // onMouseLeave={(e: React.MouseEvent) => console.log(e)}
           as="div"
           onStateChange={(state) => {
             updateIStateLog((prevState) => [...prevState, state]);

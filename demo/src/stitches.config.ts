@@ -1,29 +1,26 @@
-import { createStyled } from '@stitches/react';
+import { createCss } from '@stitches/react';
 
-export const { styled, css } = createStyled({
-  prefix: '',
-  tokens: {
+export const { styled, theme, global } = createCss({
+  theme: {
     colors: {
-      $pageBackground: 'rgb(240,240,240)',
-      $highContrast: 'rgb(0,0,0)',
-      $lowContrast: 'rgb(128,128,128)',
-      $green: 'rgb(0,168,0)',
+      pageBackground: 'rgb(240,240,240)',
+      highContrast: 'rgb(0,0,0)',
+      lowContrast: 'rgb(128,128,128)',
+      green: 'rgb(0,168,0)',
     },
   },
-  breakpoints: {},
-  utils: {},
 });
 
-export const darkThemeClass = css.theme({
+export const darkThemeClass = theme({
   colors: {
-    $pageBackground: 'rgb(32,32,32)',
-    $highContrast: 'rgb(192,192,192)',
-    $lowContrast: 'rgb(136,136,136)',
-    $green: 'rgb(0,168,0)',
+    pageBackground: 'rgb(32,32,32)',
+    highContrast: 'rgb(192,192,192)',
+    lowContrast: 'rgb(136,136,136)',
+    green: 'rgb(0,168,0)',
   },
 });
 
-export const globalStyles = css.global({
+export const globalStyles = global({
   'button, input': {
     all: 'unset',
   },

@@ -5,7 +5,7 @@ import { Interactive } from 'react-interactive';
 
 const DarkModeToggle: React.VFC<{ onClick: () => void }> = (props) => {
   return (
-    <Interactive {...props}>
+    <Interactive {...props} as="button">
       <SunIcon width="30" height="30" />
     </Interactive>
   );
@@ -20,10 +20,7 @@ export const StyledDarkModeToggle = styled(DarkModeToggle, {
     color: '$green',
   },
   '&.focusFromKey': {
-    // have separate outlineColor b/c tokens don't work in outline shorthand
-    // https://github.com/modulz/stitches/issues/103
-    outlineColor: '$green',
-    outline: '2px solid',
+    outline: '2px solid $colors$green',
     outlineOffset: '2px',
   },
 });
@@ -33,7 +30,7 @@ interface InteractiveLinkProps {
   href: string;
 }
 
-const InteractiveLink: React.FC<InteractiveLinkProps> = (props) => (
+const InteractiveLink: React.VFC<InteractiveLinkProps> = (props) => (
   <Interactive {...props} as="a" />
 );
 
@@ -47,10 +44,7 @@ export const StyledLink = styled(InteractiveLink, {
   },
 
   '&.focusFromKey': {
-    // have separate outlineColor b/c tokens don't work in outline shorthand
-    // https://github.com/modulz/stitches/issues/103
-    outlineColor: '$green',
-    outline: '2px solid',
+    outline: '2px solid $colors$green',
     outlineOffset: '2px',
   },
 
@@ -61,7 +55,7 @@ export const StyledLink = styled(InteractiveLink, {
         fontSize: '14px',
         borderBottomWidth: '1px',
 
-        ':hover, &:active': {
+        '&.hover, &.active': {
           color: '$highContrast',
         },
       },
