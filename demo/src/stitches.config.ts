@@ -1,6 +1,6 @@
 import { createCss } from '@stitches/react';
 
-export const { styled, theme, global } = createCss({
+export const { styled, theme, global: stitchesGlobal } = createCss({
   theme: {
     colors: {
       pageBackground: 'rgb(240,240,240)',
@@ -20,7 +20,7 @@ export const darkThemeClass = theme({
   },
 });
 
-export const globalStyles = global({
+export const globalStyles = stitchesGlobal({
   'button, input': {
     all: 'unset',
   },

@@ -13,7 +13,7 @@
 
 ---
 
-**[Live demo for React Interactive](https://react-interactive.rafgraph.dev)**, code is in the [`/demo`](/demo) folder, or [open in codesandbox](https://githubbox.com/rafgraph/react-interactive/demo)
+**[Live demo for React Interactive](https://react-interactive.rafgraph.dev)**, code is in the [`/demo`](/demo) folder, or [open in codesandbox](https://githubbox.com/rafgraph/react-interactive/tree/main/demo)
 
 ---
 
