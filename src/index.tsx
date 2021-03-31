@@ -62,7 +62,7 @@ const eventMap: Record<string, string> = {
 
 const eventListenerPropNames = Object.values(eventMap);
 
-interface InteractiveProps {
+export interface InteractiveStaticProps {
   // don't add 'as' prop to interface, it is provided by type AsProp as part of PolymorphicComponentProps
   children?: React.ReactNode | ((state: InteractiveState) => React.ReactNode);
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
@@ -91,8 +91,37 @@ interface InteractiveProps {
   disabledStyle?: React.CSSProperties;
 }
 
+export { PolymorphicComponentProps };
+
+/**
+ * Usage: `InteractiveProps<'button'>`, or `InteractiveProps<typeof Component>`
+ *
+ * Only use the `InteractiveProps` type when typing props that are directly passed to an `<Interactive>` component.
+ * `InteractiveProps` includes the `as` prop and `ref` prop and should not be used for
+ * typing components that wrap an `<Interactive>` component.
+ *
+ * For typing components that wrap an `<Interactive>` component use the type `InteractiveComposableProps`
+ *
+ * For more see: https://github.com/rafgraph/react-interactive#using-with-typescript
+ */
+export type InteractiveProps<
+  C extends React.ElementType = 'button'
+> = PolymorphicComponentProps<C, InteractiveStaticProps>;
+
+/**
+ * Usage: `InteractiveComposableProps<'button'>`, or `InteractiveComposableProps<typeof Component>`
+ *
+ * Use the `InteractiveComposableProps` type when typing components that wrap an `<Interactive>` component
+ * where the props are passed through to the `<Interactive>` component.
+ *
+ * For more see: https://github.com/rafgraph/react-interactive#using-with-typescript
+ */
+export type InteractiveComposableProps<
+  C extends React.ElementType = 'button'
+> = Omit<PolymorphicComponentProps<C, InteractiveStaticProps>, 'as' | 'ref'>;
+
 export const Interactive: <C extends React.ElementType = 'button'>(
-  props: PolymorphicComponentProps<C, InteractiveProps>,
+  props: PolymorphicComponentProps<C, InteractiveStaticProps>,
 ) => React.ReactElement | null =
   // wrap Interactive in memo and forwardRef
   React.memo(
@@ -126,8 +155,8 @@ export const Interactive: <C extends React.ElementType = 'button'>(
           focusFromTouchStyle,
           disabledStyle,
           ...restProps
-        }: PolymorphicComponentProps<C, InteractiveProps>,
-        ref: typeof restProps.ref,
+        }: PolymorphicComponentProps<C, InteractiveStaticProps>,
+        ref: React.ForwardedRef<typeof restProps.ref>,
       ) => {
         // what RI is rendered as in the DOM, default is <button>
         const As = as || 'button';

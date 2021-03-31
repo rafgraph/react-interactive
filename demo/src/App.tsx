@@ -3,6 +3,7 @@ import useDarkMode from 'use-dark-mode';
 import { Interactive, InteractiveStateChange } from 'react-interactive';
 import { styled, globalStyles, darkThemeClass } from './stitches.config';
 import { StyledLink, StyledDarkModeToggle } from './Interactive';
+import { TypeScriptExamples } from './TypeScriptExamples';
 
 const AppDiv = styled('div', {
   maxWidth: '400px',
@@ -84,7 +85,7 @@ export const App = () => {
     }
   });
 
-  const buttonRefCallback = React.useCallback((val) => {
+  const buttonRefCallback = React.useCallback((val: HTMLButtonElement) => {
     return;
   }, []);
   const anchorRef = React.useRef<HTMLAnchorElement>(null);
@@ -153,6 +154,7 @@ export const App = () => {
           ))}
         </StateLogContainer>
       </div>
+      <TypeScriptExamples />
     </AppDiv>
   );
 };

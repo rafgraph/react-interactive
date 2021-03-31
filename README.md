@@ -103,7 +103,7 @@ import { Interactive } from 'react-interactive'
   color: green;
 }
 
-.my-button.focusfromkey: {
+.my-button.focusFromKey: {
   outline: 2px solid green;
 }
 ```
@@ -208,7 +208,7 @@ React Interactive accepts a polymorphic `as` prop that can be a string represent
 <Interactive as={Link} to="/some-page">My React Router Link</Interactive>
 ```
 
-Note that if `as` is a React component, then the component needs to pass through props to the element that it renders, including the `ref` prop using `React.forwardRef()`. Most libraries designed for composability do this by default, including React Router's `<Link>` component. For how to do this with TypeScript [see](#TODO).
+Note that if `as` is a React component, then the component needs to pass through props to the element that it renders, including the `ref` prop using `React.forwardRef()`. Most libraries designed for composability do this by default, including React Router's `<Link>` component.
 
 ```js
 const AsComponent = React.forwardRef((props, ref) => (
@@ -423,7 +423,108 @@ const focusButton = () => {
 
 ## Using with TypeScript
 
-TODO
+React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of the props that the `as` prop accepts and the props that are specific to React Interactive.
+
+```TS
+<Interactive
+  as="a" // render as an anchor link
+  href="https://rafgraph.dev" // TS knows href is a string b/c as="a"
+>
+  My Link
+</Interactive>
+```
+
+---
+
+### Typing props passed to `<Interactive>`
+
+Sometimes you need to type the props object that is passed to an `<Interactive>` component, to do this use the type `InteractiveProps<as>`.
+
+```TS
+import { Interactive, InteractiveProps } from 'react-interactive';
+
+// props object passed to <Interactive>
+// InteractiveProps includes types for `as` and `ref`
+const propsForInteractiveButton: InteractiveProps<'button'> = {
+  as: 'button',
+  type: 'submit', // button specific prop
+  ...
+};
+
+// for as={Component} use InteractiveProps<typeof Component>
+const propsForInteractiveAsComponent: InteractiveProps<typeof Component> = {
+  as: Component,
+  ...
+};
+
+...
+
+<Interactive {...propsForInteractiveButton} />
+<Interactive {...propsForInteractiveAsComponent} />
+```
+
+---
+
+### Typing components that wrap `<Interactive>`
+
+Sometimes when creating components that wrap an `<Interactive>` component you want to extend the `<Interactive>` component and pass through props to `<Interactive>`. To do this use the type `InteractiveComposableProps<as>`.
+
+> Note that usually it makes more sense to create a limited interface for components that wrap `<Interactive>` instead of extending the `<Interactive>` component.
+
+#### Composing `as="button"` with pass through props
+
+```ts
+import { Interactive, InteractiveComposableProps } from 'react-interactive';
+
+// the same props interface is used for composing with and without forwardRef
+// note that InteractiveComposableProps doesn't include `as` or `ref` props
+// when using forwardRef the ref type will be added by the forwardRef function
+interface ComposeAsTagNameProps extends InteractiveComposableProps<'button'> {
+  additionalProp?: string;
+}
+
+// as="button" without ref
+const ComposeAsTagNameWithoutRef: React.VFC<ComposeAsTagNameProps> = ({
+  additionalProp,
+  ...props
+}) => <Interactive {...props} as="button" />;
+
+// as="button" with ref
+const ComposeAsTagNameWithRef = React.forwardRef<
+  HTMLButtonElement,
+  ComposeAsTagNameProps
+>(({ additionalProp, ...props }, ref) => (
+  <Interactive {...props} as="button" ref={ref} />
+));
+```
+
+#### Composing `as={Component}` with pass through props
+
+```ts
+import { Interactive, InteractiveComposableProps } from 'react-interactive';
+
+// the same props interface is used for composing with and without forwardRef
+// note that InteractiveComposableProps doesn't include `as` or `ref` props
+// when using forwardRef the ref type will be added by the forwardRef function
+interface ComposeAsComponentProps
+  extends InteractiveComposableProps<typeof MyComponent> {
+  additionalProp?: string;
+}
+
+// as={Component} without ref
+const ComposeAsComponentWithoutRef: React.VFC<ComposeAsComponentProps> = ({
+  additionalProp,
+  ...props
+}) => <Interactive {...props} as={MyComponent} />;
+
+// as={Component} with ref
+const ComposeAsComponentWithRef = React.forwardRef<
+  React.ElementRef<typeof MyComponent>,
+  ComposeAsComponentProps
+>(({ additionalProp, ...props }, ref) => (
+  <Interactive {...props} as={MyComponent} ref={ref} />
+));
+```
 
 ---
 
