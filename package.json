@@ -1,18 +1,22 @@
 {
   "name": "react-interactive",
-  "version": "0.9.5",
-  "description": "React Interactive",
-  "main": "lib/index.js",
+  "version": "1.0.0-next",
+  "description": "Better interactive states than CSS pseudo classes and a callback for interactive state changes",
+  "main": "dist/react-interactive.cjs.js",
+  "module": "dist/react-interactive.esm.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
   "scripts": {
-    "build": "yarn build-lib && yarn build-dist",
-    "build-lib": "rm -rf lib && babel src -d lib",
-    "build-dist": "rm -rf dist && webpack src/index.js dist/ReactInteractive.js && webpack -p src/index.js dist/ReactInteractive.min.js",
-    "prepublishOnly": "yarn build",
-    "dev": "yarn link && babel src -d lib --watch"
+    "build": "rollpkg build",
+    "watch": "rollpkg watch",
+    "prepublishOnly": "npm run lint && npm test && npm run build",
+    "lint": "eslint src",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "coverage": "npx live-server coverage/lcov-report",
+    "lintStaged": "lint-staged"
   },
   "files": [
-    "src",
-    "lib",
     "dist"
   ],
   "repository": {
@@ -26,41 +30,49 @@
     "hover",
     "active",
     "focus",
-    "keyboard"
+    "keyboard",
+    "accessibility"
   ],
   "author": "Rafael Pedicini <rafael@rafgraph.dev>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rafgraph/react-interactive/issues"
   },
-  "peerDependencies": {
-    "react": ">=16.3"
+  "homepage": "https://react-interactive.rafgraph.dev",
+  "dependencies": {
+    "event-from": "^0.6.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^7.2.3",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-preset-env": "^1.4.0",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-1": "^6.24.1",
-    "eslint": "^4.4.1",
-    "eslint-config-airbnb": "^15.1.0",
-    "eslint-config-prettier": "^2.3.0",
-    "eslint-plugin-import": "^2.1.0",
-    "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-prettier": "^2.2.0",
-    "eslint-plugin-react": "^7.2.1",
-    "prettier": "^1.15.3",
-    "webpack": "^3.6.0"
+    "@types/react": "^17.0.3",
+    "lint-staged": "^10.5.4",
+    "pre-commit": "^1.2.2",
+    "react": "file:demo/node_modules/react",
+    "rollpkg": "^0.5.2",
+    "typescript": "^4.2.3"
   },
-  "dependencies": {
-    "detect-it": "^4.0.0",
-    "object-assign": "^4.1.1",
-    "prop-types": "^15.6.0"
+  "peerDependencies": {
+    "react": ">=16.8"
   },
-  "prettier": {
-    "singleQuote": true,
-    "trailingComma": "all"
+  "pre-commit": "lintStaged",
+  "lint-staged": {
+    "(src/**/*|demo/src/**/*)": [
+      "eslint",
+      "prettier --write --ignore-unknown"
+    ]
+  },
+  "prettier": "rollpkg/configs/prettier.json",
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/rollpkg/configs/eslint"
+    ],
+    "rules": {
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "warn"
+    }
+  },
+  "jest": {
+    "preset": "rollpkg"
   }
 }

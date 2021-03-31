@@ -1,11 +1,3 @@
-# Dependency directory
 node_modules
-
-# Transpiled lib
-lib
-
-# UMD build
 dist
-
-# Files marked with gitigx
-*gitigx*
+coverage
