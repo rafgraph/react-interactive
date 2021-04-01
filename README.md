@@ -194,7 +194,7 @@ import { Interactive } from 'react-interactive';
 
 ## Props
 
-[`as`](#as-string--reactcomponent), [`onStateChange`](#onstatechange-function), [`children`](#children-reactnode--function), [`disabled`](#disabled-boolean), [interactive `className`](#interactive-state-className-props-string), [interactive `style`](#interactive-state-inline-style-props-style-object), [`useExtendedTouchActive`](#useextendedtouchactive-boolean), [`useWebkitTapHighlightColor`](#usewebkittaphighlightcolor-boolean), [`ref`](#ref-object-ref--callback-ref)
+[`as`](#as-string--reactcomponent), [`onStateChange`](#onstatechange-function), [`children`](#children-reactnode--function), [`disabled`](#disabled-boolean), [interactive `className`](#interactive-state-className-props-string), [interactive `style`](#interactive-state-inline-style-props-style-object), [`useExtendedTouchActive`](#useextendedtouchactive-boolean), [`ref`](#ref-object-ref--callback-ref)
 
 ---
 
@@ -329,14 +329,6 @@ Style prop objects for each state are merged with the following precedence (last
 Default value: `false`
 
 By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible . To remain in the `touchActive` state for as long as the touch point is on the screen then pass in a `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
-
----
-
-### `useWebkitTapHighlightColor`: `boolean`
-
-Default value: `false`
-
-By default React Interactive removes browser added `WebkitTapHighlightColor` styles because it is generally better to use the `touchActive` state to style touch interactions (you have more control when using the `touchActive` state). If you want to use `WebkitTapHighlightColor` then pass in a `useWebkitTapHighlightColor` prop.
 
 ---
 

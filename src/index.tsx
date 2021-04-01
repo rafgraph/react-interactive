@@ -74,7 +74,6 @@ export interface InteractiveOwnProps {
   onStateChange?: ({ state, prevState }: InteractiveStateChange) => void;
   disabled?: boolean;
   useExtendedTouchActive?: boolean;
-  useWebkitTapHighlightColor?: boolean;
   hoverClassName?: string;
   commonActiveClassName?: string;
   mouseActiveClassName?: string;
@@ -129,7 +128,7 @@ export type InteractiveComposableProps<
 > = Omit<InteractivePropsWithoutRef<T>, 'as'>;
 
 // InteractiveNotMemoized is wrapped in React.memo() and exported at the end of this file
-export const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
+const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   InteractiveOwnProps,
   typeof defaultAs
 > = React.forwardRef(function <T extends React.ElementType = typeof defaultAs>(
@@ -139,7 +138,6 @@ export const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     onStateChange,
     disabled = false,
     useExtendedTouchActive = false,
-    useWebkitTapHighlightColor = false,
     hoverClassName = 'hover',
     commonActiveClassName = 'active',
     mouseActiveClassName = 'mouseActive',
@@ -610,9 +608,6 @@ export const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   const style: React.CSSProperties = {};
 
   // add default styles
-  if (!useWebkitTapHighlightColor) {
-    // style.WebkitTapHighlightColor = 'transparent';
-  }
   if (
     // if clicking does something and RI is not disabled, then set the cursor to pointer for better UX
     !disabled &&

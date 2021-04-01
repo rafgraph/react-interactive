@@ -35,6 +35,7 @@ export const globalStyles = stitchesGlobal({
     textAlign: 'inherit',
     color: 'inherit',
     background: 'transparent',
+    WebkitTapHighlightColor: 'transparent',
   },
   html: {
     height: '100%',
