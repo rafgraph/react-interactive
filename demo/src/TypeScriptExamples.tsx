@@ -308,7 +308,7 @@ const DemoPassThroughAs: React.VFC = () => (
       as="a"
       href="https://rafgraph.dev"
       additionalProp="something"
-      someProp // should error, but it doesn't
+      // someProp // should error, but it doesn't
       hoverStyle={{ fontWeight: 'bold' }}
     >
       PassThroughAsWithAdditional
