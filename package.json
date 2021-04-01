@@ -40,7 +40,8 @@
   },
   "homepage": "https://react-interactive.rafgraph.dev",
   "dependencies": {
-    "event-from": "^0.6.0"
+    "event-from": "^0.6.0",
+    "react-polymorphic-types": "^1.0.3"
   },
   "devDependencies": {
     "@types/react": "^17.0.3",

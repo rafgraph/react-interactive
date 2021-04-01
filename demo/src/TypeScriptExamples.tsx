@@ -3,8 +3,7 @@ import {
   Interactive,
   InteractiveProps,
   InteractiveComposableProps,
-  PolymorphicComponentProps,
-  InteractiveStaticProps,
+  InteractivePropsWithoutRef,
 } from 'react-interactive';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { styled } from './stitches.config';
@@ -270,30 +269,27 @@ const DemoComposeAsUnionWithRef: React.VFC = () => (
 // doesn't work when adding additional props, so essentially useless
 // TODO: get composing with pass through `as` working
 
-// this works, no additional props, so essentially pointless
+// this works, but with no additional props it is essentially pointless
 type PassThroughAsProps<
-  C extends React.ElementType
-> = PolymorphicComponentProps<C, InteractiveStaticProps>;
+  T extends React.ElementType
+> = InteractivePropsWithoutRef<T>;
 
-const PassThroughAs: <C extends React.ElementType>(
-  props: PassThroughAsProps<C>,
+const PassThroughAs: <T extends React.ElementType>(
+  props: PassThroughAsProps<T>,
 ) => React.ReactElement | null = (props) => <Interactive {...props} />;
 
 // this does not work when adding additional props
-// the <PassThroughAsWithAdditional> component ends up as not typed, can pass anything to it
+// the <PassThroughAsWithAdditional> component ends up as not typed, can pass any prop to it
 interface AdditionalProps {
   additionalProp?: string;
 }
 type PassThroughAsPropsWithAdditionalProps<
-  C extends React.ElementType
+  T extends React.ElementType = 'button'
 > = AdditionalProps &
-  Omit<
-    PolymorphicComponentProps<C, InteractiveStaticProps>,
-    keyof AdditionalProps
-  >;
+  Omit<InteractivePropsWithoutRef<T>, keyof AdditionalProps>;
 
-const PassThroughAsWithAdditional: <C extends React.ElementType>(
-  props: PassThroughAsPropsWithAdditionalProps<C>,
+const PassThroughAsWithAdditional: <T extends React.ElementType>(
+  props: PassThroughAsPropsWithAdditionalProps<T>,
 ) => React.ReactElement | null = ({ additionalProp, ...props }) => (
   <Interactive {...props} />
 );
@@ -303,7 +299,7 @@ const DemoPassThroughAs: React.VFC = () => (
     <PassThroughAs
       as="a"
       href="https://rafgraph.dev"
-      // additionalProp="something" // should error and it does
+      // someProp="something" // should error and it does
       hoverStyle={{ fontWeight: 'bold' }}
     >
       PassThroughAs
@@ -312,7 +308,7 @@ const DemoPassThroughAs: React.VFC = () => (
       as="a"
       href="https://rafgraph.dev"
       additionalProp="something"
-      // someProp // should error, but it doesn't
+      someProp // should error, but it doesn't
       hoverStyle={{ fontWeight: 'bold' }}
     >
       PassThroughAsWithAdditional

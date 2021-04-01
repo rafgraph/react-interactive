@@ -3,8 +3,8 @@
 [![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive?color=purple)](https://bundlephobia.com/result?p=react-interactive) ![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue)
 
 - Better interactive states than CSS pseudo classes
-  - `hover`, `mouseActive`, `touchActive`, `keyActive`
-  - `focusFromMouse`, `focusFromTouch`, `focusFromKey`
+  - `hover`, `active`, `mouseActive`, `touchActive`, `keyActive`
+  - `focus`, `focusFromMouse`, `focusFromTouch`, `focusFromKey`
 - Callback for interactive state changes
   - Know when the hover/active/focus state is entered/exited (impossible to do with CSS)
 - Style interactive states with CSS, inline styles, and CSS-in-JS libraries
@@ -39,7 +39,7 @@ import { Interactive } from 'react-interactive'
 
 ---
 
-### What the Interactive component is rendered `as`
+### `<Interactive>` component rendered `as`
 
 React Interactive accepts a polymorphic `as` prop that can be a string representing a DOM element (e.g. `"button"`, `"a"`, `"div"`, etc), or a React component (e.g. React Router's `Link`, etc).
 
@@ -93,6 +93,7 @@ CSS classes for the current state are automatically added for easy styling with 
 import { Interactive } from 'react-interactive'
 
 ...
+
 // add a className to target the element in CSS
 <Interactive as="button" className="my-button">My Button</Interactive>
 ```
