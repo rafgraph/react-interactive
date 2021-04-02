@@ -160,7 +160,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     disabledStyle,
     ...restProps
   }: PolymorphicPropsWithoutRef<InteractiveOwnProps, T>,
-  ref: React.ForwardedRef<typeof restProps.ref>,
+  ref: React.ForwardedRef<Element>,
 ) {
   ////////////////////////////////////
 
@@ -196,9 +196,9 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   ////////////////////////////////////
 
   // support passed in ref prop as object or callback, and track ref locally
-  const localRef = React.useRef<HTMLElement | null>(null);
+  const localRef = React.useRef<Element | null>(null);
   const callbackRef = React.useCallback(
-    (node: HTMLElement | null) => {
+    (node: Element | null) => {
       localRef.current = node;
       if (typeof ref === 'function') {
         ref(node);
@@ -716,13 +716,6 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
       disabledProps.disabled = true;
     }
   }
-
-  // if RI is disabled and has focus (it shouldn't), then call el.blur() to blur the element
-  React.useEffect(() => {
-    if (disabled && iState.state.focus && localRef.current) {
-      localRef.current.blur();
-    }
-  }, [disabled, iState.state.focus]);
 
   ////////////////////////////////////
 
