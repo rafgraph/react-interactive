@@ -111,10 +111,6 @@ export type InteractiveProps<
   T extends React.ElementType = typeof defaultAs
 > = PolymorphicPropsWithRef<InteractiveOwnProps, T>;
 
-export type InteractivePropsWithoutRef<
-  T extends React.ElementType = typeof defaultAs
-> = PolymorphicPropsWithoutRef<InteractiveOwnProps, T>;
-
 /**
  * Usage: `InteractiveComposableProps<'button'>`, or `InteractiveComposableProps<typeof Component>`
  *
@@ -125,7 +121,7 @@ export type InteractivePropsWithoutRef<
  */
 export type InteractiveComposableProps<
   T extends React.ElementType = typeof defaultAs
-> = Omit<InteractivePropsWithoutRef<T>, 'as'>;
+> = Omit<InteractiveProps<T>, 'as' | 'ref'>;
 
 // InteractiveNotMemoized is wrapped in React.memo() and exported at the end of this file
 const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<

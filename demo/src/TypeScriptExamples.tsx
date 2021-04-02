@@ -3,7 +3,6 @@ import {
   Interactive,
   InteractiveProps,
   InteractiveComposableProps,
-  InteractivePropsWithoutRef,
 } from 'react-interactive';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { styled } from './stitches.config';
@@ -13,7 +12,6 @@ import { styled } from './stitches.config';
 // <DemoComposeAsTagName />
 // <DemoComposeAsComponent />
 // <DemoComposeAsUnion />
-// <DemoPassThroughAs />
 
 ////////////////////////////////////
 // typing props passed to <Interactive>
@@ -264,58 +262,6 @@ const DemoComposeAsUnionWithRef: React.VFC = () => (
   </>
 );
 
-////////////////////////////////////////////
-// composing with pass through `as` prop
-// doesn't work when adding additional props, so essentially useless
-// TODO: get composing with pass through `as` working
-
-// this works, but with no additional props it is essentially pointless
-type PassThroughAsProps<
-  T extends React.ElementType
-> = InteractivePropsWithoutRef<T>;
-
-const PassThroughAs: <T extends React.ElementType>(
-  props: PassThroughAsProps<T>,
-) => React.ReactElement | null = (props) => <Interactive {...props} />;
-
-// this does not work when adding additional props
-// the <PassThroughAsWithAdditional> component ends up as not typed, can pass any prop to it
-interface AdditionalProps {
-  additionalProp?: string;
-}
-type PassThroughAsPropsWithAdditionalProps<
-  T extends React.ElementType = 'button'
-> = AdditionalProps &
-  Omit<InteractivePropsWithoutRef<T>, keyof AdditionalProps>;
-
-const PassThroughAsWithAdditional: <T extends React.ElementType>(
-  props: PassThroughAsPropsWithAdditionalProps<T>,
-) => React.ReactElement | null = ({ additionalProp, ...props }) => (
-  <Interactive {...props} />
-);
-
-const DemoPassThroughAs: React.VFC = () => (
-  <>
-    <PassThroughAs
-      as="a"
-      href="https://rafgraph.dev"
-      // someProp="something" // should error and it does
-      hoverStyle={{ fontWeight: 'bold' }}
-    >
-      PassThroughAs
-    </PassThroughAs>
-    <PassThroughAsWithAdditional
-      as="a"
-      href="https://rafgraph.dev"
-      additionalProp="something"
-      // someProp // should error, but it doesn't
-      hoverStyle={{ fontWeight: 'bold' }}
-    >
-      PassThroughAsWithAdditional
-    </PassThroughAsWithAdditional>
-  </>
-);
-
 ////////////////////////////////////
 
 const ContainerDiv = styled('div', {
@@ -332,7 +278,6 @@ export const TypeScriptExamples: React.VFC = () => (
       <DemoComposeAsTagName />
       <DemoComposeAsComponent />
       <DemoComposeAsUnionWithRef />
-      <DemoPassThroughAs />
     </ContainerDiv>
   </BrowserRouter>
 );
