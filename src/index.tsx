@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { eventFrom, setEventFrom } from 'event-from';
+import { eventFrom, setEventFrom, EventFromInput } from 'event-from';
 import {
   stateChanged,
   enterKeyTrigger,
@@ -14,7 +14,7 @@ import {
   PolymorphicMemoExoticComponent,
 } from 'react-polymorphic-types';
 
-export { eventFrom, setEventFrom };
+export { eventFrom, setEventFrom, EventFromInput };
 
 export type ActiveState = 'mouseActive' | 'touchActive' | 'keyActive' | false;
 
