@@ -87,7 +87,7 @@ CSS classes for the current state are automatically added for easy styling with 
 - Hover state adds a `hover` class.
 - Active state adds both an `active` class and an `[input]Active` class, e.g. `mouseActive`.
 - Focus state adds both a `focus` class and a `focusFrom[input]` class, e.g. `focusFromKey`.
-- For a full class list see [interactive `className` props](#interactive-state-className-props-string).
+- For a full class list see [interactive `className` props](#interactive-state-className-props-string) (the classes added for each state can be changed using props).
 
 ```js
 import { Interactive } from 'react-interactive'
@@ -104,7 +104,7 @@ import { Interactive } from 'react-interactive'
   color: green;
 }
 
-.my-button.focusFromKey: {
+.my-button.focusfromkey: {
   outline: 2px solid green;
 }
 ```
@@ -113,7 +113,12 @@ import { Interactive } from 'react-interactive'
 
 ### Styling with inline styles
 
-React Interactive accepts a style prop for each state (`hover`, `mouseActive`, `touchActive`, etc), as well as `commonActiveStyle` and `commonFocusStyle` props for easy inline styling. For a full list see [interactive `style` props](#interactive-state-inline-style-props-style-object).
+React Interactive uses a separate style prop for each state for easy inline styling.
+
+- Hover state uses the `hoverStyle` prop.
+- Active state uses both an `activeStyle` prop and an `[input]ActiveStyle` prop.
+- Focus state uses both a `focusStyle` prop and a `focusFrom[input]Style` prop.
+- For a full list see [interactive `style` props](#interactive-state-inline-style-props-style-object).
 
 ```js
 import { Interactive } from 'react-interactive'
@@ -133,7 +138,7 @@ const focusFromKeyStyle = {
 <Interactive
   as="button"
   hoverStyle={hoverAndActiveStyle}
-  commonActiveStyle={hoverAndActiveStyle}
+  activeStyle={hoverAndActiveStyle}
   focusFromKeyStyle={focusFromKeyStyle}
 >
   My Button
@@ -273,11 +278,11 @@ CSS classes that are added to the DOM element when in an interactive state. Thes
 | Prop                      | Default value      |
 | :------------------------ | :----------------- |
 | `hoverClassName`          | `"hover"`          |
-| `commonActiveClassName`   | `"active"`         |
+| `activeClassName`         | `"active"`         |
 | `mouseActiveClassName`    | `"mouseActive"`    |
 | `touchActiveClassName`    | `"touchActive"`    |
 | `keyActiveClassName`      | `"keyActive"`      |
-| `commonFocusClassName`    | `"focus"`          |
+| `focusClassName`          | `"focus"`          |
 | `focusFromMouseClassName` | `"focusFromMouse"` |
 | `focusFromTouchClassName` | `"focusFromTouch"` |
 | `focusFromKeyClassName`   | `"focusFromKey"`   |
@@ -285,8 +290,8 @@ CSS classes that are added to the DOM element when in an interactive state. Thes
 
 Note that:
 
-- `commonActiveClassName` is added when in any active state. This is in addition to the specific `[input]ActiveClassName`.
-- `commonFocusClassName` is added when in any focus state. This is in addition to the specific `focusFrom[input]ClassName`.
+- `activeClassName` is added when in any active state. This is in addition to the specific `[input]ActiveClassName`.
+- `focusClassName` is added when in any focus state. This is in addition to the specific `focusFrom[input]ClassName`.
 - `disabledClassName` is added when the [`disabled` boolean prop](#disabled-boolean) is true, in which case none of the other interactive `className` props are applied.
 
 ---
@@ -300,11 +305,11 @@ Inline styles that are added to the DOM element when in an interactive state. Th
 Inline style prop list:
 
 - `hoverStyle`
-- `commonActiveStyle`
+- `activeStyle`
 - `mouseActiveStyle`
 - `touchActiveStyle`
 - `keyActiveStyle`
-- `commonFocusStyle`
+- `focusStyle`
 - `focusFromMouseStyle`
 - `focusFromTouchStyle`
 - `focusFromKeyStyle`
@@ -315,9 +320,9 @@ Style prop objects for each state are merged with the following precedence (last
 - `style` prop (styles that are always applied)
 - ===
 - `hoverStyle`
-- `commonActiveStyle`
+- `activeStyle`
 - `[input]ActiveStyle`
-- `commonFocusStyle`
+- `focusStyle`
 - `focusFrom[input]Style`
 - =OR=
 - `disabledStyle` (when disabled, only the `disabledStyle` prop is merged with the `style` prop)
@@ -416,7 +421,7 @@ const focusButton = () => {
 
 ## Using with TypeScript
 
-React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of the props that the `as` prop accepts and the props that are specific to React Interactive.
+React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of its own props and the props that the `as` prop accepts.
 
 ```TS
 <Interactive

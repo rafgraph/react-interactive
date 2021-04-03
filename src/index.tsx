@@ -75,21 +75,21 @@ export interface InteractiveOwnProps {
   disabled?: boolean;
   useExtendedTouchActive?: boolean;
   hoverClassName?: string;
-  commonActiveClassName?: string;
+  activeClassName?: string;
   mouseActiveClassName?: string;
   touchActiveClassName?: string;
   keyActiveClassName?: string;
-  commonFocusClassName?: string;
+  focusClassName?: string;
   focusFromKeyClassName?: string;
   focusFromMouseClassName?: string;
   focusFromTouchClassName?: string;
   disabledClassName?: string;
   hoverStyle?: React.CSSProperties;
-  commonActiveStyle?: React.CSSProperties;
+  activeStyle?: React.CSSProperties;
   mouseActiveStyle?: React.CSSProperties;
   touchActiveStyle?: React.CSSProperties;
   keyActiveStyle?: React.CSSProperties;
-  commonFocusStyle?: React.CSSProperties;
+  focusStyle?: React.CSSProperties;
   focusFromKeyStyle?: React.CSSProperties;
   focusFromMouseStyle?: React.CSSProperties;
   focusFromTouchStyle?: React.CSSProperties;
@@ -135,21 +135,21 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     disabled = false,
     useExtendedTouchActive = false,
     hoverClassName = 'hover',
-    commonActiveClassName = 'active',
+    activeClassName = 'active',
     mouseActiveClassName = 'mouseActive',
     touchActiveClassName = 'touchActive',
     keyActiveClassName = 'keyActive',
-    commonFocusClassName = 'focus',
+    focusClassName = 'focus',
     focusFromKeyClassName = 'focusFromKey',
     focusFromMouseClassName = 'focusFromMouse',
     focusFromTouchClassName = 'focusFromTouch',
     disabledClassName = 'disabled',
     hoverStyle,
-    commonActiveStyle,
+    activeStyle,
     mouseActiveStyle,
     touchActiveStyle,
     keyActiveStyle,
-    commonFocusStyle,
+    focusStyle,
     focusFromKeyStyle,
     focusFromMouseStyle,
     focusFromTouchStyle,
@@ -600,7 +600,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   let className = restProps.className || '';
 
   // style objects are merged into this object with the following precedence:
-  // style object <= default styles <= style prop <= (disabledStyle || hoverStyle <= commonActiveStyle <= [input]ActiveStyle <= commonFocusStyle <= focusFrom[input]Style)
+  // style object <= default styles <= style prop <= (disabledStyle || hoverStyle <= activeStyle <= [input]ActiveStyle <= focusStyle <= focusFrom[input]Style)
   const style: React.CSSProperties = {};
 
   // add default styles
@@ -641,7 +641,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     }
 
     if (iState.state.active) {
-      addToClassAndStyleProps(commonActiveClassName, commonActiveStyle);
+      addToClassAndStyleProps(activeClassName, activeStyle);
       switch (iState.state.active) {
         case 'mouseActive':
           addToClassAndStyleProps(mouseActiveClassName, mouseActiveStyle);
@@ -656,7 +656,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     }
 
     if (iState.state.focus) {
-      addToClassAndStyleProps(commonFocusClassName, commonFocusStyle);
+      addToClassAndStyleProps(focusClassName, focusStyle);
       switch (iState.state.focus) {
         case 'focusFromMouse':
           addToClassAndStyleProps(focusFromMouseClassName, focusFromMouseStyle);
