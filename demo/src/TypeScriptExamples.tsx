@@ -2,7 +2,7 @@ import * as React from 'react';
 import {
   Interactive,
   InteractiveProps,
-  InteractiveComposableProps,
+  InteractiveExtendableProps,
 } from 'react-interactive';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { styled } from './stitches.config';
@@ -43,7 +43,7 @@ const DemoPropsForInteractive: React.VFC = () => (
     <Interactive
       as="button"
       type="submit" // button specific prop
-      ref={(element: HTMLButtonElement | null) => {}} // TODO element type should be inferred
+      ref={(element: HTMLButtonElement | null) => {}} // element type is not inferred, see https://github.com/kripod/react-polymorphic-types/issues/5
       hoverStyle={{ fontWeight: 'bold' }}
     >
       Interactive-as-button
@@ -51,7 +51,7 @@ const DemoPropsForInteractive: React.VFC = () => (
     <Interactive
       as={Link}
       to="/some-path"
-      ref={(element: React.ElementRef<typeof Link> | null) => {}} // TODO element type should be inferred
+      ref={(element: React.ElementRef<typeof Link> | null) => {}} // element type is not inferred, see https://github.com/kripod/react-polymorphic-types/issues/5
       hoverStyle={{ fontWeight: 'bold' }}
     >
       Interactive-as-Link
@@ -61,12 +61,12 @@ const DemoPropsForInteractive: React.VFC = () => (
 
 ////////////////////////////////////
 // composing as="button" with pass through props
-// use type InteractiveComposableProps
+// use type InteractiveExtendableProps
 
 // the same props interface is used for composing with and without forwardRef
-// note that InteractiveComposableProps doesn't include `as` or `ref` props
+// note that InteractiveExtendableProps doesn't include `as` or `ref` props
 // when using forwardRef the ref type will be added by the forwardRef function
-interface ComposeAsTagNameProps extends InteractiveComposableProps<'button'> {
+interface ComposeAsTagNameProps extends InteractiveExtendableProps<'button'> {
   additionalProp?: string;
 }
 
@@ -117,7 +117,7 @@ const DemoComposeAsTagName: React.VFC = () => (
     <ComposeAsTagNameWithRef {...propsForComposeAsTagNameWithRef} />
     <Interactive
       as="button"
-      // ref={(element: HTMLButtonElement | null) => {}} // TODO element type should be inferred
+      // ref={(element: HTMLButtonElement | null) => {}}
       ref={{ current: null }}
       type="submit" // button specific prop
       hoverStyle={{ fontWeight: 'bold' }}
@@ -129,7 +129,7 @@ const DemoComposeAsTagName: React.VFC = () => (
 
 ////////////////////////////////////
 // composing as={Component} with pass through props
-// use type InteractiveComposableProps
+// use type InteractiveExtendableProps
 
 // first create a composable component to use for the `as` prop
 // (or use a component from a composable library such as React Router's <Link>)
@@ -144,12 +144,12 @@ const MyComponent = React.forwardRef<HTMLButtonElement, MyComponentProps>(
   },
 );
 
-// next create the interface for the composed <Interactive> component,
+// next create the interface for the component that wraps the <Interactive> component,
 // the same props interface is used for composing with and without forwardRef
-// note that InteractiveComposableProps doesn't include `as` or `ref` props
+// note that InteractiveExtendableProps doesn't include `as` or `ref` props
 // when using forwardRef the ref type will be added by the forwardRef function
 interface ComposeAsComponentProps
-  extends InteractiveComposableProps<typeof MyComponent> {
+  extends InteractiveExtendableProps<typeof MyComponent> {
   additionalProp?: string;
 }
 
@@ -202,7 +202,7 @@ const DemoComposeAsComponent: React.VFC = () => (
       as={MyComponent}
       someMyComponentProp="something else"
       hoverStyle={{ fontWeight: 'bold' }}
-      ref={(element: React.ElementRef<typeof MyComponent> | null) => {}} // TODO element type should be inferred
+      ref={(element: React.ElementRef<typeof MyComponent> | null) => {}}
     >
       Interactive-as-MyComponent
     </Interactive>
@@ -216,8 +216,8 @@ const DemoComposeAsComponent: React.VFC = () => (
 // when a to prop is passed to the composed component, a <Link> component is rendered
 
 type ComposeAsUnionProps =
-  | (InteractiveComposableProps<typeof Link> & { href?: never })
-  | (InteractiveComposableProps<'a'> & { to?: never });
+  | (InteractiveExtendableProps<typeof Link> & { href?: never })
+  | (InteractiveExtendableProps<'a'> & { to?: never });
 
 const ComposeAsUnionWithRef = React.forwardRef<
   HTMLAnchorElement,

@@ -24,6 +24,10 @@ export type FocusState =
   | 'focusFromKey'
   | false;
 
+/**
+ * State object used by React Interactive to determine how the `<Interactive>` component is rendered.
+ * The InteractiveState object is also passed to the `onStateChange` callback and `children` (when `children` is a function).
+ */
 export interface InteractiveState {
   hover: boolean;
   active: ActiveState;
@@ -103,7 +107,7 @@ export interface InteractiveOwnProps {
  * `InteractiveProps` includes the `as` prop and `ref` prop and should not be used for
  * typing components that wrap an `<Interactive>` component.
  *
- * For typing components that wrap an `<Interactive>` component use the type `InteractiveComposableProps`
+ * For typing components that wrap an `<Interactive>` component use the type `InteractiveExtendableProps`
  *
  * For more see: https://github.com/rafgraph/react-interactive#using-with-typescript
  */
@@ -112,14 +116,14 @@ export type InteractiveProps<
 > = PolymorphicPropsWithRef<InteractiveOwnProps, T>;
 
 /**
- * Usage: `InteractiveComposableProps<'button'>`, or `InteractiveComposableProps<typeof Component>`
+ * Usage: `InteractiveExtendableProps<'button'>`, or `InteractiveExtendableProps<typeof Component>`
  *
- * Use the `InteractiveComposableProps` type when typing components that wrap an `<Interactive>` component
+ * Use the `InteractiveExtendableProps` type when typing components that wrap an `<Interactive>` component
  * where the props are passed through to the `<Interactive>` component.
  *
  * For more see: https://github.com/rafgraph/react-interactive#using-with-typescript
  */
-export type InteractiveComposableProps<
+export type InteractiveExtendableProps<
   T extends React.ElementType = typeof defaultAs
 > = Omit<InteractiveProps<T>, 'as' | 'ref'>;
 
