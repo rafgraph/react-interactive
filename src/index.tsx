@@ -5,6 +5,7 @@ import {
   enterKeyTrigger,
   spaceKeyTrigger,
   cursorPointerElement,
+  elementSupportsDisabled,
   setUserSelectOnBody,
 } from './utils';
 import {
@@ -315,17 +316,33 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     );
   }, [stateChange]);
 
-  // react bug where blur event is not fired when a button becomes disabled
-  // if RI is disabled and in a focus state, but the DOM element doesn't have focus, then blurInteractive()
+  // if RI is disabled and in a focus state, then call blur on the DOM element and blurInteractive()
   React.useEffect(() => {
     if (
       disabled &&
       iState.state.focus &&
-      document.activeElement !== localRef.current
+      // if As is a Component that renders an element which doesn't support the disabled attribute (so disabled not passed to the DOM element)
+      // then don't do anything as have no control over what gets rendered (better to just do no harm)
+      // note that for DOM elements that don't support disabled but As is a string (e.g. as="div", as="a")
+      // this works b/c RI also sets tabIndex and href to undefined when disabled which makes the element not focusable
+      // otherwise would get a flash of focus and then blur if the user tried to re-focus the element
+      (elementSupportsDisabled(localRef.current || {}) ||
+        typeof As === 'string')
     ) {
+      // when a button that currently has focus is disabled there are bugs in both firefox (v87) and safari (v14)
+      // firefox doesn't dispatch a blur event (button is still document.activeElement) but key events are no longer registered on the button, https://bugzilla.mozilla.org/show_bug.cgi?id=1650092
+      // safari leaves focus on the button (no blur event) and key events are still registered, but once focus leaves the button it can't be re-focused
+      // so call blur() on the DOM element to fix these bugs
+      if (
+        localRef.current &&
+        typeof (localRef.current as HTMLElement).blur === 'function'
+      ) {
+        (localRef.current as HTMLElement).blur();
+      }
+
       blurInteractive();
     }
-  }, [disabled, iState.state.focus, blurInteractive]);
+  }, [disabled, iState.state.focus, blurInteractive, As]);
 
   ////////////////////////////////////
 
@@ -725,19 +742,21 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
       onClickCapture: undefined,
       onDoubleClick: undefined,
       onDoubleClickCapture: undefined,
-      // remove href to disable <a> and <area> tags
+      // make elements not focusable when disabled, this also blurs the element if it currently has focus
+      tabIndex: undefined,
+      // remove href to disable <a> and <area> tags, this also blurs the element if it currently has focus
       // setting href to undefined makes it ok to pass to any element/component, not just <a> and <area>
       href: undefined,
     };
 
     // if the As DOM element supports the disabled prop, then pass through the disabled prop
     if (
-      ['button', 'input', 'select', 'textarea'].includes(
-        typeof As === 'string'
-          ? (As as string)
-          : localRef.current
-          ? localRef.current.tagName.toLowerCase()
-          : '',
+      elementSupportsDisabled(
+        localRef.current ||
+          // on the first render localRef.current will be null, but should still pass through disabled prop if supported
+          (typeof As === 'string'
+            ? { tagName: (As as string).toUpperCase() }
+            : {}),
       )
     ) {
       disabledProps.disabled = true;

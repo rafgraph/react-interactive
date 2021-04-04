@@ -115,7 +115,7 @@ import { Interactive } from 'react-interactive'
 
 ### Styling with CSS-in-JS
 
-Use the added CSS classes to style the interactive states with CSS-in-JS libraries like Styled Components, Emotion, and Stitches.
+Use the added CSS classes to style the interactive states with CSS-in-JS libraries like Styled Components, Emotion, and [Stitches](https://stitches.dev/).
 
 ```js
 import { Interactive } from 'react-interactive';
@@ -281,9 +281,10 @@ Default value: `false`
 Passing in a `disabled` prop is an easy way to temporarily disable a React Interactive component without changing the other props. When `disabled` is `true`:
 
 - The `disabledClassName` and `disabledStyle` props will be used for styling the disabled component.
-- `disabled` will be passed through to the DOM element if it is a `<button>`, `<input>`, `<select>`, or `<textarea>`.
+- `disabled` will be passed through to the DOM element if it is a `<button>`, `<input>`, `<select>`, or `<textarea>` (elements that support the `disabled` attribute).
 - The `href` prop will not be passed through to `<a>` and `<area>` DOM elements (this disables links).
 - `onClick`, `onClickCapture`, `onDoubleClick`, and `onDoubleClickCapture` props will not be passed through.
+- `tabIndex` prop will not be passed through.
 
 ---
 

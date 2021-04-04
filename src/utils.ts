@@ -32,6 +32,10 @@ export const cursorPointerElement: ElementTagNameAndType = ({
   (tagName === 'INPUT' &&
     ['checkbox', 'radio', 'submit'].includes(type as string));
 
+// elements that support the disabled attribute
+export const elementSupportsDisabled: ElementTagNameAndType = ({ tagName }) =>
+  ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(tagName as string);
+
 // used for useExtendedTouchActive which needs to set user-select: none
 // to prevent the browser from selecting text on long touch
 // note that it needs to be set on the body not the RI element
