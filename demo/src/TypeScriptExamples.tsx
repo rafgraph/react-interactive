@@ -217,14 +217,22 @@ const DemoComposeAsComponent: React.VFC = () => (
 
 type ComposeAsUnionProps =
   | (InteractiveExtendableProps<typeof Link> & { href?: never })
-  | (InteractiveExtendableProps<'a'> & { to?: never });
+  | (InteractiveExtendableProps<'a'> & { to?: never; replace?: never });
 
 const ComposeAsUnionWithRef = React.forwardRef<
   HTMLAnchorElement,
   ComposeAsUnionProps
 >((props, ref) => {
-  const As = props.to ? Link : 'a';
-  return <Interactive {...props} as={As} ref={ref} />;
+  // React Router's <Link> component doesn't have a disabled state
+  // so when disabled always render as="a" and remove router specific props
+  const As = props.to && !props.disabled ? Link : 'a';
+  let passThroughProps = props;
+  if (props.disabled) {
+    const { to, replace, ...propsWithoutRouterProps } = props;
+    passThroughProps = propsWithoutRouterProps;
+  }
+
+  return <Interactive {...passThroughProps} as={As} ref={ref} />;
 });
 
 type ComposeAsUnionWithRefProps = React.ComponentPropsWithRef<
@@ -248,6 +256,16 @@ const DemoComposeAsUnionWithRef: React.VFC = () => (
       hoverStyle={{ fontWeight: 'bold' }}
     >
       ComposeAsUnionWithRef-RouterLink
+    </ComposeAsUnionWithRef>
+    <ComposeAsUnionWithRef
+      disabled
+      to="/some-path"
+      replace // replace is a Router Link prop
+      ref={(element) => {}}
+      hoverStyle={{ fontWeight: 'bold' }}
+      disabledStyle={{ opacity: 0.5 }}
+    >
+      ComposeAsUnionWithRef-RouterLink-disabled
     </ComposeAsUnionWithRef>
     <ComposeAsUnionWithRef
       href="https://rafgraph.dev"
