@@ -291,6 +291,43 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   }, []);
 
   ////////////////////////////////////
+  // react bug where the blur event is not dispatched when a button becomes disabled
+  // see https://github.com/facebook/react/issues/9142
+  // so break out blurInteractive() as it's own function
+  // to be called from the blur event handler (normal behavior)
+  // and the below useEffect (workaround for react bug)
+
+  const blurInteractive = React.useCallback(() => {
+    // reset keyTracking when the element is blurred (can't be the target of key events)
+    keyTracking.current.enterKeyDown = false;
+    keyTracking.current.spaceKeyDown = false;
+    stateChange(
+      {
+        iStateKey: 'focus',
+        state: false,
+        action: 'enter',
+      },
+      {
+        iStateKey: 'active',
+        state: 'keyActive',
+        action: 'exit',
+      },
+    );
+  }, [stateChange]);
+
+  // react bug where blur event is not fired when a button becomes disabled
+  // if RI is disabled and in a focus state, but the DOM element doesn't have focus, then blurInteractive()
+  React.useEffect(() => {
+    if (
+      disabled &&
+      iState.state.focus &&
+      document.activeElement !== localRef.current
+    ) {
+      blurInteractive();
+    }
+  }, [disabled, iState.state.focus, blurInteractive]);
+
+  ////////////////////////////////////
 
   // handleEvent handles all events that change the interactive state of the component
   // for example <As onMouseEnter={handleEvent} onPointerEnter={handleEvent} etc...>
@@ -359,21 +396,10 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
           }
           break;
         case 'blur':
-          // reset keyTracking when the element is blurred (can't be the target of key events)
-          keyTracking.current.enterKeyDown = false;
-          keyTracking.current.spaceKeyDown = false;
-          stateChange(
-            {
-              iStateKey: 'focus',
-              state: false,
-              action: 'enter',
-            },
-            {
-              iStateKey: 'active',
-              state: 'keyActive',
-              action: 'exit',
-            },
-          );
+          // break out blur logic as a separate function because of a react bug
+          // where the blur event is not dispatched when a button becomes disabled
+          // so also need to call blurInteractive() after receiving a disabled prop
+          blurInteractive();
           break;
         case 'keydown':
         case 'keyup':
@@ -525,6 +551,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
       ),
       useExtendedTouchActive,
       stateChange,
+      blurInteractive,
     ],
   );
 
