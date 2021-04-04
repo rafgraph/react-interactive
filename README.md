@@ -13,7 +13,9 @@
 
 ---
 
-**[Live demo for React Interactive](https://react-interactive.rafgraph.dev)**, code is in the [`/demo`](/demo) folder, or [open in codesandbox](https://githubbox.com/rafgraph/react-interactive/tree/main/demo)
+### [Live demo app for React Interactive](https://react-interactive.rafgraph.dev)
+
+Code is in the [`/demo`](/demo) folder, or open the [demo in CodeSandbox](https://githubbox.com/rafgraph/react-interactive/tree/main/demo)
 
 ---
 
@@ -39,7 +41,7 @@ import { Interactive } from 'react-interactive'
 
 ---
 
-### `<Interactive>` component rendered `as`
+### Polymorphic `as` prop
 
 React Interactive accepts a polymorphic `as` prop that can be a string representing a DOM element (e.g. `"button"`, `"a"`, `"div"`, etc), or a React component (e.g. React Router's `Link`, etc).
 
@@ -58,7 +60,7 @@ import { Link } from 'react-router-dom';
 
 ### Interactive state
 
-This is the state object used internally by React Interactive to determine how the `<Interactive>` component is rendered. The state object is also passed to the `onStateChange` callback and `children` (when `children` is a function).
+The state object used by React Interactive to determine how the `<Interactive>` component is rendered. The interactive state object is also passed to the [`onStateChange`](#reacting-to-interactive-state-changes) callback and [`children`](#using-the-interactive-state-in-children) (when `children` is a function).
 
 ```ts
 interface InteractiveState {
@@ -68,7 +70,7 @@ interface InteractiveState {
 }
 ```
 
-- `hover` Mouse on the element (unlike CSS pseudo classes the `hover` state is only entered from mouse input).
+- `hover` Mouse on the element (unlike CSS pseudo classes the `hover` state is only entered from mouse input which eliminates the [CSS sticky hover bug](#css-sticky-hover-bug) on touch devices).
 - `active`
   - `mouseActive` Mouse on the element and mouse button down.
   - `touchActive` Touch point on the element.
@@ -107,6 +109,30 @@ import { Interactive } from 'react-interactive'
 .my-button.focusfromkey: {
   outline: 2px solid green;
 }
+```
+
+---
+
+### Styling with CSS-in-JS
+
+Use the added CSS classes to style the interactive states with CSS-in-JS libraries like Styled Components, Emotion, and Stitches.
+
+```js
+import { Interactive } from 'react-interactive';
+import { styled } from '@stitches/react';
+
+const StyledButton = styled(Interactive, {
+  '&.hover, &.active': {
+    color: 'green',
+  },
+  '&.focusFromKey': {
+    outline: '2px solid green',
+  },
+});
+
+...
+
+<StyledButton>My Button</StyledButton>
 ```
 
 ---
@@ -177,9 +203,9 @@ const handleInteractiveStateChange = ({ state, prevState }) => {
 
 ---
 
-### Styling children based on interactive state
+### Using the interactive state in `children`
 
-React Interactive uses the children as a function pattern to pass the current interactive state to it's children.
+React Interactive uses the children as a function pattern to pass the current interactive state to its children.
 
 ```js
 import { Interactive } from 'react-interactive';
@@ -214,15 +240,7 @@ React Interactive accepts a polymorphic `as` prop that can be a string represent
 <Interactive as={Link} to="/some-page">My React Router Link</Interactive>
 ```
 
-Note that if `as` is a React component, then the component needs to pass through props to the element that it renders, including the `ref` prop using `React.forwardRef()`. Most libraries designed for composability do this by default, including React Router's `<Link>` component.
-
-```js
-const AsComponent = React.forwardRef((props, ref) => (
-  <button {...props} ref={ref} />
-))
-
-<Interactive as={AsComponent}>My Component</Interactive>
-```
+> Note that if `as` is a React component, then the component needs to pass through props to the element that it renders, including the `ref` prop using `React.forwardRef()`. Most libraries designed for composability do this by default, including React Router's `<Link>` component.
 
 ---
 
@@ -230,7 +248,7 @@ const AsComponent = React.forwardRef((props, ref) => (
 
 Default value: `undefined`
 
-Callback function that is called each time the state changes with both the current and previous states (passed in as a single argument of the form of `{ state, prevState }`). See [Reacting to interactive state changes](#reacting-to-interactive-state-changes).
+Callback function that is called each time the interactive state changes with both the current and previous interactive states (passed in as a single argument of the form `{ state, prevState }`). See [Reacting to interactive state changes](#reacting-to-interactive-state-changes).
 
 ---
 
@@ -240,10 +258,10 @@ Default value: `undefined`
 
 If `children` is a `ReactNode` (anything that React can render, e.g. an Element, Fragment, string, boolean, null, etc) then it is passed through to React to render normally.
 
-If `children` is a function then it is called with an object containing the current state of the Interactive component (note that the function must return a `ReactNode` that React can render). See [Styling children based on interactive state](#styling-children-based-on-interactive-state).
+If `children` is a function then it is called with an object containing the current interactive state of (note that the function must return a `ReactNode` that React can render). See [Using the interactive state in `children`](#using-the-interactive-state-in-children).
 
 ```js
-<Interactive as="button">
+<Interactive as="div">
   {({ hover, active, focus }) => {
     //   hover: boolean,
     //   active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
@@ -333,7 +351,7 @@ Style prop objects for each state are merged with the following precedence (last
 
 Default value: `false`
 
-By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible . To remain in the `touchActive` state for as long as the touch point is on the screen then pass in a `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
+By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible. To remain in the `touchActive` state for as long as the touch point is on the screen then pass in a `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
 
 ---
 
@@ -388,7 +406,7 @@ const handleClickEvent = (e) => {
 
 `inputType: "mouse" | "touch" | "key"`
 
-This is useful when manually generating events. For example, when calling `focus()` on a React Interactive component and you want it to enter the `focusFromKey` state.
+This is useful when manually generating events. For example, when calling `focus()` on an `<Interactive>` component and you want it to enter the `focusFromKey` state.
 
 ```js
 import * as React from 'react';
@@ -499,4 +517,8 @@ const WrapperWithRef = React.forwardRef<
 
 ## CSS sticky hover bug
 
-The CSS sticky hover bug on touch devices occurs when you tap something that has a CSS `:hover` state. The `:hover` state sticks until you tap someplace else on the screen. The reason for this is back in the early days of mobile, the web relied heavily on hover menus, so on mobile you could tap to see the hover menu. Sites are no longer built this way, so now the sticky hover feature has become a bug. React Interactive fixes the sticky hover bug by only entering the `hover` state from mouse input and creating a `touchActive` state for styling touch interactions.
+The CSS sticky hover bug on touch devices occurs when you tap an element that has a CSS `:hover` pseudo class. The `:hover` state sticks until you tap someplace else on the screen. This causes `:hover` styles to stick on touch devices and prevents proper styling of touch interactions (like native apps).
+
+The reason for CSS sticky hover is that back in the early days of mobile the web relied heavily on hover menus, so on mobile you could tap to see the hover menu (it would stick until you tapped someplace else). Sites are generally no longer built this way, so now the sticky hover feature has become a bug.
+
+React Interactive fixes the sticky hover bug by only entering the `hover` state from mouse input and creating a separate `touchActive` state for styling touch interactions.
