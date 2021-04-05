@@ -92,7 +92,7 @@ CSS classes for the current state are automatically added for easy styling with 
 - For a full class list see [interactive `className` props](#interactive-state-className-props-string) (the classes added for each state can be changed using props).
 
 ```js
-import { Interactive } from 'react-interactive'
+import { Interactive } from 'react-interactive';
 
 ...
 
@@ -147,17 +147,15 @@ React Interactive uses a separate style prop for each state for easy inline styl
 - For a full list see [interactive `style` props](#interactive-state-inline-style-props-style-object).
 
 ```js
-import { Interactive } from 'react-interactive'
-
-...
+import { Interactive } from 'react-interactive';
 
 const hoverAndActiveStyle = {
   color: 'green',
-}
+};
 
 const focusFromKeyStyle = {
   outline: '2px solid green',
-}
+};
 
 ...
 
@@ -178,18 +176,19 @@ const focusFromKeyStyle = {
 React Interactive accepts an `onStateChange` prop callback that is called each time the state changes with both the current and previous states.
 
 ```js
-import { Interactive } from 'react-interactive'
+import * as React from 'react';
+import { Interactive } from 'react-interactive';
 
 ...
 
-const handleInteractiveStateChange = ({ state, prevState }) => {
+const handleInteractiveStateChange = React.useCallback(({ state, prevState }) => {
   // both state and prevState are of the shape:
   // {
   //   hover: boolean,
   //   active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
   //   focus: 'focusFromMouse' | 'focusFromTouch' | 'focusFromKey' | false,
   // }
-}
+}, []);
 
 ...
 
@@ -375,11 +374,12 @@ React Interactive uses [Event From](https://github.com/rafgraph/event-from) unde
 The `eventFrom(event)` function takes a browser event and returns 1 of 3 strings indicating the input type that caused the browser event: `'mouse'`, `'touch'`, or `'key'`. For example, this can be useful to determine what input type generated a `click` event.
 
 ```js
+import * as React from 'react';
 import { Interactive, eventFrom } from 'react-interactive';
 
 ...
 
-const handleClickEvent = (e) => {
+const handleClickEvent = React.useCallback((e) => {
   switch (eventFrom(e)) {
     case 'mouse':
       // click event from mouse
@@ -391,7 +391,7 @@ const handleClickEvent = (e) => {
       // click event from key
       break;
   }
-};
+}, []);
 
 ...
 
@@ -417,13 +417,14 @@ import { Interactive, setEventFrom } from 'react-interactive';
 
 const myButtonRef = React.useRef(null);
 
+// called from someplace else in your code
 const focusButton = () => {
   if (myButtonRef.current) {
     // so the <Interactive> component will enter the focusFromKey state
     setEventFrom('key');
     myButtonRef.current.focus()
   }
-}
+};
 
 ...
 
