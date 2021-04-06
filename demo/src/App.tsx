@@ -4,6 +4,7 @@ import { Interactive, InteractiveStateChange } from 'react-interactive';
 import { styled, globalStyles, darkThemeClass } from './stitches.config';
 import { StyledLink, StyledDarkModeToggle } from './Interactive';
 import { TypeScriptExamples } from './TypeScriptExamples';
+import { DisabledEdgeCases } from './DisabledEdgeCases';
 
 const AppDiv = styled('div', {
   maxWidth: '400px',
@@ -154,6 +155,7 @@ export const App = () => {
           ))}
         </StateLogContainer>
       </div>
+      <DisabledEdgeCases />
       <TypeScriptExamples />
     </AppDiv>
   );

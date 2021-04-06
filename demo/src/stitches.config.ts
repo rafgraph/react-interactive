@@ -50,6 +50,9 @@ export const globalStyles = stitchesGlobal({
     boxSizing: 'border-box',
     textSizeAdjust: 'none',
   },
+  code: {
+    fontFamily: 'monospace',
+  },
   '#root': {
     minHeight: '100%',
     backgroundColor: '$pageBackground',
