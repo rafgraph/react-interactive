@@ -1,6 +1,10 @@
 # React Interactive
 
-[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive?color=purple)](https://bundlephobia.com/result?p=react-interactive) ![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue)
+[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive@next?color=purple)](https://bundlephobia.com/result?p=react-interactive)
+
+<!--
+badge is only for @latest (v0) which doesn't have types, when v1 is published add this badge
+![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue) -->
 
 - Better interactive states than CSS pseudo classes
   - `hover`, `active`, `mouseActive`, `touchActive`, `keyActive`
@@ -89,7 +93,7 @@ CSS classes for the current state are automatically added for easy styling with 
 - Hover state adds a `hover` class.
 - Active state adds both an `active` class and an `[input]Active` class, e.g. `mouseActive`.
 - Focus state adds both a `focus` class and a `focusFrom[input]` class, e.g. `focusFromKey`.
-- For a full class list see [interactive `className` props](#interactive-state-className-props-string) (the classes added for each state can be changed using props).
+- For a full class list see [interactive `className` props](#interactive-state-className-props-string) (the class names for each state can be changed using props).
 
 ```js
 import { Interactive } from 'react-interactive';
