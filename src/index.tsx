@@ -645,7 +645,8 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   // compute className and style props based on the current state
 
   // css classes are merged into this string
-  let className = restProps.className || '';
+  let className: string =
+    typeof restProps.className === 'string' ? restProps.className : '';
 
   // style objects are merged into this object with the following precedence:
   // style object <= default styles <= style prop <= (disabledStyle || hoverStyle <= activeStyle <= [input]ActiveStyle <= focusStyle <= focusFrom[input]Style)
