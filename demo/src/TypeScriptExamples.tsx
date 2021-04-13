@@ -286,6 +286,9 @@ const ContainerDiv = styled('div', {
   '&>*': {
     display: 'block',
   },
+  '&>h1': {
+    fontSize: '20px',
+  },
 });
 
 export const TypeScriptExamples: React.VFC = () => (

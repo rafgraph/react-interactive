@@ -7,7 +7,7 @@
     "@stitches/react": "^0.1.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-interactive": "^1.0.0-next.5",
+    "react-interactive": "^1.0.0-next.6",
     "react-router-dom": "^5.2.0",
     "use-dark-mode": "^2.3.1"
   },

@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Interactive, InteractiveState } from 'react-interactive';
-import { styled } from './stitches.config';
+import { Link } from '../Interactive';
+import { styled } from '../stitches.config';
 import './DisabledEdgeCases.css';
 
 const StyledDisplayStateContainer = styled('div', {
-  fontSize: '12px',
+  fontSize: '14px',
   opacity: 0.5,
 });
 
@@ -33,6 +34,17 @@ const DivComponent = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<'div'>
 >((props, ref) => <div {...props} ref={ref} tabIndex={0} />);
+
+const DisabledEdgeCasesContainer = styled('div', {
+  padding: '20px',
+  margin: '0 auto',
+  maxWidth: '600px',
+});
+
+const H1 = styled('h1', {
+  fontSize: '20px',
+  margin: '10px 0',
+});
 
 const DemoContainer = styled('div', {
   margin: '20px 0',
@@ -88,7 +100,15 @@ export const DisabledEdgeCases: React.VFC = () => {
   ] = React.useState<boolean>(false);
 
   return (
-    <div>
+    <DisabledEdgeCasesContainer>
+      <H1>Clicking the button/link/div disables it</H1>
+      <p>
+        Check for edge cases related to{' '}
+        <Link href="https://github.com/facebook/react/issues/9142">
+          this React bug
+        </Link>
+        , which is fixed/worked around in React Interactive.
+      </p>
       <DemoContainer>
         <Interactive
           as="button"
@@ -201,6 +221,6 @@ export const DisabledEdgeCases: React.VFC = () => {
       >
         Un-disable all
       </Interactive>
-    </div>
+    </DisabledEdgeCasesContainer>
   );
 };

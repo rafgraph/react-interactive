@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
-import { App } from './App';
+import { MainDemo } from './MainDemo';
 
 describe('renders links to rollpkg', () => {
-  const { container } = render(<App />);
+  const { container } = render(<MainDemo />);
   const links = container.getElementsByTagName('a');
   const hrefs = Object.values(links).map((link) => link.getAttribute('href'));
 
