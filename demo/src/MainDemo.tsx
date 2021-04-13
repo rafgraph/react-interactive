@@ -1,7 +1,7 @@
 import * as React from 'react';
 import useDarkMode from 'use-dark-mode';
 import { Interactive, InteractiveStateChange } from 'react-interactive';
-import { styled, globalStyles, darkThemeClass } from './stitches.config';
+import { styled, darkThemeClass } from './stitches.config';
 import { Link, DarkModeButton } from './Interactive';
 
 const MainDemoContainer = styled('div', {
@@ -66,8 +66,6 @@ const ExampleComponent: React.VFC = React.forwardRef<HTMLDivElement>(
 );
 
 export const MainDemo = () => {
-  globalStyles();
-
   const darkMode = useDarkMode(undefined, {
     classNameDark: darkThemeClass,
   });
