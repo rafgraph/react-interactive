@@ -4,7 +4,7 @@ import {
   stateChanged,
   enterKeyTrigger,
   spaceKeyTrigger,
-  cursorPointerElement,
+  cursorPointer,
   elementSupportsDisabled,
   setUserSelectOnBody,
 } from './utils';
@@ -656,9 +656,10 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   if (
     // if clicking does something and RI is not disabled, then set the cursor to pointer for better UX
     !disabled &&
-    (restProps.onClick ||
-      restProps.onClickCapture ||
-      cursorPointerElement(localRef.current || {}))
+    cursorPointer(
+      localRef.current || {},
+      Boolean(restProps.onClick || restProps.onClickCapture),
+    )
   ) {
     style.cursor = 'pointer';
   }
@@ -676,7 +677,9 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     addClassName: string,
     addStyle?: React.CSSProperties,
   ) => {
-    className = [className, addClassName].filter((cN) => cN).join(' ');
+    className = [className, addClassName]
+      .filter((cN) => cN && typeof cN === 'string')
+      .join(' ');
     Object.assign(style, addStyle);
   };
 
@@ -796,3 +799,21 @@ export const Interactive: PolymorphicMemoExoticComponent<
 if (process.env.NODE_ENV !== 'production') {
   Interactive.displayName = 'Interactive';
 }
+
+// interface PolymorphicInteractive
+//   extends PolymorphicMemoExoticComponent<
+//     InteractiveOwnProps,
+//     typeof defaultAs
+//   > {
+//   polymorphicAs?: true;
+// }
+
+// // export const Interactive: PolymorphicMemoExoticComponent<
+// //   InteractiveOwnProps,
+// //   typeof defaultAs
+// // > = React.memo(InteractiveNotMemoized);
+// export const Interactive: PolymorphicInteractive = React.memo(
+//   InteractiveNotMemoized,
+// );
+
+// Interactive.polymorphicAs = true;

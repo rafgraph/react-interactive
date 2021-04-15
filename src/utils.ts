@@ -23,18 +23,26 @@ export const spaceKeyTrigger: ElementTagNameAndType = ({ tagName, type }) =>
   (tagName === 'INPUT' &&
     ['checkbox', 'radio', 'submit'].includes(type as string));
 
-// elements that should have cursor: pointer b/c clicking does something
-export const cursorPointerElement: ElementTagNameAndType = ({
-  tagName,
-  type,
-}) =>
-  ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName as string) ||
-  (tagName === 'INPUT' &&
-    ['checkbox', 'radio', 'submit'].includes(type as string));
-
 // elements that support the disabled attribute
 export const elementSupportsDisabled: ElementTagNameAndType = ({ tagName }) =>
   ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(tagName as string);
+
+interface CursorPointer {
+  (
+    element: { tagName?: string; type?: string },
+    hasOnClickHandler: boolean,
+  ): boolean;
+}
+
+// elements that should have cursor: pointer b/c clicking does something
+export const cursorPointer: CursorPointer = (
+  { tagName, type },
+  hasOnClickHandler,
+) =>
+  ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName as string) ||
+  (tagName === 'INPUT' &&
+    ['checkbox', 'radio', 'submit'].includes(type as string)) ||
+  (tagName !== 'INPUT' && hasOnClickHandler);
 
 // used for useExtendedTouchActive which needs to set user-select: none
 // to prevent the browser from selecting text on long touch
