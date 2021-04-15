@@ -44,6 +44,17 @@ export const cursorPointer: CursorPointer = (
     ['checkbox', 'radio', 'submit'].includes(type as string)) ||
   (tagName !== 'INPUT' && hasOnClickHandler);
 
+// mimic react's treatment of className prop
+// objects (including arrays) and numbers/bigints
+// are converted to strings, the rest are ignored
+export const classNameToString = (className: any) =>
+  typeof className === 'string' ||
+  (typeof className === 'object' && className !== null) ||
+  typeof className === 'number' ||
+  typeof className === 'bigint'
+    ? String(className)
+    : '';
+
 // used for useExtendedTouchActive which needs to set user-select: none
 // to prevent the browser from selecting text on long touch
 // note that it needs to be set on the body not the RI element

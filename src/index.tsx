@@ -6,6 +6,7 @@ import {
   spaceKeyTrigger,
   cursorPointer,
   elementSupportsDisabled,
+  classNameToString,
   setUserSelectOnBody,
 } from './utils';
 import {
@@ -645,8 +646,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   // compute className and style props based on the current state
 
   // css classes are merged into this string
-  let className: string =
-    typeof restProps.className === 'string' ? restProps.className : '';
+  let className: string = classNameToString(restProps.className);
 
   // style objects are merged into this object with the following precedence:
   // style object <= default styles <= style prop <= (disabledStyle || hoverStyle <= activeStyle <= [input]ActiveStyle <= focusStyle <= focusFrom[input]Style)
@@ -677,8 +677,8 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     addClassName: string,
     addStyle?: React.CSSProperties,
   ) => {
-    className = [className, addClassName]
-      .filter((cN) => cN && typeof cN === 'string')
+    className = [className, classNameToString(addClassName)]
+      .filter((cN) => cN)
       .join(' ');
     Object.assign(style, addStyle);
   };
@@ -799,21 +799,3 @@ export const Interactive: PolymorphicMemoExoticComponent<
 if (process.env.NODE_ENV !== 'production') {
   Interactive.displayName = 'Interactive';
 }
-
-// interface PolymorphicInteractive
-//   extends PolymorphicMemoExoticComponent<
-//     InteractiveOwnProps,
-//     typeof defaultAs
-//   > {
-//   polymorphicAs?: true;
-// }
-
-// // export const Interactive: PolymorphicMemoExoticComponent<
-// //   InteractiveOwnProps,
-// //   typeof defaultAs
-// // > = React.memo(InteractiveNotMemoized);
-// export const Interactive: PolymorphicInteractive = React.memo(
-//   InteractiveNotMemoized,
-// );
-
-// Interactive.polymorphicAs = true;
