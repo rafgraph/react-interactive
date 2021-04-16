@@ -38,6 +38,9 @@ export interface InteractiveState {
 
 export type InteractiveStateKey = 'hover' | 'active' | 'focus';
 
+/**
+ * InteractiveStateChange is the type for the argument passed to the `onStateChange` callback.
+ */
 export interface InteractiveStateChange {
   state: InteractiveState;
   prevState: InteractiveState;

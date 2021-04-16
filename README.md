@@ -1,6 +1,6 @@
 # React Interactive
 
-[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive@next?color=purple)](https://bundlephobia.com/result?p=react-interactive)
+[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive@next?color=purple)](https://bundlephobia.com/result?p=react-interactive@next)
 
 <!--
 badge is only for @latest (v0) which doesn't have types, when v1 is published add this badge
@@ -355,7 +355,7 @@ Style prop objects for each state are merged with the following precedence (last
 
 Default value: `false`
 
-By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible. To remain in the `touchActive` state for as long as the touch point is on the screen then pass in a `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
+By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible. To remain in the `touchActive` state for as long as the touch point is on the screen, pass in the `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
 
 ---
 
@@ -447,7 +447,7 @@ const focusButton = () => {
 
 React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of its own props and the props that the `as` prop accepts.
 
-```TS
+```ts
 <Interactive
   as="a" // render as an anchor link
   href="https://rafgraph.dev" // TS knows href is a string b/c as="a"
@@ -458,11 +458,82 @@ React Interactive is fully typed, including the polymorphic `as` prop. The props
 
 ---
 
+### Exported `types` from React Interactive
+
+```ts
+type ActiveState = 'mouseActive' | 'touchActive' | 'keyActive' | false;
+type FocusState = 'focusFromMouse' | 'focusFromTouch' | 'focusFromKey' | false;
+
+// type for the state object used by React Interactive
+// InteractiveState is passed to children (when children is a function)
+interface InteractiveState {
+    hover: boolean;
+    active: ActiveState;
+    focus: FocusState;
+}
+
+// type used for the argument passed to the onStateChange callback
+interface InteractiveStateChange {
+    state: InteractiveState;
+    prevState: InteractiveState;
+}
+
+// type used for props passed to an <Interactive> component, see below for usage
+type InteractiveProps<T extends React.ElementType = 'button'>
+
+// type used when wrapping/extending an <Interactive> component, see below for usage
+type InteractiveExtendableProps<T extends React.ElementType = 'button'>
+```
+
+---
+
+### Typing `onStateChange` callback and `children` as a function
+
+```ts
+import {
+  Interactive,
+  InteractiveState,
+  InteractiveStateChange,
+} from 'react-interactive';
+
+...
+
+// use the InteractiveStateChange type to type the argument
+// passed to the onStateChange callback
+const handleInteractiveStateChange = React.useCallback(
+  ({ state, prevState }: InteractiveStateChange) => {
+    // ...
+  },
+  [],
+);
+
+// use the InteractiveState type to type the argument
+// passed to children (when children is a function)
+const childrenAsAFunction = React.useCallback(
+  ({ hover, active, focus }: InteractiveState ) => (
+    // ...
+  ),
+  []
+);
+
+...
+
+<Interactive
+  as="button"
+  onStateChange={handleInteractiveStateChange}
+>
+  {childrenAsAFunction}
+</Interactive>
+
+```
+
+---
+
 ### Typing props passed to `<Interactive>`
 
 Sometimes you need to type the props object that is passed to an `<Interactive>` component, to do this use the type `InteractiveProps<as>`.
 
-```TS
+```ts
 import { Interactive, InteractiveProps } from 'react-interactive';
 
 // props object passed to <Interactive>
@@ -489,18 +560,26 @@ const propsForInteractiveAsComponent: InteractiveProps<typeof Component> = {
 
 ### Typing components that wrap `<Interactive>`
 
-Sometimes when creating components that wrap an `<Interactive>` component you want to extend the `<Interactive>` component and pass through props to `<Interactive>`. To do this use the type `InteractiveExtendableProps<as>`.
+When creating components that wrap an `<Interactive>` component, sometimes you want to extend the `<Interactive>` component and pass through props to `<Interactive>`. To do this use the type `InteractiveExtendableProps<as>`.
 
-> Note that usually it makes more sense to create a limited interface for components that wrap `<Interactive>` instead of extending the entire `<Interactive>` component interface, but sometimes it is necessary.
+```ts
+import { Interactive, InteractiveExtendableProps } from 'react-interactive';
+
+// tldr, extend <Interactive> without additional props and without ref,
+// useful when all you need to do is specify the as prop
+const InteractiveButton: React.VFC<InteractiveExtendableProps<'button'>> = (
+  props,
+) => <Interactive {...props} as="button" />;
+```
 
 ```ts
 import { Interactive, InteractiveExtendableProps } from 'react-interactive';
 
 // the same props interface is used for wrapping with and without forwardRef
-// note that InteractiveExtendableProps doesn't include `as` or `ref` props
-// when using forwardRef the ref type will be added by the forwardRef function
-interface WrapperProps
-  extends InteractiveExtendableProps<'button'> /* OR InteractiveExtendableProps<typeof Component> */ {
+// note that InteractiveExtendableProps doesn't include `as` or `ref` props,
+// when using forwardRef the ref prop type will be added by the forwardRef function
+interface WrapperProps extends InteractiveExtendableProps<'button'> {
+  // OR extends InteractiveExtendableProps<typeof Component>
   additionalProp?: string;
 }
 
@@ -512,7 +591,7 @@ const WrapperWithoutRef: React.VFC<WrapperProps> = ({
 
 // with ref
 const WrapperWithRef = React.forwardRef<
-  HTMLButtonElement, // OR React.ElementRef<typeof MyComponent>
+  HTMLButtonElement, // OR React.ElementRef<typeof Component>
   WrapperProps
 >(({ additionalProp, ...props }, ref) => (
   <Interactive {...props} as="button" ref={ref} />
