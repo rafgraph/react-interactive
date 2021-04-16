@@ -1,6 +1,10 @@
-import { Interactive } from 'react-interactive';
-import { SunIcon } from '@modulz/radix-icons';
+import { Interactive, InteractiveExtendableProps } from 'react-interactive';
+import * as Checkbox from '@radix-ui/react-checkbox';
+import * as Label from '@radix-ui/react-label';
+import { SunIcon, CheckIcon } from '@radix-ui/react-icons';
 import { styled } from './stitches.config';
+
+////////////////////////////////////////
 
 interface InteractiveButtonProps {
   onClick: React.MouseEventHandler<HTMLButtonElement>;
@@ -27,34 +31,92 @@ export const ButtonBase = styled(InteractiveButton, {
   },
 });
 
+////////////////////////////////////////
+
+// checkbox and label usage:
+// <LabelBase disabled={disabled}>
+//   <CheckboxBase
+//     disabled={disabled}
+//     checked={checked}
+//     onCheckedChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+//       setChecked(event.target.checked)
+//     }
+//   />
+//   Label text here
+//  </LabelBase>
+
 interface InteractiveCheckboxProps {
   checked: boolean;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-  disabled?: boolean;
+  onCheckedChange: React.ChangeEventHandler<HTMLInputElement>;
   className?: string;
+  disabled?: boolean;
 }
+
 const InteractiveCheckbox: React.VFC<InteractiveCheckboxProps> = ({
   checked,
-  onChange,
-  disabled,
+  onCheckedChange,
   className,
+  disabled,
 }) => (
-  <Interactive
-    as="input"
-    type="checkbox"
+  <Checkbox.Root
+    as={Interactive}
     checked={checked}
-    onChange={onChange}
-    disabled={disabled}
+    onCheckedChange={onCheckedChange}
     className={className}
-  />
+    disabled={disabled}
+  >
+    <Checkbox.Indicator as={CheckIcon} width="30" height="30" />
+  </Checkbox.Root>
 );
+
 export const CheckboxBase = styled(InteractiveCheckbox, {
-  appearance: 'checkbox',
+  appearance: 'none',
+  backgroundColor: 'transparent',
+  boxShadow: 'inset 0 0 0 1px $colors$highContrast',
+  width: '30px',
+  height: '30px',
+  borderRadius: '2px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  // hover and active are styled in LabelBase so styles are applied when label is hovered/active
+  // '&.hover, &.active': {...},
   '&.focusFromKey': {
-    outline: '2px solid $colors$green',
-    outlineOffset: '1px',
+    outline: 'none',
+    boxShadow: 'inset 0 0 0 1px $colors$purple, 0 0 0 1px $colors$purple',
+  },
+  '&.keyActive': {
+    color: '$purple',
   },
 });
+
+const InteractiveLabel: React.VFC<
+  InteractiveExtendableProps<typeof Label.Root>
+> = (props) => <Interactive {...props} as={Label.Root} />;
+
+export const LabelBase = styled(InteractiveLabel, {
+  cursor: 'pointer',
+  WebkitTapHighlightColor: 'transparent',
+  // style CheckboxBase (which renders a button) when label is hovered/active
+  '&.hover>button, &.mouseActive>button': {
+    color: '$green',
+    boxShadow: 'inset 0 0 0 1px $colors$green, 0 0 0 1px $colors$green',
+  },
+  '&.touchActive>button': {
+    color: '$blue',
+    boxShadow: 'inset 0 0 0 1px $colors$blue, 0 0 0 1px $colors$blue',
+  },
+  '&.disabled': {
+    opacity: 0.5,
+    cursor: 'unset',
+  },
+  // required because of radix checkbox bug: https://github.com/radix-ui/primitives/issues/605
+  '&>input': {
+    display: 'none',
+  },
+});
+
+////////////////////////////////////////
 
 interface InteractiveLinkProps {
   href: string;
@@ -102,6 +164,8 @@ export const Link = styled(InteractiveLink, {
   },
 });
 
+////////////////////////////////////////
+
 interface DarkModeButtonBaseProps {
   onClick: React.MouseEventHandler<HTMLButtonElement>;
   className?: string;
@@ -118,3 +182,5 @@ export const DarkModeButton = styled(DarkModeButtonBase, {
   width: '30px',
   height: '30px',
 });
+
+////////////////////////////////////////

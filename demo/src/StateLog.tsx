@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { deviceType } from 'detect-it';
 import {
   Interactive,
   eventFrom,
@@ -6,10 +7,12 @@ import {
   InteractiveState,
   InteractiveStateChange,
 } from 'react-interactive';
+import { CheckboxBase, LabelBase } from './Interactive';
+import { DemoContainer, DemoHeading } from './ui';
 import { styled } from './stitches.config';
 
 const StateLogContainer = styled('div', {
-  height: '300px',
+  height: '200px',
   padding: '0 5px',
   border: '1px solid $highContrast',
   overflow: 'scroll',
@@ -27,10 +30,10 @@ const InteractiveButton: React.VFC<InteractiveExtendableProps<'button'>> = (
 
 const DemoButton = styled(InteractiveButton, {
   fontFamily: 'monospace',
-  fontSize: '18px',
+  fontSize: '20px',
   textAlign: 'center',
   width: '100%',
-  height: '60px',
+  height: '50px',
   border: '1px solid',
   marginBottom: '5px',
   '&.hover': {
@@ -81,8 +84,33 @@ const InfoType = styled('span', {
   },
 });
 
+const ExtendedTouchActiveOptionContainer = styled('div', {
+  marginTop: '10px',
+});
+
+const OptionLabel = styled(LabelBase, {
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontSize: '18px',
+});
+
+const OptionCheckbox = styled(CheckboxBase, {
+  marginRight: '4px',
+});
+
+const CodeBlock = styled('code', {
+  backgroundColor: '$backgroundContrast',
+  marginTop: '2px',
+  padding: '4px 6px 4px',
+  borderRadius: '5px',
+});
+
 export const StateLog: React.VFC = () => {
   const [stateLog, setStateLog] = React.useState<string[]>([]);
+  const [
+    useExtendedTouchActive,
+    setUseExtendedTouchActive,
+  ] = React.useState<boolean>(false);
 
   const logContainerElement = React.useRef<HTMLDivElement>(null!);
 
@@ -153,11 +181,13 @@ export const StateLog: React.VFC = () => {
   );
 
   return (
-    <>
+    <DemoContainer>
+      <DemoHeading>Interactive State Log</DemoHeading>
       <DemoButton
         onStateChange={handleInteractiveStateChange}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
+        useExtendedTouchActive={useExtendedTouchActive}
       >
         {childrenAsAFunction}
       </DemoButton>
@@ -173,6 +203,19 @@ export const StateLog: React.VFC = () => {
           </div>
         ))}
       </Interactive>
-    </>
+      {deviceType !== 'mouseOnly' ? (
+        <ExtendedTouchActiveOptionContainer>
+          <OptionLabel>
+            <OptionCheckbox
+              checked={useExtendedTouchActive}
+              onCheckedChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setUseExtendedTouchActive(event.target.checked)
+              }
+            />
+            <CodeBlock>useExtendedTouchActive</CodeBlock>
+          </OptionLabel>
+        </ExtendedTouchActiveOptionContainer>
+      ) : null}
+    </DemoContainer>
   );
 };
