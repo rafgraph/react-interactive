@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Interactive,
+  createInteractive,
   InteractiveProps,
   InteractiveExtendableProps,
 } from 'react-interactive';
@@ -8,10 +9,64 @@ import { BrowserRouter, Link } from 'react-router-dom';
 import { styled } from './stitches.config';
 
 // TS demos in this file:
+// <DemoCreateInteractiveAs />
 // <DemoPropsForInteractive />
 // <DemoComposeAsTagName />
 // <DemoComposeAsComponent />
 // <DemoComposeAsUnion />
+
+////////////////////////////////////
+// using createInteractive(as) to extend <Interactive>
+// and predefined Interactive.Tagname components
+
+const InteractiveNav = createInteractive('nav');
+const InteractiveRouterLink = createInteractive(Link);
+
+export const DemoCreateInteractiveAs: React.VFC = () => (
+  <>
+    <Interactive.Button
+      // as="button" // should error
+      type="submit" // button specific prop
+      ref={(element) => {}}
+      hoverStyle={{ fontWeight: 'bold' }}
+      // foo // should error
+    >
+      Interactive.Button
+    </Interactive.Button>
+    <Interactive.A
+      // as="a" // should error
+      href="https://rafgraph.dev"
+      ref={(element) => {}}
+      hoverStyle={{ fontWeight: 'bold' }}
+    >
+      Interactive.A
+    </Interactive.A>
+    <Interactive.Div
+      ref={(element) => {}}
+      hoverStyle={{ fontWeight: 'bold' }}
+      onStateChange={({ state, prevState }) => {}}
+    >
+      Interactive.Div
+    </Interactive.Div>
+    <InteractiveNav
+      // as="nav" // should error
+      ref={(element) => {}}
+      hoverStyle={{ fontWeight: 'bold' }}
+      onStateChange={({ state, prevState }) => {}}
+    >
+      InteractiveNav
+    </InteractiveNav>
+    <InteractiveRouterLink
+      // as={Link} // should error
+      to="/some-path"
+      ref={(element) => {}}
+      hoverStyle={{ fontWeight: 'bold' }}
+      onStateChange={({ state, prevState }) => {}}
+    >
+      InteractiveRouterLink
+    </InteractiveRouterLink>
+  </>
+);
 
 ////////////////////////////////////
 // typing props passed to <Interactive>
@@ -295,6 +350,7 @@ export const TypeScriptExamples: React.VFC = () => (
   <BrowserRouter>
     <ContainerDiv>
       <h1>TypeScript Examples</h1>
+      <DemoCreateInteractiveAs />
       <DemoPropsForInteractive />
       <DemoComposeAsTagName />
       <DemoComposeAsComponent />

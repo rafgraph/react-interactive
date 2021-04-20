@@ -414,7 +414,7 @@ React Interactive exports a `createInteractive(as)` function that returns a full
 
 This is the same as wrapping `<Interactive>` and passing through props like `<Interactive {...props} as={SomeAs} ref={ref} />`, but by the time you add ref forwarding and typing this can become verbose, and it may be something you need to do frequently in your app. So React Interactive provides a `createInteractive` convenience function that makes extending `<Interactive>` quick and easy.
 
-Also, some commonly used DOM elements are available using `Interactive.Tagname` to make things even easier (they are created using `createInteractive('tagname')`).
+Also, some commonly used DOM elements are available using `Interactive.Tagname`, for example `Interactive.Button`, to make things even easier (they are created using `createInteractive('tagname')`).
 
 You can use the predefined `as` components with JSX (instead of using the `as` prop), or you can use them with CSS-in-JS libraries and other polymorphic components to avoid `as` prop conflicts. For more see [Extending the `<Interactive>` component
 ](#extending-the-interactive-component).
