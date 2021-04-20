@@ -1,5 +1,6 @@
 import useDarkMode from 'use-dark-mode';
 import { StateLog } from './StateLog';
+import { StressTest } from './StressTest';
 import { styled, darkThemeClass } from './stitches.config';
 import { Link, DarkModeButton } from './Interactive';
 
@@ -47,6 +48,7 @@ export const MainDemo = () => {
         navigation too!
       </DemoInfoText>
       <StateLog />
+      <StressTest />
     </MainDemoContainer>
   );
 };
