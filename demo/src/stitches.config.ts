@@ -50,7 +50,7 @@ export const darkThemeClass = theme({
 });
 
 export const globalCss = createGlobalCss({
-  'button, input': {
+  'button, input, a': {
     all: 'unset',
   },
   'body, div, span, a, p, h1, h2, h3, code, button, form, input, ul, li': {
