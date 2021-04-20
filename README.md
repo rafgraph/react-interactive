@@ -23,7 +23,7 @@ Code is in the [`/demo`](/demo) folder, or open the [demo in CodeSandbox](https:
 
 ---
 
-[Basics](#basics) ⚡️ [Props](#props) ⚡️ [`eventFrom`](#using-eventfrom) ⚡️ [TypeScript](#using-with-typescript)
+[Basics](#basics) ⚡️ [Props](#props) ⚡️ [`createInteractive`](#using-createinteractive) ⚡️ [`eventFrom`](#using-eventfrom) ⚡️ [TypeScript](#using-with-typescript)
 
 ---
 
@@ -121,11 +121,13 @@ import { Interactive } from 'react-interactive';
 
 Use the added CSS classes to style the interactive states with CSS-in-JS libraries like Styled Components, Emotion, and [Stitches](https://stitches.dev/).
 
+> React Interactive also includes a `createInteractive(as)` function and some common predefined DOM elements, for example `Interactive.Button`, for easy use with CSS-in-JS. For more see [Extending `<Interactive>`](#extending-the-interactive-component).
+
 ```js
 import { Interactive } from 'react-interactive';
 import { styled } from '@stitches/react';
 
-const StyledButton = styled(Interactive, {
+const StyledButton = styled(Interactive.Button, {
   '&.hover, &.active': {
     color: 'green',
   },
@@ -215,13 +217,50 @@ import { Interactive } from 'react-interactive';
 
 ...
 
-<Interactive as="p">
+<Interactive as="div" tabIndex={0}>
   {({ hover, active, focus }) => (
-    Some text where only one word is{' '}
-    <span style={{ color: hover ? 'green' : undefined }}>highlighted</span>{' '}
-    when the paragraph is hovered.
+    `Current state - active: ${active}, hover: ${hover}, focus: ${focus}`
   )}
 </Interactive>
+```
+
+---
+
+### Extending the `<Interactive>` component
+
+Sometimes it is useful to extend the polymorphic `<Interactive>` component with a predefined `as` prop, but without additional logic. This is especially useful when using React Interactive with CSS-in-JS libraries and other polymorphic components.
+
+React Interactive provides a `createInteractive(as)` function that returns a fully typed `<Interactive>` component with the `as` prop predefined. Also, some common DOM elements are available using `Interactive.Tagname` (for example `Interactive.Button`). For more see [Using `createInteractive`](#using-createinteractive).
+
+```js
+// using with CSS-in-JS
+import { Interactive, createInteractive } from 'react-interactive';
+import { styled } from '@stitches/react';
+import { Link } from 'react-router-dom';
+
+const StyledButton = styled(Interactive.Button, {...});
+const StyledRouterLink = styled(createInteractive(Link), {...});
+
+...
+
+// onStateChange is an <Interactive> prop
+<StyledButton onStateChange={...}>Interactive Button</StyledButton>
+<StyledRouterLink onStateChange={...}>Interactive Router Link</StyledRouterLink>
+
+```
+
+```js
+// using with another polymorphic component
+import { Interactive, createInteractive } from 'react-interactive';
+import { Link } from 'react-router-dom';
+import { SomePolymorphicComponent } from '...';
+
+const InteractiveRouterLink = createInteractive(Link);
+
+...
+
+<SomePolymorphicComponent as={Interactive.Button} />
+<SomePolymorphicComponent as={InteractiveRouterLink} />
 ```
 
 ---
@@ -261,10 +300,10 @@ Default value: `undefined`
 
 If `children` is a `ReactNode` (anything that React can render, e.g. an Element, Fragment, string, boolean, null, etc) then it is passed through to React to render normally.
 
-If `children` is a function then it is called with an object containing the current interactive state of (note that the function must return a `ReactNode` that React can render). See [Using the interactive state in `children`](#using-the-interactive-state-in-children).
+If `children` is a function then it is called with an object containing the current interactive state (note that the function must return a `ReactNode` that React can render). See [Using the interactive state in `children`](#using-the-interactive-state-in-children).
 
 ```js
-<Interactive as="div">
+<Interactive as="div" tabIndex={0}>
   {({ hover, active, focus }) => {
     //   hover: boolean,
     //   active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
@@ -366,6 +405,40 @@ Default value: `undefined`
 React Interactive uses `React.forwardRef()` to forward the `ref` prop to the DOM element. Passing a `ref` prop to an Interactive component will return the DOM element that the Interactive component is rendered as.
 
 React Interactive supports both object refs created with `React.useRef()` and callback refs created with `React.useCallback()`.
+
+---
+
+## Using `createInteractive`
+
+React Interactive exports a `createInteractive(as)` function that returns a fully typed `<Interactive>` component with the `as` prop predefined.
+
+This is the same as wrapping `<Interactive>` and passing through props like `<Interactive {...props} as={SomeAs} ref={ref} />`, but by the time you add ref forwarding and typing this can become verbose, and it may be something you need to do frequently in your app. So React Interactive provides a `createInteractive` convenience function that makes extending `<Interactive>` quick and easy.
+
+Also, some commonly used DOM elements are available using `Interactive.Tagname` to make things even easier (they are created using `createInteractive('tagname')`).
+
+You can use predefined `as` components with JSX (instead of using the `as` prop), or you can use them with CSS-in-JS libraries and other polymorphic components to avoid `as` prop conflicts. For more see [Extending the `<Interactive>` component
+](#extending-the-interactive-component).
+
+```js
+import { Interactive, createInteractive } from 'react-interactive';
+import { Link } from 'react-router-dom';
+
+// already defined DOM elements
+<Interactive.Button />
+<Interactive.A href="..." />
+<Interactive.Input type="..." />
+<Interactive.Textarea />
+<Interactive.Select />
+<Interactive.Div />
+<Interactive.Span />
+
+// for other DOM elements and components use createInteractive(as)
+const InteractiveNav = createInteractive('nav');
+const InteractiveRouterLink = createInteractive(Link);
+
+<InteractiveNav />
+<InteractiveRouterLink to="..." />
+```
 
 ---
 
@@ -562,15 +635,24 @@ const propsForInteractiveAsComponent: InteractiveProps<typeof Component> = {
 
 When creating components that wrap an `<Interactive>` component, sometimes you want to extend the `<Interactive>` component and pass through props to `<Interactive>`. To do this use the type `InteractiveExtendableProps<as>`.
 
-```ts
-import { Interactive, InteractiveExtendableProps } from 'react-interactive';
-
-// tldr, extend <Interactive> without additional props and without ref,
-// useful when all you need to do is specify the as prop
-const InteractiveButton: React.VFC<InteractiveExtendableProps<'button'>> = (
-  props,
-) => <Interactive {...props} as="button" />;
-```
+> Note that if all you need to do is extend `<Interactive>` with a predefined `as` prop but without additional props and logic, [use `createInteractive(as)`](#using-createinteractive) instead.
+>
+> ```ts
+> import {
+>   Interactive,
+>   InteractiveExtendableProps,
+>   createInteractive,
+> } from 'react-interactive';
+> import { Link } from 'react-router-dom';
+>
+> // this works fine, but it's not necessary
+> const InteractiveLink: React.VFC<InteractiveExtendableProps<typeof Link>> = (
+>   props,
+> ) => <Interactive {...props} as={Link} />;
+>
+> // do this instead
+> const InteractiveLink = createInteractive(Link);
+> ```
 
 ```ts
 import { Interactive, InteractiveExtendableProps } from 'react-interactive';
@@ -587,15 +669,19 @@ interface WrapperProps extends InteractiveExtendableProps<'button'> {
 const WrapperWithoutRef: React.VFC<WrapperProps> = ({
   additionalProp,
   ...props
-}) => <Interactive {...props} as="button" />;
+}) => {
+  // your logic here
+  return <Interactive {...props} as="button" />;
+};
 
 // with ref
 const WrapperWithRef = React.forwardRef<
   HTMLButtonElement, // OR React.ElementRef<typeof Component>
   WrapperProps
->(({ additionalProp, ...props }, ref) => (
-  <Interactive {...props} as="button" ref={ref} />
-));
+>(({ additionalProp, ...props }, ref) => {
+  // your logic here
+  return <Interactive {...props} as="button" ref={ref} />;
+});
 ```
 
 ---
