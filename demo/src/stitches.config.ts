@@ -1,6 +1,6 @@
-import { createCss } from '@stitches/react';
+import { createCss, StitchesCss } from '@stitches/react';
 
-export const { styled, theme, global: createGlobalCss } = createCss({
+export const stitchesConfig = createCss({
   theme: {
     colors: {
       pageBackground: 'rgb(240,240,240)',
@@ -11,12 +11,24 @@ export const { styled, theme, global: createGlobalCss } = createCss({
       orange: 'hsl(30,100%,50%)',
       yellow: 'hsl(51,100%,40%)',
       green: 'hsl(120,100%,30%)',
+      outlineGreen: 'hsl(120,40%,55%)',
       blueGreen: 'hsl(180,100%,35%)',
       blue: 'hsl(240,100%,50%)',
+      outlineBlue: 'hsl(240,100%,70%)',
       purple: 'hsl(270,100%,60%)',
+      backgroundPurple: 'hsl(270,100%,92%)',
     },
   },
 });
+
+export type CSS = StitchesCss<typeof stitchesConfig>;
+
+export const {
+  styled,
+  theme,
+  keyframes,
+  global: createGlobalCss,
+} = stitchesConfig;
 
 export const darkThemeClass = theme({
   colors: {
@@ -28,9 +40,12 @@ export const darkThemeClass = theme({
     orange: 'hsl(30,90%,50%)',
     yellow: 'hsl(60,88%,50%)',
     green: 'hsl(120,85%,42%)',
+    outlineGreen: 'hsl(120,80%,30%)',
     blueGreen: 'hsl(180,100%,50%)',
     blue: 'hsl(210,100%,60%)',
+    outlineBlue: 'hsl(210,80%,40%)',
     purple: 'hsl(270,85%,60%)',
+    backgroundPurple: 'hsl(270,100%,15%)',
   },
 });
 
@@ -58,6 +73,7 @@ export const globalCss = createGlobalCss({
     height: '100%',
     color: '$highContrast',
     fontFamily: 'system-ui, Helvetica Neue, sans-serif',
+    overflowWrap: 'anywhere',
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
     fontSize: '16px',

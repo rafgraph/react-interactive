@@ -9,14 +9,19 @@ const MainDemoContainer = styled('div', {
   margin: '0 auto',
 });
 
-const H1 = styled('h1', {
-  fontSize: '26px',
+const HeaderContainer = styled('header', {
   display: 'flex',
   justifyContent: 'space-between',
   marginBottom: '2px',
 });
 
-const P = styled('p', {
+const H1 = styled('h1', {
+  fontSize: '26px',
+  marginRight: '6px',
+});
+
+const DemoInfoText = styled('p', {
+  color: '$lowContrast',
   margin: '12px 0',
 });
 
@@ -27,23 +32,20 @@ export const MainDemo = () => {
 
   return (
     <MainDemoContainer>
-      <H1>
-        <span>React Interactive Demo</span>
+      <HeaderContainer>
+        <H1>React Interactive Demo</H1>
         <DarkModeButton onClick={darkMode.toggle} />
-      </H1>
+      </HeaderContainer>
       <Link
         type="lowContrast"
         href="https://github.com/rafgraph/react-interactive"
       >
         https://github.com/rafgraph/react-interactive
       </Link>
-      <P>
-        This demo site for React Interactive v1 is under construction 🚧🚧 the{' '}
-        <Link href="https://react-interactive-v0.rafgraph.dev">
-          v0 demo site can be found here
-        </Link>
-        .
-      </P>
+      <DemoInfoText>
+        Try out this demo on both mouse and touch devices, and test the keyboard
+        navigation too!
+      </DemoInfoText>
       <StateLog />
     </MainDemoContainer>
   );

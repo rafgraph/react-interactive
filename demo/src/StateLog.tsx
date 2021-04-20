@@ -33,14 +33,14 @@ const DemoButton = styled(InteractiveButton, {
   fontSize: '20px',
   textAlign: 'center',
   width: '100%',
-  height: '50px',
+  minHeight: '50px',
   border: '1px solid',
   marginBottom: '5px',
   '&.hover': {
     color: '$green',
   },
   '&.mouseActive': {
-    color: '$red',
+    color: '$green',
   },
   '&.touchActive': {
     color: '$blue',
@@ -48,8 +48,12 @@ const DemoButton = styled(InteractiveButton, {
   '&.keyActive': {
     color: '$purple',
   },
-  '&.focusFromMouse, &.focusFromTouch': {
-    outline: '3px solid $colors$backgroundContrast',
+  '&.focusFromTouch': {
+    outline: '3px solid $colors$outlineBlue',
+    outlineOffset: '1px',
+  },
+  '&.focusFromMouse': {
+    outline: '3px solid $colors$outlineGreen',
     outlineOffset: '1px',
   },
   '&.focusFromKey': {
@@ -61,12 +65,12 @@ const DemoButton = styled(InteractiveButton, {
 const variantLookup: Record<string, any> = {
   'hover: true': 'green',
   'hover: false': 'normal',
-  'active: mouseActive': 'red',
+  'active: mouseActive': 'green',
   'active: touchActive': 'blue',
   'active: keyActive': 'purple',
   'active: false': 'normal',
-  'focus: focusFromMouse': 'normal',
-  'focus: focusFromTouch': 'normal',
+  'focus: focusFromMouse': 'green',
+  'focus: focusFromTouch': 'blue',
   'focus: focusFromKey': 'purple',
   'focus: false': 'normal',
 };
@@ -75,11 +79,11 @@ const InfoType = styled('span', {
   color: '$lowContrast',
   variants: {
     type: {
-      normal: { color: '$highContrast' },
+      normal: { color: '$lowContrast' },
       green: { color: '$green' },
       blue: { color: '$blue' },
       purple: { color: '$purple' },
-      red: { color: '$red' },
+      orange: { color: '$orange' },
     },
   },
 });
@@ -95,6 +99,7 @@ const OptionLabel = styled(LabelBase, {
 });
 
 const OptionCheckbox = styled(CheckboxBase, {
+  flexShrink: 0,
   marginRight: '4px',
 });
 
@@ -199,7 +204,11 @@ export const StateLog: React.VFC = () => {
         {stateLog.map((item, idx) => (
           <div key={idx}>
             <InfoType>{idx + 1}</InfoType>{' '}
-            <InfoType type={variantLookup[item]}>{item}</InfoType>
+            <InfoType
+              type={/click/.test(item) ? 'orange' : variantLookup[item]}
+            >
+              {item}
+            </InfoType>
           </div>
         ))}
       </Interactive>
