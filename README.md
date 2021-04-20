@@ -416,18 +416,17 @@ This is the same as wrapping `<Interactive>` and passing through props like `<In
 
 Also, some commonly used DOM elements are available using `Interactive.Tagname` to make things even easier (they are created using `createInteractive('tagname')`).
 
-You can use predefined `as` components with JSX (instead of using the `as` prop), or you can use them with CSS-in-JS libraries and other polymorphic components to avoid `as` prop conflicts. For more see [Extending the `<Interactive>` component
+You can use the predefined `as` components with JSX (instead of using the `as` prop), or you can use them with CSS-in-JS libraries and other polymorphic components to avoid `as` prop conflicts. For more see [Extending the `<Interactive>` component
 ](#extending-the-interactive-component).
 
 ```js
 import { Interactive, createInteractive } from 'react-interactive';
 import { Link } from 'react-router-dom';
 
-// already defined DOM elements
+// these are the already defined DOM elements
 <Interactive.Button />
 <Interactive.A href="..." />
 <Interactive.Input type="..." />
-<Interactive.Textarea />
 <Interactive.Select />
 <Interactive.Div />
 <Interactive.Span />

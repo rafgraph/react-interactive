@@ -803,45 +803,49 @@ interface PolymorphicInteractive
     InteractiveOwnProps,
     typeof defaultAs
   > {
-  Div: React.VFC<InteractivePropsWithoutAs<'div'>>;
-  A: React.VFC<InteractivePropsWithoutAs<'a'>>;
-  Span: React.VFC<InteractivePropsWithoutAs<'span'>>;
-  Button: React.VFC<InteractivePropsWithoutAs<'button'>>;
-  Input: React.VFC<InteractivePropsWithoutAs<'input'>>;
-  Select: React.VFC<InteractivePropsWithoutAs<'select'>>;
-  Textarea: React.VFC<InteractivePropsWithoutAs<'textarea'>>;
+  Button: React.ForwardRefExoticComponent<InteractivePropsWithoutAs<'button'>>;
+  A: React.ForwardRefExoticComponent<InteractivePropsWithoutAs<'a'>>;
+  Input: React.ForwardRefExoticComponent<InteractivePropsWithoutAs<'input'>>;
+  Select: React.ForwardRefExoticComponent<InteractivePropsWithoutAs<'select'>>;
+  Div: React.ForwardRefExoticComponent<InteractivePropsWithoutAs<'div'>>;
+  Span: React.ForwardRefExoticComponent<InteractivePropsWithoutAs<'span'>>;
 }
 
-export const Interactive: PolymorphicInteractive = (React.memo(
-  InteractiveNotMemoized,
-) as unknown) as PolymorphicInteractive;
-// cast as PolymorphicInteractive because Interactive.Div, etc aren't defined yet
-// but they can't be optional in the PolymorphicInteractive interface because otherwise
-// Interactive.Div won't have a call signature when imported (can't call undefined)
-// the other option is to:
-// const Interactive: PolymorphicInteractive = Object.assign(React.memo(...), { Div: createInteractive('div'), ...} )
-// so the Div, etc properties are added before being assigned to Interactive
-// but the current way is more declarative and easier to read even though it isn't the best typescript
-
-Interactive.Div = createInteractive('div');
-Interactive.Span = createInteractive('span');
-// button is the defaultAs for Interactive, so no need to wrap Interactive to render a button
-Interactive.Button = Interactive;
-Interactive.A = createInteractive('a');
-Interactive.Input = createInteractive('input');
-Interactive.Select = createInteractive('select');
-Interactive.Textarea = createInteractive('textarea');
+// use Object.assign because the properties are required
+// by the PolymorphicInteractive interface so can't add them later
+export const Interactive: PolymorphicInteractive = Object.assign(
+  React.memo(InteractiveNotMemoized),
+  {
+    // button is the defaultAs for Interactive, so no need to createInteractive('button')
+    // but can't set "Button: Interactive" because Interactive hasn't been defined yet
+    // so just use React.memo(InteractiveNotMemoized) instead
+    Button: React.memo(InteractiveNotMemoized),
+    A: createInteractive('a'),
+    Input: createInteractive('input'),
+    Select: createInteractive('select'),
+    Div: createInteractive('div'),
+    Span: createInteractive('span'),
+  },
+);
 
 export function createInteractive<
   T extends React.ElementType = typeof defaultAs
->(as: T): React.ForwardRefExoticComponent<Omit<InteractiveProps<T>, 'as'>> {
-  // eslint-disable-next-line react/display-name, @typescript-eslint/no-unsafe-return
-  return React.forwardRef(function <T extends React.ElementType = typeof as>(
+>(as: T): React.ForwardRefExoticComponent<InteractivePropsWithoutAs<T>> {
+  // without any get TS error on return type of WrappedInteractive
+  const WrappedInteractive: any = React.forwardRef(function <
+    T extends React.ElementType = typeof as
+  >(
     props: PolymorphicPropsWithoutRef<InteractiveOwnProps, T>,
     ref: React.ForwardedRef<Element>,
   ) {
     return <Interactive {...props} as={as} ref={ref} />;
-  }) as any; // without this any get TS error on return type of React.forwardRef...
+  });
+  if (process.env.NODE_ENV !== 'production') {
+    WrappedInteractive.displayName = `createInteractive.${
+      typeof as === 'string' ? as : (as as any).displayName
+    }`;
+  }
+  return WrappedInteractive;
 }
 
 if (process.env.NODE_ENV !== 'production') {

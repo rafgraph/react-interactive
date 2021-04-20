@@ -42,7 +42,7 @@ export const cursorPointer: CursorPointer = (
   ['BUTTON', 'A', 'AREA', 'SELECT'].includes(tagName as string) ||
   (tagName === 'INPUT' &&
     ['checkbox', 'radio', 'submit'].includes(type as string)) ||
-  (tagName !== 'INPUT' && hasOnClickHandler);
+  (tagName !== 'INPUT' && tagName !== 'TEXTAREA' && hasOnClickHandler);
 
 // mimic react's treatment of className prop
 // objects (including arrays) and numbers/bigints
