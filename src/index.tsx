@@ -396,13 +396,14 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
       //     eventFrom mouse
       //       switch on e.type
       //         mouse/pointer enter -> hover: enter true
-      //         mouse/pointer leave -> hover: enter false, active: exit mouseActive
+      //         mouse/pointer leave, pointercancel -> hover: enter false, active: exit mouseActive
       //         mouse/pointer down -> active: enter mouseActive
-      //         mouse/pointer up, pointercancel -> active: exit mouseActive
+      //         mouse/pointer up -> active: exit mouseActive
       //     eventFrom touch
       //       switch on e.type
       //         touchstart/pointerdown -> active: enter touchActive
-      //         touchend/pointerup/touchcancel/pointercancel/any-mouse-event-from-touch -> active: exit touchActive
+      //         touchend/pointerup/touchcancel/pointercancel/mouseenter -> active: exit touchActive
+      //         mouseleave -> hover: enter false, active: exit mouseActive
       switch (e.type) {
         case 'focus':
           // only enter focus state if RI is the target of the focus event (focus events bubble in react)
@@ -480,6 +481,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
                   break;
                 case 'mouseleave':
                 case 'pointerleave':
+                case 'pointercancel':
                   stateChange(
                     {
                       iStateKey: 'hover',
@@ -505,7 +507,6 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
                   break;
                 case 'mouseup':
                 case 'pointerup':
-                case 'pointercancel':
                   stateChange({
                     iStateKey: 'active',
                     state: 'mouseActive',
@@ -528,14 +529,11 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
                 case 'touchcancel':
                 case 'pointerup':
                 case 'pointercancel':
-                // exit touchActive on any mouse event from touch
+                // exit touchActive on mouseenter eventFrom touch
                 // because on android, mouse events (and focus and context menu) fire ~500ms after touch start
                 // once they fire, click will never be fired, so exit touchActive
                 // eslint-disable-next-line no-fallthrough
                 case 'mouseenter':
-                case 'mouseleave':
-                case 'mousedown':
-                case 'mouseup':
                   // if useExtendedTouchActive then only exit touchActive on touchend and touchcancel events
                   // which won't fire until the touch point is removed from the screen
                   if (
@@ -548,6 +546,31 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
                       action: 'exit',
                     });
                   }
+                  break;
+                // when using both mouse and touch input on a hybrid device the following can happen:
+                // the mouse enters an RI element, so hover: true,
+                // then tap someplace else on the screen which fires a mouseleave event
+                // this is correctly treated as an eventFrom touch (caused by a touch interaction)
+                // but RI is now stuck in the hover state
+                // so RI needs to exit the hover state on a mouseleave eventFrom touch,
+                // note that if no scrolling is involved this is not too bad because
+                // when the mouse is used again it will be over the RI element (and will fire mouseenter event),
+                // but if the user scrolled with the touch interaction then RI will be stuck in the hover state
+                // until the user re-hovers and exits the RI element with their mouse, which is bad,
+                // also note that on touch only devices this stateChange call will have no effect because RI is never in the hover or mouseActive states
+                case 'mouseleave':
+                  stateChange(
+                    {
+                      iStateKey: 'hover',
+                      state: false,
+                      action: 'enter',
+                    },
+                    {
+                      iStateKey: 'active',
+                      state: 'mouseActive',
+                      action: 'exit',
+                    },
+                  );
                   break;
               }
               break;
