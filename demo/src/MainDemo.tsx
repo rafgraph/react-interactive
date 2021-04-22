@@ -35,8 +35,17 @@ const DemoInfoText = styled('p', {
 });
 
 export const MainDemo = () => {
+  // put a try catch around localStorage so this app will work in codesandbox
+  // when the user blocks all third party cookies in chrome,
+  // which results in a security error when useDarkMode tries to access localStorage
+  // see https://github.com/codesandbox/codesandbox-client/issues/5397
+  let storageProvider: any = null;
+  try {
+    storageProvider = localStorage;
+  } catch {}
   const darkMode = useDarkMode(undefined, {
     classNameDark: darkThemeClass,
+    storageProvider,
   });
 
   return (
