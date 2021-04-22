@@ -4,7 +4,7 @@ import { ShowOnDemo } from './ShowOnDemo';
 import { LinkDemo } from './LinkDemo';
 import { StressTest } from './StressTest';
 import { styled, darkThemeClass } from './stitches.config';
-import { Link, DarkModeButton } from './Interactive';
+import { GitHubRepoButtonLink, DarkModeButton } from './Interactive';
 
 const MainDemoContainer = styled('div', {
   maxWidth: '500px',
@@ -20,11 +20,17 @@ const HeaderContainer = styled('header', {
 
 const H1 = styled('h1', {
   fontSize: '26px',
-  marginRight: '6px',
+  marginRight: '10px',
+});
+
+const HeaderIconContainer = styled('span', {
+  flexShrink: 0,
+  width: '70px',
+  display: 'inline-flex',
+  justifyContent: 'space-between',
 });
 
 const DemoInfoText = styled('p', {
-  color: '$lowContrast',
   margin: '12px 0',
 });
 
@@ -37,14 +43,11 @@ export const MainDemo = () => {
     <MainDemoContainer>
       <HeaderContainer>
         <H1>React Interactive Demo</H1>
-        <DarkModeButton onClick={darkMode.toggle} />
+        <HeaderIconContainer>
+          <GitHubRepoButtonLink />
+          <DarkModeButton onClick={darkMode.toggle} />
+        </HeaderIconContainer>
       </HeaderContainer>
-      <Link
-        type="lowContrast"
-        href="https://github.com/rafgraph/react-interactive"
-      >
-        https://github.com/rafgraph/react-interactive
-      </Link>
       <DemoInfoText>
         Try out this demo on both mouse and touch devices, and test the keyboard
         navigation too!

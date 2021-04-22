@@ -1,26 +1,12 @@
 import { Interactive, InteractiveExtendableProps } from 'react-interactive';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Label from '@radix-ui/react-label';
-import { SunIcon, CheckIcon } from '@radix-ui/react-icons';
+import { SunIcon, GitHubLogoIcon, CheckIcon } from '@radix-ui/react-icons';
 import { styled } from './stitches.config';
 
 ////////////////////////////////////////
 
-interface InteractiveButtonProps {
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
-  className?: string;
-  children: React.ReactNode;
-}
-const InteractiveButton: React.VFC<InteractiveButtonProps> = ({
-  onClick,
-  className,
-  children,
-}) => (
-  <Interactive as="button" className={className} onClick={onClick}>
-    {children}
-  </Interactive>
-);
-export const ButtonBase = styled(InteractiveButton, {
+export const ButtonBase = styled(Interactive.Button, {
   color: '$highContrast',
   '&.hover, &.active': {
     color: '$green',
@@ -166,21 +152,36 @@ export const Link = styled(InteractiveLink, {
 
 ////////////////////////////////////////
 
-interface DarkModeButtonBaseProps {
+interface DarkModeButtonProps {
   onClick: React.MouseEventHandler<HTMLButtonElement>;
   className?: string;
 }
-const DarkModeButtonBase: React.VFC<DarkModeButtonBaseProps> = ({
-  onClick,
-  className,
-}) => (
-  <ButtonBase className={className} onClick={onClick}>
+export const DarkModeButton: React.VFC<DarkModeButtonProps> = (props) => (
+  <ButtonBase
+    {...props}
+    css={{ width: '30px', height: '30px' }}
+    aria-label="Toggle dark mode"
+  >
     <SunIcon width="30" height="30" />
   </ButtonBase>
 );
-export const DarkModeButton = styled(DarkModeButtonBase, {
-  width: '30px',
-  height: '30px',
-});
+
+////////////////////////////////////////
+
+export const GitHubRepoButtonLink: React.VFC<{ className?: string }> = (
+  props,
+) => (
+  <ButtonBase
+    {...props}
+    as={Interactive.A}
+    href="https://github.com/rafgraph/react-interactive"
+    target="_blank"
+    rel="noopener noreferrer"
+    css={{ display: 'inline-block', width: '30px', height: '30px' }}
+    aria-label="GitHub repository for React Interactive"
+  >
+    <GitHubLogoIcon width="30" height="30" />
+  </ButtonBase>
+);
 
 ////////////////////////////////////////

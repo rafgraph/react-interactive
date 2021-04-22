@@ -1,10 +1,6 @@
 # React Interactive
 
-[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive@next?color=purple)](https://bundlephobia.com/result?p=react-interactive@next)
-
-<!--
-badge is only for @latest (v0) which doesn't have types, when v1 is published add this badge
-![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue) -->
+[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive@next?color=purple)](https://bundlephobia.com/result?p=react-interactive@next) ![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue)
 
 - Better interactive states than CSS pseudo classes
   - `hover`, `active`, `mouseActive`, `touchActive`, `keyActive`
