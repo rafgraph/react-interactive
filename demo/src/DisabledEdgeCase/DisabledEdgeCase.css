@@ -1,0 +1,30 @@
+.DisabledEdgeCase-button {
+  display: block;
+  padding: 5px;
+  margin: 10px 0;
+  border: 1px solid;
+}
+
+.DisabledEdgeCase-link {
+  display: inline-block;
+  margin: 10px 0;
+  text-decoration: underline;
+}
+
+.DisabledEdgeCase-button.hover,
+.DisabledEdgeCase-button.active,
+.DisabledEdgeCase-link.hover,
+.DisabledEdgeCase-link.active {
+  color: green;
+}
+
+.DisabledEdgeCase-button.focus,
+.DisabledEdgeCase-link.focus {
+  outline: 2px solid green;
+  outline-offset: 2px;
+}
+
+.DisabledEdgeCase-button.disabled,
+.DisabledEdgeCase-link.disabled {
+  opacity: 0.5;
+}

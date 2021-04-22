@@ -2,9 +2,9 @@ import * as React from 'react';
 import { Interactive, InteractiveState } from 'react-interactive';
 import { Link } from '../Interactive';
 import { styled } from '../stitches.config';
-import './DisabledEdgeCases.css';
+import './DisabledEdgeCase.css';
 
-const StyledDisplayStateContainer = styled('div', {
+const DisplayStateContainer = styled('div', {
   fontSize: '14px',
   opacity: 0.5,
 });
@@ -13,10 +13,10 @@ const DisplayState: React.VFC<{
   state: InteractiveState;
   disabled: boolean;
 }> = ({ state: { hover, active, focus }, disabled }) => (
-  <StyledDisplayStateContainer>
+  <DisplayStateContainer>
     hover: <code>{`${hover}`}</code>, active: <code>{`${active}`}</code>, focus:{' '}
     <code>{`${focus}`}</code>, disabled: <code>{`${disabled}`}</code>
-  </StyledDisplayStateContainer>
+  </DisplayStateContainer>
 );
 
 const ButtonComponent = React.forwardRef<
@@ -35,7 +35,7 @@ const DivComponent = React.forwardRef<
   React.ComponentPropsWithoutRef<'div'>
 >((props, ref) => <div {...props} ref={ref} tabIndex={0} />);
 
-const DisabledEdgeCasesContainer = styled('div', {
+const DisabledEdgeCaseContainer = styled('div', {
   padding: '20px',
   margin: '0 auto',
   maxWidth: '600px',
@@ -56,7 +56,7 @@ const initialState: InteractiveState = {
   focus: false,
 };
 
-export const DisabledEdgeCases: React.VFC = () => {
+export const DisabledEdgeCase: React.VFC = () => {
   const [buttonState, setButtonState] = React.useState<InteractiveState>(
     initialState,
   );
@@ -100,7 +100,7 @@ export const DisabledEdgeCases: React.VFC = () => {
   ] = React.useState<boolean>(false);
 
   return (
-    <DisabledEdgeCasesContainer>
+    <DisabledEdgeCaseContainer>
       <H1>Clicking the button/link/div disables it</H1>
       <p>
         Check for edge cases related to{' '}
@@ -115,7 +115,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           disabled={buttonDisabled}
           onClick={() => setButtonDisabled(true)}
           onStateChange={({ state }) => setButtonState(state)}
-          className="DisabledEdgeCases-button"
+          className="DisabledEdgeCase-button"
         >
           <code>as="button"</code>
         </Interactive>
@@ -128,7 +128,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           disabled={linkDisabled}
           onClick={() => setLinkDisabled(true)}
           onStateChange={({ state }) => setLinkState(state)}
-          className="DisabledEdgeCases-link"
+          className="DisabledEdgeCase-link"
         >
           <code>as="a" href="#top"</code>
         </Interactive>
@@ -141,7 +141,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           disabled={divDisabled}
           onClick={() => setDivDisabled(true)}
           onStateChange={({ state }) => setDivState(state)}
-          className="DisabledEdgeCases-button"
+          className="DisabledEdgeCase-button"
         >
           <code>as="div" tabIndex=0</code>
         </Interactive>
@@ -153,7 +153,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           disabled={buttonComponentDisabled}
           onClick={() => setButtonComponentDisabled(true)}
           onStateChange={({ state }) => setButtonComponentState(state)}
-          className="DisabledEdgeCases-button"
+          className="DisabledEdgeCase-button"
         >
           <code>{'as={ButtonComponent}'}</code>
         </Interactive>
@@ -169,7 +169,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           disabled={linkComponentDisabled}
           onClick={() => setLinkComponentDisabled(true)}
           onStateChange={({ state }) => setLinkComponentState(state)}
-          className="DisabledEdgeCases-link"
+          className="DisabledEdgeCase-link"
         >
           <code>{'as={LinkComponent} href="#top"'}</code>
         </Interactive>
@@ -184,7 +184,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           disabled={divComponentDisabled}
           onClick={() => setDivComponentDisabled(true)}
           onStateChange={({ state }) => setDivComponentState(state)}
-          className="DisabledEdgeCases-button"
+          className="DisabledEdgeCase-button"
         >
           <code>{'as={DivComponent}'}</code>
         </Interactive>
@@ -203,7 +203,7 @@ export const DisabledEdgeCases: React.VFC = () => {
           setLinkComponentDisabled(true);
           setDivComponentDisabled(true);
         }}
-        className="DisabledEdgeCases-button"
+        className="DisabledEdgeCase-button"
       >
         Disable all
       </Interactive>
@@ -217,10 +217,10 @@ export const DisabledEdgeCases: React.VFC = () => {
           setLinkComponentDisabled(false);
           setDivComponentDisabled(false);
         }}
-        className="DisabledEdgeCases-button"
+        className="DisabledEdgeCase-button"
       >
         Un-disable all
       </Interactive>
-    </DisabledEdgeCasesContainer>
+    </DisabledEdgeCaseContainer>
   );
 };

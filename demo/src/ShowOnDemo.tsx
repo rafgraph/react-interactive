@@ -25,6 +25,7 @@ const InfoIconContainer = styled('div', {
 const InteractiveInfo = styled(Interactive.Span, {
   height: 30,
   display: 'inline-block',
+  outline: 'none',
   '&.hover': {
     color: '$green',
   },
@@ -55,7 +56,7 @@ export const ShowOnDemo: React.VFC = () => {
       <DemoHeading>Show On</DemoHeading>
       <InfoTextContainer showInfo={showInfo}>
         {showInfo ? (
-          'Some info to show about something'
+          'Some info to show about something important'
         ) : (
           <>
             <code>hover</code>, <code>touchActive</code>, and{' '}

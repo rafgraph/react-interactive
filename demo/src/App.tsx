@@ -1,8 +1,9 @@
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { globalCss } from './stitches.config';
 import { MainDemo } from './MainDemo';
-import { DisabledEdgeCases } from './DisabledEdgeCases/DisabledEdgeCases';
 import { TypeScriptExamples } from './TypeScriptExamples';
+import { DisabledEdgeCase } from './DisabledEdgeCase/DisabledEdgeCase';
+import { PageJumpEdgeCase } from './PageJumpEdgeCase';
 
 export const App = () => {
   globalCss();
@@ -11,7 +12,8 @@ export const App = () => {
     <BrowserRouter>
       <Switch>
         <Route path="/typescript" component={TypeScriptExamples} />
-        <Route path="/disabled-edge-cases" component={DisabledEdgeCases} />
+        <Route path="/disabled-edge-case" component={DisabledEdgeCase} />
+        <Route path="/page-jump-edge-case" component={PageJumpEdgeCase} />
         <Route component={MainDemo} />
       </Switch>
     </BrowserRouter>
