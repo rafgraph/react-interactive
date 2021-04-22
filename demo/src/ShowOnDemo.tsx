@@ -4,11 +4,20 @@ import { InfoCircledIcon } from '@radix-ui/react-icons';
 import { DemoContainer, DemoHeading } from './ui';
 import { styled } from './stitches.config';
 
+const ShowOnDemoHeading = styled(DemoHeading, {
+  marginBottom: 0,
+});
+
 const InfoTextContainer = styled('div', {
-  textAlign: 'center',
   fontSize: 18,
-  marginTop: 16,
-  marginBottom: 20,
+  height: 52,
+  marginBottom: 4,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '&>*': {
+    textAlign: 'center',
+  },
   variants: {
     showInfo: {
       false: {
@@ -53,16 +62,18 @@ export const ShowOnDemo: React.VFC = () => {
 
   return (
     <DemoContainer>
-      <DemoHeading>Show On</DemoHeading>
+      <ShowOnDemoHeading>Show On</ShowOnDemoHeading>
       <InfoTextContainer showInfo={showInfo}>
-        {showInfo ? (
-          'Some info to show about something important'
-        ) : (
-          <>
-            <code>hover</code>, <code>touchActive</code>, and{' '}
-            <code>focusFromKey</code>
-          </>
-        )}
+        <span>
+          {showInfo ? (
+            'Some info to show about something'
+          ) : (
+            <>
+              <code>hover</code>, <code>touchActive</code>, and{' '}
+              <code>focusFromKey</code>
+            </>
+          )}
+        </span>
       </InfoTextContainer>
       <InfoIconContainer>
         <InteractiveInfo
