@@ -50,10 +50,12 @@ export const darkThemeClass = theme({
 });
 
 export const globalCss = createGlobalCss({
-  'button, input, a': {
+  // unset all styles on interactive elements
+  'button, input, select, textarea, a, area': {
     all: 'unset',
   },
-  'body, div, span, a, p, h1, h2, h3, code, button, form, input, ul, li': {
+  // normalize behavior on all elements
+  '*, *::before, *::after, button, input, select, textarea, a, area': {
     margin: 0,
     border: 0,
     padding: 0,
@@ -62,18 +64,18 @@ export const globalCss = createGlobalCss({
     fontWeight: 'inherit',
     textDecoration: 'inherit',
     textAlign: 'inherit',
+    lineHeight: 'inherit',
+    wordBreak: 'inherit',
     color: 'inherit',
     background: 'transparent',
     WebkitTapHighlightColor: 'transparent',
   },
-  html: {
-    height: '100%',
-  },
+  // set base styles for the app
   body: {
-    height: '100%',
     color: '$highContrast',
     fontFamily: 'system-ui, Helvetica Neue, sans-serif',
-    overflowWrap: 'anywhere',
+    // use word-break instead of "overflow-wrap: anywhere" because of Safari support
+    wordBreak: 'break-word',
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
     fontSize: '16px',
@@ -82,6 +84,10 @@ export const globalCss = createGlobalCss({
   },
   code: {
     fontFamily: 'monospace',
+  },
+  // pass down height: 100% to the #root div
+  'body, html': {
+    height: '100%',
   },
   '#root': {
     minHeight: '100%',
