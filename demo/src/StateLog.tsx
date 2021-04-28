@@ -2,20 +2,23 @@ import * as React from 'react';
 import { deviceType } from 'detect-it';
 import {
   Interactive,
+  createInteractive,
   eventFrom,
   InteractiveExtendableProps,
   InteractiveState,
   InteractiveStateChange,
 } from 'react-interactive';
-import { CheckboxBase, LabelBase } from './Interactive';
-import { DemoContainer, DemoHeading } from './ui';
+import * as Checkbox from '@radix-ui/react-checkbox';
+import * as Label from '@radix-ui/react-label';
+import { CheckIcon } from '@radix-ui/react-icons';
+import { DemoContainer, DemoHeading } from './ui/DemoContainer';
 import { styled } from './stitches.config';
 
 const StateLogContainer = styled('div', {
   height: '200px',
   padding: '0 5px',
   border: '1px solid $highContrast',
-  overflow: 'scroll',
+  overflowY: 'scroll',
   fontFamily: 'monospace',
   outline: 'none',
   '&.focusFromKey': {
@@ -92,16 +95,61 @@ const ExtendedTouchActiveOptionContainer = styled('div', {
   marginTop: '10px',
 });
 
-const OptionLabel = styled(LabelBase, {
+const ExtendedTouchActiveOptionLabel = styled(createInteractive(Label.Root), {
+  cursor: 'pointer',
+  fontSize: '18px',
   display: 'inline-flex',
   alignItems: 'center',
-  fontSize: '18px',
+  // required to set vertical-align because display is inline
+  // and it contains an empty button (the checkbox when un-checked)
+  // see https://stackoverflow.com/questions/21645695/button-element-without-text-causes-subsequent-buttons-to-be-positioned-wrong
+  verticalAlign: 'top',
+
+  // style Checkbox (which renders a button) when label is hovered/active
+  '&.hover>button, &.mouseActive>button': {
+    color: '$green',
+    borderColor: '$green',
+    boxShadow: '0 0 0 1px $colors$green',
+  },
+  '&.touchActive>button': {
+    color: '$blue',
+    borderColor: '$blue',
+    boxShadow: '0 0 0 1px $colors$blue',
+  },
+  '&.disabled': {
+    opacity: 0.5,
+    cursor: 'unset',
+  },
+  // required because of radix checkbox bug: https://github.com/radix-ui/primitives/issues/605
+  '&>input': {
+    display: 'none',
+  },
 });
 
-const OptionCheckbox = styled(CheckboxBase, {
-  flexShrink: 0,
-  marginRight: '4px',
-});
+const ExtendedTouchActiveOptionCheckbox = styled(
+  createInteractive(Checkbox.Root),
+  {
+    flexShrink: 0,
+    marginRight: '4px',
+    appearance: 'none',
+    border: '1px solid $highContrast',
+    width: '32px',
+    height: '32px',
+    borderRadius: '2px',
+    // hover and active are styled in LabelBase so styles are applied when label is hovered/active
+    // '&.hover, &.active': {...},
+    '&.focusFromKey': {
+      outline: 'none',
+      // !important required so hover and active styles from Label are not applied
+      // to border and boxShadow when in the focusFromKey state
+      borderColor: '$purple !important',
+      boxShadow: '0 0 0 1px $colors$purple !important',
+    },
+    '&.keyActive': {
+      color: '$purple',
+    },
+  },
+);
 
 const CodeBlock = styled('code', {
   backgroundColor: '$backgroundContrast',
@@ -214,15 +262,17 @@ export const StateLog: React.VFC = () => {
       </Interactive>
       {deviceType !== 'mouseOnly' ? (
         <ExtendedTouchActiveOptionContainer>
-          <OptionLabel>
-            <OptionCheckbox
+          <ExtendedTouchActiveOptionLabel>
+            <ExtendedTouchActiveOptionCheckbox
               checked={useExtendedTouchActive}
               onCheckedChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 setUseExtendedTouchActive(event.target.checked)
               }
-            />
+            >
+              <Checkbox.Indicator as={CheckIcon} width="30" height="30" />
+            </ExtendedTouchActiveOptionCheckbox>
             <CodeBlock>useExtendedTouchActive</CodeBlock>
-          </OptionLabel>
+          </ExtendedTouchActiveOptionLabel>
         </ExtendedTouchActiveOptionContainer>
       ) : null}
     </DemoContainer>

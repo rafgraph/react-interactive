@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Interactive, InteractiveState } from 'react-interactive';
-import { DemoContainer, DemoHeading } from './ui';
+import { DemoContainer, DemoHeading } from './ui/DemoContainer';
 import { styled } from './stitches.config';
 
 const StressTestHeadingContainer = styled('div', {
@@ -16,7 +16,8 @@ const StressTestHeading = styled(DemoHeading, {
 const ShowStressTestButton = styled(Interactive.Button, {
   display: 'inline-block',
   textDecoration: 'underline',
-  padding: '4px 5px 3px',
+  borderRadius: '3px',
+  padding: '3px 4px 2px',
   marginLeft: '3px',
 
   '&.hover, &.mouseActive': {
@@ -29,11 +30,11 @@ const ShowStressTestButton = styled(Interactive.Button, {
     color: '$purple',
   },
   '&.focusFromKey': {
-    backgroundColor: '$backgroundPurple',
-    padding: '3px 4px 2px',
-    border: '1px solid $colors$purple',
-    borderRadius: '3px',
     textDecoration: 'none',
+    backgroundColor: '$backgroundPurple',
+    boxShadow: '0 0 0 1px $colors$purple',
+    // adds a 3D drop shadow as well
+    // boxShadow: '0 0 0 1px $colors$purple, 2px 3px 4px 0px rgba(0, 0, 0, 0.38)',
   },
 });
 

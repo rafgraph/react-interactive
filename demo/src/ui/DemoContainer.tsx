@@ -1,4 +1,4 @@
-import { styled } from './stitches.config';
+import { styled } from '../stitches.config';
 
 export const DemoContainer = styled('div', {
   margin: '24px 0',

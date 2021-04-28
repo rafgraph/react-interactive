@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Interactive, InteractiveState } from 'react-interactive';
-import { Link } from '../Interactive';
+import { Link } from '../ui/Link';
 import { styled } from '../stitches.config';
 import './DisabledEdgeCase.css';
 

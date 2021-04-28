@@ -645,7 +645,7 @@ When creating components that wrap an `<Interactive>` component, sometimes you w
 >   props,
 > ) => <Interactive {...props} as={Link} />;
 >
-> // do this instead
+> // do this instead, createInteractive also includes ref forwarding
 > const InteractiveLink = createInteractive(Link);
 > ```
 

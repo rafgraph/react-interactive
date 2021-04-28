@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Interactive, InteractiveStateChange } from 'react-interactive';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { DemoContainer, DemoHeading } from './ui';
+import { DemoContainer, DemoHeading } from './ui/DemoContainer';
 import { styled } from './stitches.config';
 
 const ShowOnDemoHeading = styled(DemoHeading, {
@@ -35,6 +35,7 @@ const InteractiveInfo = styled(Interactive.Span, {
   height: 30,
   display: 'inline-block',
   outline: 'none',
+  borderRadius: '50%',
   '&.hover': {
     color: '$green',
   },

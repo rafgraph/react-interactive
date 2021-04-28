@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Interactive, createInteractive } from 'react-interactive';
-import { Link } from 'react-router-dom';
-import { DemoContainer, DemoHeading } from './ui';
+import { Link as ReactRouterLink } from 'react-router-dom';
+import { Link } from './ui/Link';
+import { DemoContainer, DemoHeading } from './ui/DemoContainer';
 import { styled, keyframes, CSS } from './stitches.config';
 
 const scale = keyframes({
@@ -13,7 +14,9 @@ const scale = keyframes({
 const linkCss: CSS = {
   display: 'inline-block',
   textDecoration: 'underline',
-  padding: '4px 5px 3px',
+  borderRadius: '3px',
+  padding: '3px 4px 2px',
+  margin: '1px -4px',
   '&.hover, &.mouseActive': {
     color: '$green',
   },
@@ -25,16 +28,16 @@ const linkCss: CSS = {
   },
   '&.focusFromKey': {
     animation: `${scale} 500ms`,
-    backgroundColor: '$backgroundPurple',
-    padding: '3px 4px 2px',
-    border: '1px solid $colors$purple',
-    borderRadius: '3px',
     textDecoration: 'none',
+    backgroundColor: '$backgroundPurple',
+    boxShadow: '0 0 0 1px $colors$purple',
+    // adds a 3D drop shadow as well
+    // boxShadow: '0 0 0 1px $colors$purple, 2px 3px 4px 0px rgba(0, 0, 0, 0.38)',
   },
 };
 
 const AnchorLink = styled(Interactive.A, linkCss);
-const RouterLink = styled(createInteractive(Link), linkCss);
+const RouterLink = styled(createInteractive(ReactRouterLink), linkCss);
 
 export const LinkDemo: React.VFC = () => {
   return (
@@ -46,6 +49,10 @@ export const LinkDemo: React.VFC = () => {
       <RouterLink to="/">
         React Router link – <code>{'as={Link} to="/"'}</code>
       </RouterLink>
+      <div style={{ margin: '10px 0  ' }}>
+        Another <Link href="#">link with different styling</Link> that appears
+        in the middle of some text.
+      </div>
     </DemoContainer>
   );
 };
