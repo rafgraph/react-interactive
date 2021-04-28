@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Interactive, InteractiveStateChange } from 'react-interactive';
 import { InfoCircledIcon } from '@radix-ui/react-icons';
-import { DemoContainer, DemoHeading } from './ui/DemoContainer';
-import { styled } from './stitches.config';
+import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
+import { styled } from '../stitches.config';
 
 const ShowOnDemoHeading = styled(DemoHeading, {
   marginBottom: 0,
@@ -47,7 +47,7 @@ const InteractiveInfo = styled(Interactive.Span, {
   },
 });
 
-export const ShowOnDemo: React.VFC = () => {
+export const ShowOn: React.VFC = () => {
   const [showInfo, setShowInfo] = React.useState(false);
 
   const handleOnStateChange = React.useCallback(

@@ -1,11 +1,11 @@
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { MainDemo } from './MainDemo';
+import { App } from './App';
 
 describe('renders links to rollpkg', () => {
   const { container } = render(
     <MemoryRouter>
-      <MainDemo />
+      <App />
     </MemoryRouter>,
   );
   const links = container.getElementsByTagName('a');

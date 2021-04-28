@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Interactive, createInteractive } from 'react-interactive';
 import { Link as ReactRouterLink } from 'react-router-dom';
-import { Link } from './ui/Link';
-import { DemoContainer, DemoHeading } from './ui/DemoContainer';
-import { styled, keyframes, CSS } from './stitches.config';
+import { Link } from '../ui/Link';
+import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
+import { styled, keyframes, CSS } from '../stitches.config';
 
 const scale = keyframes({
   '0%': { transform: 'scale(1)' },
@@ -39,7 +39,7 @@ const linkCss: CSS = {
 const AnchorLink = styled(Interactive.A, linkCss);
 const RouterLink = styled(createInteractive(ReactRouterLink), linkCss);
 
-export const LinkDemo: React.VFC = () => {
+export const Links: React.VFC = () => {
   return (
     <DemoContainer>
       <DemoHeading>Links</DemoHeading>

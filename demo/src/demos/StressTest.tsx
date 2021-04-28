@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Interactive, InteractiveState } from 'react-interactive';
-import { DemoContainer, DemoHeading } from './ui/DemoContainer';
-import { styled } from './stitches.config';
+import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
+import { styled } from '../stitches.config';
 
 const StressTestHeadingContainer = styled('div', {
   marginBottom: 10,

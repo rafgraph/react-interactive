@@ -6,7 +6,7 @@ import {
   InteractiveExtendableProps,
 } from 'react-interactive';
 import { BrowserRouter, Link } from 'react-router-dom';
-import { styled } from './stitches.config';
+import { styled } from '../stitches.config';
 
 // TS demos in this file:
 // <DemoCreateInteractiveAs />

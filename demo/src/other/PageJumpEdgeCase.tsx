@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Interactive, InteractiveState } from 'react-interactive';
-import { styled, CSS } from './stitches.config';
+import { styled, CSS } from '../stitches.config';
 
 const PageJumpEdgeCaseContainer = styled('div', {
   padding: '20px',

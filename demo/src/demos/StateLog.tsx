@@ -11,8 +11,8 @@ import {
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Label from '@radix-ui/react-label';
 import { CheckIcon } from '@radix-ui/react-icons';
-import { DemoContainer, DemoHeading } from './ui/DemoContainer';
-import { styled } from './stitches.config';
+import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
+import { styled } from '../stitches.config';
 
 const StateLogContainer = styled('div', {
   height: '200px',
