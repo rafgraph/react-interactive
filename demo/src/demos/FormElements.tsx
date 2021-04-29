@@ -211,6 +211,7 @@ const Ocean = styled('div', {
   backgroundColor: 'royalblue',
   opacity: 0.2,
   pointerEvents: 'none',
+  zIndex: 1,
 });
 
 const Fish = styled(Interactive.Button, {
@@ -220,6 +221,7 @@ const Fish = styled(Interactive.Button, {
   '&.focusFromKey': {
     filter: 'drop-shadow(6px 6px 3px royalblue) hue-rotate(50deg)',
   },
+  zIndex: 2,
 });
 
 interface FishType {
