@@ -39,9 +39,13 @@ const linkCss: CSS = {
 const AnchorLink = styled(Interactive.A, linkCss);
 const RouterLink = styled(createInteractive(ReactRouterLink), linkCss);
 
+const P = styled('p', {
+  marginTop: '10px',
+});
+
 export const Links: React.VFC = () => {
   return (
-    <DemoContainer>
+    <DemoContainer id="links">
       <DemoHeading>Links</DemoHeading>
       <AnchorLink href="#">
         Anchor tag link – <code>as="a" href="#"</code>
@@ -49,10 +53,13 @@ export const Links: React.VFC = () => {
       <RouterLink to="/">
         React Router link – <code>{'as={Link} to="/"'}</code>
       </RouterLink>
-      <div style={{ margin: '10px 0  ' }}>
-        Another <Link href="#">link with different styling</Link> that appears
-        in the middle of some text.
-      </div>
+      <P>
+        Another{' '}
+        <Link href="#" newWindow={false}>
+          link with different styling
+        </Link>{' '}
+        that appears in the middle of some text.
+      </P>
     </DemoContainer>
   );
 };

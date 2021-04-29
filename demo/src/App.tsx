@@ -6,6 +6,7 @@ import { StressTest } from './demos/StressTest';
 import { styled } from './stitches.config';
 import { GitHubIconLink } from './ui/GitHubIconLink';
 import { DarkModeButton } from './ui/DarkModeButton';
+import { DemoContainer } from './ui/DemoContainer';
 
 const AppContainer = styled('div', {
   maxWidth: '500px',
@@ -32,10 +33,6 @@ const HeaderIconContainer = styled('span', {
   justifyContent: 'space-between',
 });
 
-const DemoInfoText = styled('p', {
-  margin: '20px 0',
-});
-
 export const App = () => {
   return (
     <AppContainer>
@@ -49,10 +46,10 @@ export const App = () => {
           <DarkModeButton />
         </HeaderIconContainer>
       </HeaderContainer>
-      <DemoInfoText>
+      <DemoContainer as="p" css={{ paddingBottom: '20px' }}>
         Try out this demo on both mouse and touch devices, and test the keyboard
         navigation too!
-      </DemoInfoText>
+      </DemoContainer>
       <StateLog />
       <ShowOn />
       <Links />

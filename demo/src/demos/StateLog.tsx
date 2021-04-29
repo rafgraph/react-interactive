@@ -234,7 +234,7 @@ export const StateLog: React.VFC = () => {
   );
 
   return (
-    <DemoContainer>
+    <DemoContainer id="interactive-state-log">
       <DemoHeading>Interactive State Log</DemoHeading>
       <DemoButton
         onStateChange={handleInteractiveStateChange}

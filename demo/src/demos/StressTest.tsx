@@ -4,7 +4,13 @@ import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
 import { styled } from '../stitches.config';
 
 const StressTestHeadingContainer = styled('div', {
-  marginBottom: 10,
+  variants: {
+    stressTestShown: {
+      true: {
+        marginBottom: 10,
+      },
+    },
+  },
 });
 
 const StressTestHeading = styled(DemoHeading, {
@@ -73,7 +79,10 @@ export const StressTest: React.VFC = () => {
 
   return (
     <DemoContainer>
-      <StressTestHeadingContainer>
+      <StressTestHeadingContainer
+        id="stress-test"
+        stressTestShown={showStressTest}
+      >
         <StressTestHeading>Stress Test</StressTestHeading>–
         <ShowStressTestButton
           onClick={() => setShowStressTest((prevState) => !prevState)}

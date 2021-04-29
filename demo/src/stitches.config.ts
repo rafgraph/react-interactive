@@ -36,7 +36,7 @@ export const darkThemeClass = theme({
     backgroundContrast: 'rgb(64,64,64)',
     highContrast: 'rgb(192,192,192)',
     lowContrast: 'rgb(136,136,136)',
-    formElementsBackground: 'rgb(48,48,48)',
+    formElementsBackground: 'rgb(20,20,20)',
     red: 'hsl(0,100%,50%)',
     orange: 'hsl(30,90%,50%)',
     yellow: 'hsl(60,88%,50%)',
@@ -84,6 +84,7 @@ export const globalCss = createGlobalCss({
   },
   code: {
     fontFamily: 'monospace',
+    lineHeight: '16px',
   },
   // pass down height: 100% to the #root div
   'body, html': {

@@ -34,6 +34,7 @@ const InfoIconContainer = styled('div', {
 const InteractiveInfo = styled(Interactive.Span, {
   height: 30,
   display: 'inline-block',
+  verticalAlign: 'top',
   outline: 'none',
   borderRadius: '50%',
   '&.hover': {
@@ -62,7 +63,7 @@ export const ShowOn: React.VFC = () => {
   );
 
   return (
-    <DemoContainer>
+    <DemoContainer id="show-on">
       <ShowOnDemoHeading>Show On</ShowOnDemoHeading>
       <InfoTextContainer showInfo={showInfo}>
         <span>

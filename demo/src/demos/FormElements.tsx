@@ -165,8 +165,7 @@ const Select = styled(Interactive.Select, {
 
 const Button = styled(Interactive.Button, {
   display: 'block',
-  width: '100px',
-  height: '34px',
+  padding: '8px 26px',
   margin: '18px 0 14px',
   textAlign: 'center',
   backgroundColor: '$formElementsBackground',
@@ -276,7 +275,7 @@ export const FormElements: React.VFC = () => {
   }, [fishes.length]);
 
   return (
-    <DemoContainer>
+    <DemoContainer id="form-elements">
       <DemoHeading>Form Elements</DemoHeading>
 
       <TextInput
@@ -373,7 +372,7 @@ export const FormElements: React.VFC = () => {
 
       <Button disabled={disableElements}>Button</Button>
 
-      <CheckboxLabel>
+      <CheckboxLabel css={{ marginBottom: 0 }}>
         <Checkbox
           onCheckedChange={(event: React.ChangeEvent<HTMLInputElement>) =>
             setDisabledElements(event.target.checked)
