@@ -8,7 +8,7 @@
 - Callback for interactive state changes
   - Know when the hover/active/focus state is entered/exited (impossible to do with CSS)
 - Style interactive states with CSS, inline styles, and CSS-in-JS libraries
-- Eliminates the [CSS sticky hover bug](#css-sticky-hover-bug) on touch devices
+- Eliminates the [CSS sticky `:hover` bug](#css-sticky-hover-bug) on touch devices
 - Allows you to only add focus styles when focus is from the keyboard
 
 ---
@@ -19,7 +19,7 @@ Code is in the [`/demo`](/demo) folder, or open the [demo in CodeSandbox](https:
 
 ---
 
-[Basics](#basics) ⚡️ [Props](#props) ⚡️ [`createInteractive`](#using-createinteractive) ⚡️ [`eventFrom`](#using-eventfrom) ⚡️ [TypeScript](#using-with-typescript)
+[Basics](#basics) ⚡️ [Props](#props) ⚡️ [`createInteractive`](#using-createinteractive) ⚡️ [`eventFrom`](#using-eventfrom) ⚡️ [TypeScript](#using-with-typescript) ⚡️ [FAQ](#faq)
 
 ---
 
@@ -70,7 +70,7 @@ interface InteractiveState {
 }
 ```
 
-- `hover` Mouse on the element (unlike CSS pseudo classes the `hover` state is only entered from mouse input which eliminates the [CSS sticky hover bug](#css-sticky-hover-bug) on touch devices).
+- `hover` Mouse on the element (unlike CSS pseudo classes the `hover` state is only entered from mouse input which eliminates the [CSS sticky `:hover` bug](#css-sticky-hover-bug) on touch devices).
 - `active`
   - `mouseActive` Mouse on the element and mouse button down.
   - `touchActive` Touch point on the element.
@@ -90,6 +90,7 @@ CSS classes for the current state are automatically added for easy styling with 
 - Active state adds both an `active` class and an `[input]Active` class, e.g. `mouseActive`.
 - Focus state adds both a `focus` class and a `focusFrom[input]` class, e.g. `focusFromKey`.
 - For a full class list see [interactive `className` props](#interactive-state-className-props-string) (the class names for each state can be changed using props).
+- See [this CodeSandbox](https://codesandbox.io/s/react-interactive-css-style-example-ttl0t) for a live example using CSS.
 
 ```js
 import { Interactive } from 'react-interactive';
@@ -115,9 +116,9 @@ import { Interactive } from 'react-interactive';
 
 ### Styling with CSS-in-JS
 
-Use the added CSS classes to style the interactive states with CSS-in-JS libraries like Styled Components, Emotion, and [Stitches](https://stitches.dev/).
+Use the added CSS classes to style the interactive states with CSS-in-JS libraries like Styled Components, Emotion, and [Stitches](https://stitches.dev/). Live examples in CodeSandbox are available for [Styled Components](https://codesandbox.io/s/react-interactive-styled-components-example-7dozj) and [Stitches](https://codesandbox.io/s/react-interactive-stitches-example-os981) (also the demo app is built using Stitches).
 
-> React Interactive also includes a `createInteractive(as)` function and some common predefined DOM elements, for example `Interactive.Button`, for easy use with CSS-in-JS. For more see [Extending `<Interactive>`](#extending-the-interactive-component).
+> React Interactive includes a `createInteractive(as)` function with some predefined DOM elements, for example `Interactive.Button`, for easy use with CSS-in-JS. For more see [Extending `<Interactive>`](#extending-the-interactive-component).
 
 ```js
 import { Interactive } from 'react-interactive';
@@ -147,6 +148,7 @@ React Interactive uses a separate style prop for each state for easy inline styl
 - Active state uses both an `activeStyle` prop and an `[input]ActiveStyle` prop.
 - Focus state uses both a `focusStyle` prop and a `focusFrom[input]Style` prop.
 - For a full list see [interactive `style` props](#interactive-state-inline-style-props-style-object).
+- See [this CodeSandbox](https://codesandbox.io/s/react-interactive-inline-style-example-6s8mn) for a live example using inline styles.
 
 ```js
 import { Interactive } from 'react-interactive';
@@ -557,6 +559,8 @@ type InteractiveExtendableProps<T extends React.ElementType = 'button'>
 
 ### Typing `onStateChange` callback and `children` as a function
 
+Also see [TypeScriptExamples.tsx](https://github.com/rafgraph/react-interactive/blob/main/demo/src/other/TypeScriptExamples.tsx) in the demo app.
+
 ```ts
 import {
   Interactive,
@@ -599,7 +603,7 @@ const childrenAsAFunction = React.useCallback(
 
 ### Typing props passed to `<Interactive>`
 
-Sometimes you need to type the props object that is passed to an `<Interactive>` component, to do this use the type `InteractiveProps<as>`.
+Sometimes you need to type the props object that is passed to an `<Interactive>` component, to do this use the type `InteractiveProps<as>`. Also see [TypeScriptExamples.tsx](https://github.com/rafgraph/react-interactive/blob/main/demo/src/other/TypeScriptExamples.tsx) in the demo app.
 
 ```ts
 import { Interactive, InteractiveProps } from 'react-interactive';
@@ -628,7 +632,7 @@ const propsForInteractiveAsComponent: InteractiveProps<typeof Component> = {
 
 ### Typing components that wrap `<Interactive>`
 
-When creating components that wrap an `<Interactive>` component, sometimes you want to extend the `<Interactive>` component and pass through props to `<Interactive>`. To do this use the type `InteractiveExtendableProps<as>`.
+When creating components that wrap an `<Interactive>` component, sometimes you want to extend the `<Interactive>` component and pass through props to `<Interactive>`. To do this use the type `InteractiveExtendableProps<as>`. Also see [TypeScriptExamples.tsx](https://github.com/rafgraph/react-interactive/blob/main/demo/src/other/TypeScriptExamples.tsx) in the demo app.
 
 > Note that if all you need to do is extend `<Interactive>` with a predefined `as` prop but without additional props and logic, [use `createInteractive(as)`](#using-createinteractive) instead.
 >
@@ -681,10 +685,39 @@ const WrapperWithRef = React.forwardRef<
 
 ---
 
-## CSS sticky hover bug
+## CSS sticky `:hover` bug
 
-The CSS sticky hover bug on touch devices occurs when you tap an element that has a CSS `:hover` pseudo class. The `:hover` state sticks until you tap someplace else on the screen. This causes `:hover` styles to stick on touch devices and prevents proper styling of touch interactions (like native apps).
+The CSS sticky `:hover` bug on touch devices occurs when you tap an element that has a CSS `:hover` pseudo class. The `:hover` state sticks until you tap someplace else on the screen. This causes `:hover` styles to stick on touch devices and prevents proper styling of touch interactions (like native apps).
 
 The reason for CSS sticky hover is that back in the early days of mobile the web relied heavily on hover menus, so on mobile you could tap to see the hover menu (it would stick until you tapped someplace else). Sites are generally no longer built this way, so now the sticky hover feature has become a bug.
 
 React Interactive fixes the sticky hover bug by only entering the `hover` state from mouse input and creating a separate `touchActive` state for styling touch interactions.
+
+---
+
+## FAQ
+
+- **How do I manually set focus on an `<Interactive>` component?**
+  - Use a `ref` a call `focus()` on the element (this is standard React). To enter a specific `focusFrom[Input]` state use [`setEventFrom`](#seteventfrominputtype).
+- **How do I disable an `<Interactive>` component?**
+  - Pass in a [`disabled` boolean prop](#disabled-boolean).
+- **How do I use `<Interactive>` with another polymorphic component?**
+  - Use the [`createInteractive` function](#using-createinteractive).
+- **The `touchActive` state is exited even though my finger is still on the button, how do I prevent this from happening?**
+  - Pass in a [`useExtendedTouchActive` boolean prop](#useextendedtouchactive-boolean).
+- **Styling**
+  - **How do I style the interactive states with CSS?**
+    - See [Styling with CSS](#styling-with-css), and also [this CodeSandbox](https://codesandbox.io/s/react-interactive-css-style-example-ttl0t) for a live example.
+  - **How do I style the interactive states with inline styles?**
+    - See [Styling with inline styles](#styling-with-inline-styles), and also [this CodeSandbox](https://codesandbox.io/s/react-interactive-inline-style-example-6s8mn) for a live example.
+  - **How do I use React Interactive with Styled Components?**
+    - See [this CodeSandbox](https://codesandbox.io/s/react-interactive-styled-components-example-7dozj) for a live example.
+  - **How do I use React Interactive with Stitches?**
+    - See [this CodeSandbox](https://codesandbox.io/s/react-interactive-stitches-example-os981) for a live example.
+- **TypeScript**
+  - **How do I use React Interactive with TypeScript?**
+    - See [Using with TypeScript](#using-with-typescript).
+  - **What types are exported from React Interactive?**
+    - See [Exported types from React Interactive](#exported-types-from-react-interactive).
+  - **How do I extend an `<Interactive>` component including the TypeScript prop types?**
+    - See [Typing components that wrap `<Interactive>`](#typing-components-that-wrap-interactive).
