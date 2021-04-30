@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Interactive } from 'react-interactive';
 import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
+import { Link } from '../ui/Link';
 import { styled } from '../stitches.config';
 
 const PseudoClassButton = styled('button', {
@@ -53,10 +54,15 @@ const ButtonsContainer = styled('div', {
 export const CssStickyHoverBug: React.VFC = () => {
   return (
     <DemoContainer id="css-sticky-hover-bug">
-      <DemoHeading>CSS Sticky Hover Bug</DemoHeading>
+      <DemoHeading>
+        CSS Sticky <code>:hover</code> Bug
+      </DemoHeading>
       <p>
-        On touch devices the CSS <code>:hover</code> state sticks until you tap
-        someplace else on the screen.
+        On touch devices the{' '}
+        <Link href="https://github.com/rafgraph/react-interactive#css-sticky-hover-bug">
+          CSS <code>:hover</code> state sticks
+        </Link>{' '}
+        until you tap someplace else on the screen.
       </p>
       <ButtonsContainer>
         <div>
