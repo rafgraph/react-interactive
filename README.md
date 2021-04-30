@@ -513,7 +513,7 @@ const focusButton = () => {
 
 ## Using with TypeScript
 
-React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of its own props and the props that the `as` prop accepts.
+React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of its own props and the props that the `as` prop accepts. Live TypeScript examples are available in [TypeScriptExamples.tsx](https://github.com/rafgraph/react-interactive/blob/main/demo/src/other/TypeScriptExamples.tsx) in the demo app.
 
 ```ts
 <Interactive

@@ -4,16 +4,22 @@ import {
   createInteractive,
   InteractiveProps,
   InteractiveExtendableProps,
+  InteractiveState,
+  InteractiveStateChange,
 } from 'react-interactive';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { styled } from '../stitches.config';
 
+////////////////////////////////////
 // TS demos in this file:
+//
 // <DemoCreateInteractiveAs />
+// <DemoOnStateChangeAndChildren />
 // <DemoPropsForInteractive />
-// <DemoComposeAsTagName />
-// <DemoComposeAsComponent />
-// <DemoComposeAsUnion />
+// <DemoWrapAsTagName />
+// <DemoWrapAsComponent />
+// <DemoWrapAsUnion />
+////////////////////////////////////
 
 ////////////////////////////////////
 // using createInteractive(as) to extend <Interactive>
@@ -69,6 +75,34 @@ export const DemoCreateInteractiveAs: React.VFC = () => (
 );
 
 ////////////////////////////////////
+// typing onStateChange and children as a function
+
+const DemoOnStateChangeAndChildren: React.VFC = () => {
+  // use the InteractiveStateChange type to type the argument
+  // passed to the onStateChange callback
+  const handleInteractiveStateChange = React.useCallback(
+    ({ state, prevState }: InteractiveStateChange) => {
+      // your logic here...
+    },
+    [],
+  );
+
+  // use the InteractiveState type to type the argument
+  // passed to children (when children is a function)
+  const childrenAsAFunction = React.useCallback(
+    ({ hover, active, focus }: InteractiveState) =>
+      `Current state - active: ${active}, hover: ${hover}, focus: ${focus}`,
+    [],
+  );
+
+  return (
+    <Interactive as="button" onStateChange={handleInteractiveStateChange}>
+      {childrenAsAFunction}
+    </Interactive>
+  );
+};
+
+////////////////////////////////////
 // typing props passed to <Interactive>
 // use type InteractiveProps
 
@@ -79,6 +113,7 @@ const propsForInteractiveButton: InteractiveProps<'button'> = {
   children: 'propsForInteractiveButton',
   ref: (element) => {},
   hoverStyle: { fontWeight: 'bold' },
+  onStateChange: ({ state, prevState }) => {},
   // foo: true, // should error
 };
 
@@ -88,6 +123,7 @@ const propsForInteractiveRouterLink: InteractiveProps<typeof Link> = {
   children: 'propsForInteractiveRouterLink',
   ref: (element) => {},
   hoverStyle: { fontWeight: 'bold' },
+  onStateChange: ({ state, prevState }) => {},
   // foo: true, // should error
 };
 
@@ -100,6 +136,7 @@ const DemoPropsForInteractive: React.VFC = () => (
       type="submit" // button specific prop
       ref={(element: HTMLButtonElement | null) => {}} // element type is not inferred, see https://github.com/kripod/react-polymorphic-types/issues/5
       hoverStyle={{ fontWeight: 'bold' }}
+      onStateChange={({ state, prevState }) => {}}
     >
       Interactive-as-button
     </Interactive>
@@ -108,6 +145,7 @@ const DemoPropsForInteractive: React.VFC = () => (
       to="/some-path"
       ref={(element: React.ElementRef<typeof Link> | null) => {}} // element type is not inferred, see https://github.com/kripod/react-polymorphic-types/issues/5
       hoverStyle={{ fontWeight: 'bold' }}
+      onStateChange={({ state, prevState }) => {}}
     >
       Interactive-as-Link
     </Interactive>
@@ -115,61 +153,65 @@ const DemoPropsForInteractive: React.VFC = () => (
 );
 
 ////////////////////////////////////
-// composing as="button" with pass through props
+// wrapping as="button" with pass through props
 // use type InteractiveExtendableProps
 
-// the same props interface is used for composing with and without forwardRef
+// the same props interface is used for wrapping with and without forwardRef
 // note that InteractiveExtendableProps doesn't include `as` or `ref` props
 // when using forwardRef the ref type will be added by the forwardRef function
-interface ComposeAsTagNameProps extends InteractiveExtendableProps<'button'> {
+interface WrapAsTagNameProps extends InteractiveExtendableProps<'button'> {
   additionalProp?: string;
 }
 
 // as="button" without ref
-const ComposeAsTagNameWithoutRef: React.VFC<ComposeAsTagNameProps> = ({
+const WrapAsTagNameWithoutRef: React.VFC<WrapAsTagNameProps> = ({
   additionalProp,
   ...props
-}) => <Interactive {...props} as="button" />;
+}) => {
+  // component logic here...
+  return <Interactive {...props} as="button" />;
+};
 
 // as="button" with ref
-const ComposeAsTagNameWithRef = React.forwardRef<
+const WrapAsTagNameWithRef = React.forwardRef<
   HTMLButtonElement,
-  ComposeAsTagNameProps
->(({ additionalProp, ...props }, ref) => (
-  <Interactive {...props} as="button" ref={ref} />
-));
+  WrapAsTagNameProps
+>(({ additionalProp, ...props }, ref) => {
+  // component logic here...
+  return <Interactive {...props} as="button" ref={ref} />;
+});
 
-// type for props with ref, use for typing props passed to ComposeAsTagNameWithRef
-type ComposeAsTagNameWithRefProps = React.ComponentPropsWithRef<
-  typeof ComposeAsTagNameWithRef
+// type for props with ref, use for typing props passed to WrapAsTagNameWithRef
+type WrapAsTagNameWithRefProps = React.ComponentPropsWithRef<
+  typeof WrapAsTagNameWithRef
 >;
-const propsForComposeAsTagNameWithRef: ComposeAsTagNameWithRefProps = {
+const propsForWrapAsTagNameWithRef: WrapAsTagNameWithRefProps = {
   additionalProp: 'something',
-  children: 'propsForComposeAsTagNameWithRef',
+  children: 'propsForWrapAsTagNameWithRef',
   ref: () => {},
   type: 'submit', // button specific prop
   hoverStyle: { fontWeight: 'bold' },
 };
 
-const DemoComposeAsTagName: React.VFC = () => (
+const DemoWrapAsTagName: React.VFC = () => (
   <>
-    <ComposeAsTagNameWithoutRef
+    <WrapAsTagNameWithoutRef
       // as="button" // should error
       // ref={(element) => {}} // should error
       type="submit" // button specific prop
       hoverStyle={{ fontWeight: 'bold' }}
     >
-      ComposeAsTagNameWithoutRef
-    </ComposeAsTagNameWithoutRef>
-    <ComposeAsTagNameWithRef
+      WrapAsTagNameWithoutRef
+    </WrapAsTagNameWithoutRef>
+    <WrapAsTagNameWithRef
       // as="button" // should error
       ref={(element) => {}}
       type="submit" // button specific prop
       hoverStyle={{ fontWeight: 'bold' }}
     >
-      ComposeAsTagNameWithRef
-    </ComposeAsTagNameWithRef>
-    <ComposeAsTagNameWithRef {...propsForComposeAsTagNameWithRef} />
+      WrapAsTagNameWithRef
+    </WrapAsTagNameWithRef>
+    <WrapAsTagNameWithRef {...propsForWrapAsTagNameWithRef} />
     <Interactive
       as="button"
       // ref={(element: HTMLButtonElement | null) => {}}
@@ -183,7 +225,7 @@ const DemoComposeAsTagName: React.VFC = () => (
 );
 
 ////////////////////////////////////
-// composing as={Component} with pass through props
+// wrapping as={Component} with pass through props
 // use type InteractiveExtendableProps
 
 // first create a composable component to use for the `as` prop
@@ -194,65 +236,69 @@ interface MyComponentProps extends React.ComponentPropsWithoutRef<'button'> {
 }
 const MyComponent = React.forwardRef<HTMLButtonElement, MyComponentProps>(
   ({ someMyComponentProp, ...props }, ref) => {
-    // component logic...
+    // component logic here...
     return <button {...props} ref={ref} />;
   },
 );
 
 // next create the interface for the component that wraps the <Interactive> component,
-// the same props interface is used for composing with and without forwardRef
+// the same props interface is used for wrapping with and without forwardRef
 // note that InteractiveExtendableProps doesn't include `as` or `ref` props
 // when using forwardRef the ref type will be added by the forwardRef function
-interface ComposeAsComponentProps
+interface WrapAsComponentProps
   extends InteractiveExtendableProps<typeof MyComponent> {
   additionalProp?: string;
 }
 
 // as={Component} without ref
-const ComposeAsComponentWithoutRef: React.VFC<ComposeAsComponentProps> = ({
+const WrapAsComponentWithoutRef: React.VFC<WrapAsComponentProps> = ({
   additionalProp,
   ...props
-}) => <Interactive {...props} as={MyComponent} />;
+}) => {
+  // component logic here...
+  return <Interactive {...props} as={MyComponent} />;
+};
 
 // as={Component} with ref
-const ComposeAsComponentWithRef = React.forwardRef<
+const WrapAsComponentWithRef = React.forwardRef<
   React.ElementRef<typeof MyComponent>,
-  ComposeAsComponentProps
->(({ additionalProp, ...props }, ref) => (
-  <Interactive {...props} as={MyComponent} ref={ref} />
-));
+  WrapAsComponentProps
+>(({ additionalProp, ...props }, ref) => {
+  // component logic here...
+  return <Interactive {...props} as={MyComponent} ref={ref} />;
+});
 
-// type for props with ref, use for typing props passed to ComposeAsComponentWithRef
-type ComposeAsComponentWithRefProps = React.ComponentPropsWithRef<
-  typeof ComposeAsComponentWithRef
+// type for props with ref, use for typing props passed to WrapAsComponentWithRef
+type WrapAsComponentWithRefProps = React.ComponentPropsWithRef<
+  typeof WrapAsComponentWithRef
 >;
-const propsForComposeAsComponentWithRef: ComposeAsComponentWithRefProps = {
+const propsForWrapAsComponentWithRef: WrapAsComponentWithRefProps = {
   additionalProp: 'something',
   someMyComponentProp: 'something else',
-  children: 'propsForComposeAsTagNameWithRef',
+  children: 'propsForWrapAsTagNameWithRef',
   ref: () => {},
   hoverStyle: { fontWeight: 'bold' },
 };
 
-const DemoComposeAsComponent: React.VFC = () => (
+const DemoWrapAsComponent: React.VFC = () => (
   <>
-    <ComposeAsComponentWithoutRef
+    <WrapAsComponentWithoutRef
       additionalProp="something"
       someMyComponentProp="something else"
       // ref={(element) => {}} // should error
       hoverStyle={{ fontWeight: 'bold' }}
     >
-      ComposeAsComponentWithoutRef
-    </ComposeAsComponentWithoutRef>
-    <ComposeAsComponentWithRef
+      WrapAsComponentWithoutRef
+    </WrapAsComponentWithoutRef>
+    <WrapAsComponentWithRef
       additionalProp="something"
       someMyComponentProp="something else"
       ref={(element) => {}}
       hoverStyle={{ fontWeight: 'bold' }}
     >
-      ComposeAsComponentWithRef
-    </ComposeAsComponentWithRef>
-    <ComposeAsComponentWithRef {...propsForComposeAsComponentWithRef} />
+      WrapAsComponentWithRef
+    </WrapAsComponentWithRef>
+    <WrapAsComponentWithRef {...propsForWrapAsComponentWithRef} />
     <Interactive
       as={MyComponent}
       someMyComponentProp="something else"
@@ -265,18 +311,18 @@ const DemoComposeAsComponent: React.VFC = () => (
 );
 
 ////////////////////////////////////
-// composing as a union with ref
+// wrapping as a union with ref
 // this example is a union of an Anchor element and React Router's <Link> component
-// when an href prop is passed to the composed component, an Anchor element is rendered
-// when a to prop is passed to the composed component, a <Link> component is rendered
+// when an href prop is passed to the component, an Anchor element is rendered
+// when a to prop is passed to the component, a <Link> component is rendered
 
-type ComposeAsUnionProps =
+type WrapAsUnionProps =
   | (InteractiveExtendableProps<typeof Link> & { href?: never })
   | (InteractiveExtendableProps<'a'> & { to?: never; replace?: never });
 
-const ComposeAsUnionWithRef = React.forwardRef<
+const WrapAsUnionWithRef = React.forwardRef<
   HTMLAnchorElement,
-  ComposeAsUnionProps
+  WrapAsUnionProps
 >((props, ref) => {
   // React Router's <Link> component doesn't have a disabled state
   // so when disabled always render as="a" and remove router specific props
@@ -290,29 +336,29 @@ const ComposeAsUnionWithRef = React.forwardRef<
   return <Interactive {...passThroughProps} as={As} ref={ref} />;
 });
 
-type ComposeAsUnionWithRefProps = React.ComponentPropsWithRef<
-  typeof ComposeAsUnionWithRef
+type WrapAsUnionWithRefProps = React.ComponentPropsWithRef<
+  typeof WrapAsUnionWithRef
 >;
-const propsForComposeAsUnionWithRef: ComposeAsUnionWithRefProps = {
+const propsForWrapAsUnionWithRef: WrapAsUnionWithRefProps = {
   ref: (element) => {},
   href: 'https://rafgraph.dev',
   // to: '/some-path', // should error
-  children: 'propsForComposeAsUnionWithRef',
+  children: 'propsForWrapAsUnionWithRef',
   hoverStyle: { fontWeight: 'bold' },
 };
 
-const DemoComposeAsUnionWithRef: React.VFC = () => (
+const DemoWrapAsUnionWithRef: React.VFC = () => (
   <>
-    <ComposeAsUnionWithRef
+    <WrapAsUnionWithRef
       to="/some-path"
       replace // replace is a Router Link prop
       // href="https://rafgraph.dev" // should error
       ref={(element) => {}}
       hoverStyle={{ fontWeight: 'bold' }}
     >
-      ComposeAsUnionWithRef-RouterLink
-    </ComposeAsUnionWithRef>
-    <ComposeAsUnionWithRef
+      WrapAsUnionWithRef-RouterLink
+    </WrapAsUnionWithRef>
+    <WrapAsUnionWithRef
       disabled
       to="/some-path"
       replace // replace is a Router Link prop
@@ -320,18 +366,18 @@ const DemoComposeAsUnionWithRef: React.VFC = () => (
       hoverStyle={{ fontWeight: 'bold' }}
       disabledStyle={{ opacity: 0.5 }}
     >
-      ComposeAsUnionWithRef-RouterLink-disabled
-    </ComposeAsUnionWithRef>
-    <ComposeAsUnionWithRef
+      WrapAsUnionWithRef-RouterLink-disabled
+    </WrapAsUnionWithRef>
+    <WrapAsUnionWithRef
       href="https://rafgraph.dev"
       // to="/some-path" // should error b/c to is a Router Link prop
       // replace // should error b/c replace is a Router Link prop
       ref={(element) => {}}
       hoverStyle={{ fontWeight: 'bold' }}
     >
-      ComposeAsUnionWithRef-AnchorLink
-    </ComposeAsUnionWithRef>
-    <ComposeAsUnionWithRef {...propsForComposeAsUnionWithRef} />
+      WrapAsUnionWithRef-AnchorLink
+    </WrapAsUnionWithRef>
+    <WrapAsUnionWithRef {...propsForWrapAsUnionWithRef} />
   </>
 );
 
@@ -351,10 +397,11 @@ export const TypeScriptExamples: React.VFC = () => (
     <ContainerDiv>
       <h1>TypeScript Examples</h1>
       <DemoCreateInteractiveAs />
+      <DemoOnStateChangeAndChildren />
       <DemoPropsForInteractive />
-      <DemoComposeAsTagName />
-      <DemoComposeAsComponent />
-      <DemoComposeAsUnionWithRef />
+      <DemoWrapAsTagName />
+      <DemoWrapAsComponent />
+      <DemoWrapAsUnionWithRef />
     </ContainerDiv>
   </BrowserRouter>
 );
