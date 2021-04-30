@@ -3,7 +3,7 @@ import { Interactive } from 'react-interactive';
 import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
 import { styled } from '../stitches.config';
 
-const CssButton = styled('button', {
+const PseudoClassButton = styled('button', {
   display: 'block',
   padding: '8px 20px',
   marginTop: '18px',
@@ -61,10 +61,10 @@ export const CssStickyHoverBug: React.VFC = () => {
       <ButtonsContainer>
         <div>
           <p>
-            Button styled with CSS, <code>:hover</code> is green,{' '}
+            Button styled with pseudo-classes, <code>:hover</code> is green,{' '}
             <code>:active</code> is red.
           </p>
-          <CssButton>CSS Button</CssButton>
+          <PseudoClassButton>Pseudo-class Button</PseudoClassButton>
         </div>
         <div>
           <p>
@@ -77,7 +77,7 @@ export const CssStickyHoverBug: React.VFC = () => {
             // React Interactive's default is to exit the touchActive state when a click is no longer possible
             useExtendedTouchActive
           >
-            Interactive Button
+            React Interactive Button
           </InteractiveButton>
         </div>
       </ButtonsContainer>

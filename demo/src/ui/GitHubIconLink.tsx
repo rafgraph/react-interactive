@@ -5,7 +5,7 @@ import { Button } from './Button';
 
 interface GitHubIconLinkProps {
   href?: string;
-  'aria-label'?: string;
+  title?: string;
   newWindow?: boolean;
   css?: React.ComponentProps<typeof Button>['css'];
 }
@@ -13,11 +13,14 @@ interface GitHubIconLinkProps {
 export const GitHubIconLink: React.VFC<GitHubIconLinkProps> = ({
   newWindow = true,
   css,
+  title,
   ...props
 }) => (
   <Button
     {...props}
     as={Interactive.A}
+    title={title}
+    aria-label={title}
     target={newWindow ? '_blank' : undefined}
     rel={newWindow ? 'noopener noreferrer' : undefined}
     focus="boxShadow"

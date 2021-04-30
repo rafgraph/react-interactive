@@ -50,6 +50,7 @@ export const DarkModeButton: React.VFC<DarkModeButtonProps> = ({
         // cast as any b/c of Stitches bug: https://github.com/modulz/stitches/issues/407
         ...(css as any),
       }}
+      title="Toggle dark mode"
       aria-label="Toggle dark mode"
     >
       <SunIcon width="30" height="30" />

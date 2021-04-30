@@ -1,6 +1,6 @@
 import { StateLog } from './demos/StateLog';
-import { ShowOn } from './demos/ShowOn';
 import { Links } from './demos/Links';
+import { ShowOn } from './demos/ShowOn';
 import { FormElements } from './demos/FormElements';
 import { CssStickyHoverBug } from './demos/CssStickyHoverBug';
 import { StressTest } from './demos/StressTest';
@@ -41,7 +41,7 @@ export const App = () => {
         <H1>React Interactive Demo</H1>
         <HeaderIconContainer>
           <GitHubIconLink
-            aria-label="GitHub repository for React Interactive"
+            title="GitHub repository for React Interactive"
             href="https://github.com/rafgraph/react-interactive"
           />
           <DarkModeButton />
@@ -52,8 +52,8 @@ export const App = () => {
         navigation too!
       </DemoContainer>
       <StateLog />
-      <ShowOn />
       <Links />
+      <ShowOn />
       <FormElements />
       <CssStickyHoverBug />
       <StressTest />
