@@ -1,7 +1,7 @@
 {
   "name": "react-interactive",
   "version": "1.0.0-next.10",
-  "description": "Better interactive states than CSS pseudo classes and a callback for interactive state changes",
+  "description": "Better hover, active and focus states than CSS pseudo-classes, and a callback when the interactive state changes.",
   "main": "dist/react-interactive.cjs.js",
   "module": "dist/react-interactive.esm.js",
   "types": "dist/index.d.ts",

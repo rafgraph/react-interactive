@@ -1,6 +1,6 @@
 # React Interactive
 
-[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive@next?color=purple)](https://bundlephobia.com/result?p=react-interactive@next) ![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue)
+[![npm](https://img.shields.io/npm/dm/react-interactive?label=npm)](https://www.npmjs.com/package/react-interactive) [![npm bundle size (version)](https://img.shields.io/bundlephobia/minzip/react-interactive?color=purple)](https://bundlephobia.com/result?p=react-interactive) ![npm type definitions](https://img.shields.io/npm/types/react-interactive?color=blue)
 
 - Better interactive states than CSS pseudo classes
   - `hover`, `active`, `mouseActive`, `touchActive`, `keyActive`
@@ -25,10 +25,8 @@ Code is in the [`/demo`](/demo) folder, or open the [demo in CodeSandbox](https:
 
 ## Basics
 
-> v1 is in pre-release so use the `@next` tag to install it, v0 is available [here](https://github.com/rafgraph/react-interactive/tree/v0.9.5)
-
 ```shell
-npm install --save react-interactive@next
+npm install --save react-interactive
 ```
 
 ```js
@@ -698,7 +696,7 @@ React Interactive fixes the sticky hover bug by only entering the `hover` state 
 ## FAQ
 
 - **How do I manually set focus on an `<Interactive>` component?**
-  - Use a `ref` a call `focus()` on the element (this is standard React). To enter a specific `focusFrom[Input]` state use [`setEventFrom`](#seteventfrominputtype).
+  - Pass in a `ref` prop and call `focus()` on the element (this is standard React). To enter a specific `focusFrom[Input]` state use [`setEventFrom`](#seteventfrominputtype).
 - **How do I disable an `<Interactive>` component?**
   - Pass in a [`disabled` boolean prop](#disabled-boolean).
 - **How do I use `<Interactive>` with another polymorphic component?**
@@ -710,9 +708,9 @@ React Interactive fixes the sticky hover bug by only entering the `hover` state 
     - See [Styling with CSS](#styling-with-css), and also [this CodeSandbox](https://codesandbox.io/s/react-interactive-css-style-example-ttl0t) for a live example.
   - **How do I style the interactive states with inline styles?**
     - See [Styling with inline styles](#styling-with-inline-styles), and also [this CodeSandbox](https://codesandbox.io/s/react-interactive-inline-style-example-6s8mn) for a live example.
-  - **How do I use React Interactive with Styled Components?**
+  - **How do I use Styled Components with React Interactive?**
     - See [this CodeSandbox](https://codesandbox.io/s/react-interactive-styled-components-example-7dozj) for a live example.
-  - **How do I use React Interactive with Stitches?**
+  - **How do I use Stitches with React Interactive?**
     - See [this CodeSandbox](https://codesandbox.io/s/react-interactive-stitches-example-os981) for a live example.
 - **TypeScript**
   - **How do I use React Interactive with TypeScript?**
