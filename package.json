@@ -40,11 +40,11 @@
   },
   "homepage": "https://react-interactive.rafgraph.dev",
   "dependencies": {
-    "event-from": "^0.7.0",
+    "event-from": "^1.0.0",
     "react-polymorphic-types": "^1.1.0"
   },
   "devDependencies": {
-    "@types/react": "^17.0.3",
+    "@types/react": "^17.0.4",
     "lint-staged": "^10.5.4",
     "pre-commit": "^1.2.2",
     "react": "file:demo/node_modules/react",
