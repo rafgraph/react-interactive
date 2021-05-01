@@ -25,7 +25,9 @@ export const spaceKeyTrigger: ElementTagNameAndType = ({ tagName, type }) =>
 
 // elements that support the disabled attribute
 export const elementSupportsDisabled: ElementTagNameAndType = ({ tagName }) =>
-  ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(tagName as string);
+  ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'FIELDSET'].includes(
+    tagName as string,
+  );
 
 interface CursorPointer {
   (

@@ -200,6 +200,16 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
 
   ////////////////////////////////////
 
+  // if disabled and As is a component, will need to re-render if there is a new ref
+  // to know if the DOM element supports disabled because don't have access to the DOM element on the first render,
+  // the forceUpdate only happens after the first render (and only if disabled and As component),
+  // and when the As component renders a different DOM element while in the disabled state
+  const disabledAndAsComponent = React.useRef<boolean>(false);
+  disabledAndAsComponent.current = disabled && typeof As !== 'string';
+  const [, forceUpdateDisabledComponent] = React.useState(false);
+
+  ////////////////////////////////////
+
   // support passed in ref prop as object or callback, and track ref locally
   const localRef = React.useRef<Element | null>(null);
   const callbackRef = React.useCallback(
@@ -209,6 +219,12 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
         ref(node);
       } else if (ref) {
         ref.current = node;
+      }
+
+      // if disabled and As is a component, and receive a new ref (i.e. callbackRef is called)
+      // then re-render to pass the disabled prop to the As component if the DOM element supports it
+      if (disabledAndAsComponent.current) {
+        forceUpdateDisabledComponent((s) => !s);
       }
     },
     [ref],
@@ -782,11 +798,10 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     // if the As DOM element supports the disabled prop, then pass through the disabled prop
     if (
       elementSupportsDisabled(
-        localRef.current ||
-          // on the first render localRef.current will be null, but should still pass through disabled prop if supported
-          (typeof As === 'string'
-            ? { tagName: (As as string).toUpperCase() }
-            : {}),
+        // on the first render localRef.current will be null, but should still pass through disabled prop if supported
+        typeof As === 'string'
+          ? { tagName: (As as string).toUpperCase() }
+          : localRef.current || {},
       )
     ) {
       disabledProps.disabled = true;
