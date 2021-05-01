@@ -29,6 +29,7 @@ export const GitHubIconLink: React.VFC<GitHubIconLinkProps> = ({
       width: '36px',
       height: '36px',
       padding: '3px',
+      margin: '-3px',
       borderRadius: '50%',
       // cast as any b/c of Stitches bug: https://github.com/modulz/stitches/issues/407
       ...(css as any),

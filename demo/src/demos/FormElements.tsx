@@ -90,10 +90,10 @@ const Checkbox = styled(createInteractive(RadixCheckbox.Root), {
   border: '1px solid $highContrast',
   borderRadius: '2px',
 
-  // hover and active styles in LabelBase so styles are applied when label is hovered/active
+  // hover and active styles in label so styles are applied when label is hovered/active
   // '&.hover, &.active': {...},
   '&.focusFromKey': {
-    // !important required so hover and active styles from Label are not applied
+    // !important required so hover and active styles from label are not applied
     // to border and boxShadow when in the focusFromKey state
     borderColor: '$purple !important',
     boxShadow:

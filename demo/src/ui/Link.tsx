@@ -16,13 +16,20 @@ const StyledLink = styled(Interactive.A, {
     textDecorationColor: '$green',
     textDecorationStyle: 'solid',
   },
+  '&.mouseActive': {
+    textDecorationColor: '$green',
+    textDecorationStyle: 'solid',
+    color: '$green',
+  },
   '&.touchActive': {
     textDecorationColor: '$blue',
     textDecorationStyle: 'solid',
+    color: '$blue',
   },
   '&.keyActive': {
     textDecorationColor: '$purple',
     textDecorationStyle: 'solid',
+    color: '$purple',
   },
   variants: {
     focus: {

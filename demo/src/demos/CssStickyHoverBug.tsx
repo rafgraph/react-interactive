@@ -60,7 +60,7 @@ export const CssStickyHoverBug: React.VFC = () => {
       <p>
         On touch devices the{' '}
         <Link href="https://github.com/rafgraph/react-interactive#css-sticky-hover-bug">
-          CSS <code>:hover</code> state sticks
+          CSS :hover state sticks
         </Link>{' '}
         until you tap someplace else on the screen.
       </p>

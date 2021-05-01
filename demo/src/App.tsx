@@ -11,7 +11,7 @@ import { DemoContainer } from './ui/DemoContainer';
 
 const AppContainer = styled('div', {
   maxWidth: '500px',
-  padding: '10px 15px 25px',
+  padding: '12px 15px 25px',
   margin: '0 auto',
 });
 
@@ -22,16 +22,15 @@ const HeaderContainer = styled('header', {
 });
 
 const H1 = styled('h1', {
-  display: 'flex',
-  alignItems: 'center',
   fontSize: '26px',
-  marginRight: '10px',
+  marginRight: '16px',
 });
 
 const HeaderIconContainer = styled('span', {
-  width: '80px',
+  width: '78px',
   display: 'inline-flex',
   justifyContent: 'space-between',
+  gap: '10px',
 });
 
 export const App = () => {
@@ -40,11 +39,11 @@ export const App = () => {
       <HeaderContainer>
         <H1>React Interactive Demo</H1>
         <HeaderIconContainer>
+          <DarkModeButton />
           <GitHubIconLink
             title="GitHub repository for React Interactive"
             href="https://github.com/rafgraph/react-interactive"
           />
-          <DarkModeButton />
         </HeaderIconContainer>
       </HeaderContainer>
       <DemoContainer as="p" css={{ paddingBottom: '20px' }}>

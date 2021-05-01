@@ -4,7 +4,6 @@ import {
   Interactive,
   createInteractive,
   eventFrom,
-  InteractiveExtendableProps,
   InteractiveState,
   InteractiveStateChange,
 } from 'react-interactive';
@@ -14,25 +13,8 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import { DemoContainer, DemoHeading } from '../ui/DemoContainer';
 import { styled } from '../stitches.config';
 
-const StateLogContainer = styled('div', {
-  height: '200px',
-  padding: '0 5px',
-  border: '1px solid $highContrast',
-  overflowY: 'scroll',
-  fontFamily: 'monospace',
-  outline: 'none',
-  '&.focusFromKey': {
-    outline: '3px solid $colors$purple',
-    outlineOffset: '1px',
-  },
-});
-
-const InteractiveButton: React.VFC<InteractiveExtendableProps<'button'>> = (
-  props,
-) => <Interactive {...props} as="button" />;
-
-const DemoButton = styled(InteractiveButton, {
-  fontFamily: 'monospace',
+const DemoButton = styled(Interactive.Button, {
+  fontFamily: '$mono',
   fontSize: '20px',
   textAlign: 'center',
   width: '100%',
@@ -59,6 +41,21 @@ const DemoButton = styled(InteractiveButton, {
     outline: '3px solid $colors$outlineGreen',
     outlineOffset: '1px',
   },
+  '&.focusFromKey': {
+    outline: '3px solid $colors$purple',
+    outlineOffset: '1px',
+  },
+});
+
+const StateLogContainer = styled('div', {
+  height: '200px',
+  padding: '0 5px',
+  border: '1px solid $highContrast',
+  overflowY: 'scroll',
+  fontFamily: '$mono',
+  // outline: 'none' required because this is a div (with tabIndex)
+  // which doesn't have "unset: all" in css reset applied
+  outline: 'none',
   '&.focusFromKey': {
     outline: '3px solid $colors$purple',
     outlineOffset: '1px',
@@ -136,11 +133,10 @@ const ExtendedTouchActiveOptionCheckbox = styled(
     width: '32px',
     height: '32px',
     borderRadius: '2px',
-    // hover and active are styled in LabelBase so styles are applied when label is hovered/active
+    // hover and active are styled in label so styles are applied when label is hovered/active
     // '&.hover, &.active': {...},
     '&.focusFromKey': {
-      outline: 'none',
-      // !important required so hover and active styles from Label are not applied
+      // !important required so hover and active styles from label are not applied
       // to border and boxShadow when in the focusFromKey state
       borderColor: '$purple !important',
       boxShadow: '0 0 0 1px $colors$purple !important',

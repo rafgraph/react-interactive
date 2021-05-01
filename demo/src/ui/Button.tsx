@@ -3,7 +3,6 @@ import { styled } from '../stitches.config';
 
 export const Button = styled(Interactive.Button, {
   color: '$highContrast',
-  outline: 'none',
   '&.hover, &.mouseActive': {
     color: '$green',
     borderColor: '$green',

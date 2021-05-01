@@ -47,7 +47,7 @@ const ShowStressTestButton = styled(Interactive.Button, {
 const StressTestItem = styled(Interactive.Button, {
   display: 'block',
   width: '100%',
-  fontFamily: 'monospace',
+  fontFamily: '$mono',
   '&.hover, &.mouseActive': {
     color: '$green',
   },

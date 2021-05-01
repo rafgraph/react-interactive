@@ -18,6 +18,9 @@ export const stitchesConfig = createCss({
       purple: 'hsl(270,100%,60%)',
       backgroundPurple: 'hsl(270,100%,92%)',
     },
+    fonts: {
+      mono: 'monospace',
+    },
   },
 });
 
@@ -83,8 +86,7 @@ export const globalCss = createGlobalCss({
     textSizeAdjust: 'none',
   },
   code: {
-    fontFamily: 'monospace',
-    lineHeight: '16px',
+    fontFamily: '$mono',
   },
   // pass down height: 100% to the #root div
   'body, html': {
