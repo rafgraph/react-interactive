@@ -10,7 +10,7 @@
     "detect-it": "^4.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-interactive": "^1.0.0-next.10",
+    "react-interactive": "^1.0.0",
     "react-router-dom": "^5.2.0",
     "use-dark-mode": "^2.3.1"
   },
@@ -30,7 +30,7 @@
   },
   "scripts": {
     "dev": "npm install --save ../ && npm start",
-    "devCleanup": "npm install --save react-interactive@next",
+    "devCleanup": "npm install --save react-interactive@latest",
     "deploy": "gh-pages --dist build --message Built-`date +%Y%m%d`-`date +%H%M%S`",
     "predeploy": "npm run devCleanup && npm run lint && npm test -- --watchAll=false && npm run build",
     "lint": "eslint src",
