@@ -35,9 +35,6 @@ const InteractiveInfo = styled(Interactive.Span, {
   height: 30,
   display: 'inline-block',
   verticalAlign: 'top',
-  // outline: 'none' required because this is a span (with tabIndex)
-  // which doesn't have "unset: all" in css reset applied
-  outline: 'none',
   borderRadius: '50%',
   '&.hover': {
     color: '$green',

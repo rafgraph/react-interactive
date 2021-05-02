@@ -53,9 +53,6 @@ const StateLogContainer = styled('div', {
   border: '1px solid $highContrast',
   overflowY: 'scroll',
   fontFamily: '$mono',
-  // outline: 'none' required because this is a div (with tabIndex)
-  // which doesn't have "unset: all" in css reset applied
-  outline: 'none',
   '&.focusFromKey': {
     outline: '3px solid $colors$purple',
     outlineOffset: '1px',

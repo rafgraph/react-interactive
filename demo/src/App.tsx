@@ -30,7 +30,7 @@ const HeaderIconContainer = styled('span', {
   width: '78px',
   display: 'inline-flex',
   justifyContent: 'space-between',
-  gap: '10px',
+  gap: '12px',
 });
 
 export const App = () => {

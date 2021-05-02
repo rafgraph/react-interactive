@@ -47,7 +47,6 @@ const InteractiveLink = styled(Interactive.A, {
 const InteractiveDiv = styled(Interactive.Div, {
   padding: '5px',
   border: '1px solid',
-  outline: 'none',
   ...interactiveStyles,
 });
 

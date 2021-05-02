@@ -11,7 +11,7 @@ export const stitchesConfig = createCss({
       red: 'hsl(0,100%,50%)',
       orange: 'hsl(30,100%,50%)',
       yellow: 'hsl(51,100%,40%)',
-      green: 'hsl(120,100%,30%)',
+      green: 'hsl(120,100%,33%)', // same as rgb(0,168,0)
       outlineGreen: 'hsl(120,40%,55%)',
       blue: 'hsl(240,100%,50%)',
       outlineBlue: 'hsl(240,100%,70%)',
@@ -71,6 +71,7 @@ export const globalCss = createGlobalCss({
     wordBreak: 'inherit',
     color: 'inherit',
     background: 'transparent',
+    outline: 'none',
     WebkitTapHighlightColor: 'transparent',
   },
   // set base styles for the app
