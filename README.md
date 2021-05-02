@@ -392,6 +392,11 @@ Default value: `false`
 
 By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible. To remain in the `touchActive` state for as long as the touch point is on the screen, pass in the `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
 
+Note that anchor tags, `<a>`, on touch devices have their own device/browser specific behavior for long press (context/callout menu, dragging, etc). If you need to disable the native behavior for long press of links you can:
+- Set a `onContextMenu` event listener and call `preventDefault()`, to prevent the context menu from appearing.
+- Set `-webkit-touch-callout: none` style to prevent the iOS "context menu" from appearing (iOS doesn't support `contextmenu` events).
+- Set `draggable="false"` on the `<a>` element (by passing it in as a prop).
+
 ---
 
 ### `ref`: object `ref` | callback `ref`

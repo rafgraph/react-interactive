@@ -617,26 +617,8 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
 
   ////////////////////////////////////
 
-  // prevent the context menu from popping up on long touch when useExtendedTouchActive is true
-  const { onContextMenu } = restProps;
-  const handleContextMenuEvent = React.useCallback(
-    (e: React.MouseEvent) => {
-      if (inTouchActiveState && useExtendedTouchActive) {
-        e.preventDefault();
-      }
-      if (onContextMenu) {
-        (onContextMenu as React.MouseEventHandler)(e);
-      }
-    },
-    [inTouchActiveState, useExtendedTouchActive, onContextMenu],
-  );
-
-  ////////////////////////////////////
-
   // create object with event listeners to pass to <As {...eventListeners}>
-  const eventListeners: Record<string, React.ReactEventHandler> = {
-    onContextMenu: handleContextMenuEvent,
-  };
+  const eventListeners: Record<string, React.ReactEventHandler> = {};
   eventListenerPropNames.forEach((listenerPropName) => {
     eventListeners[listenerPropName] = handleEvent;
   });
@@ -704,11 +686,6 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
     )
   ) {
     style.cursor = 'pointer';
-  }
-  if (inTouchActiveState && useExtendedTouchActive) {
-    // set webkit-touch-callout: none to prevent the iOS "context menu" from popping up on long touch
-    // note that iOS doesn't fire contextmenu events so need to set webkit-touch-callout
-    style.WebkitTouchCallout = 'none';
   }
 
   // add style prop passed to RI
@@ -812,11 +789,6 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
 
   return (
     <As
-      // if useExtendedTouchActive then prevent long touch from dragging links
-      // allow draggable to be overridden by passed in draggable prop from restProps
-      draggable={
-        inTouchActiveState && useExtendedTouchActive ? false : undefined
-      }
       {...restProps}
       {...eventListeners}
       {...disabledProps}
