@@ -1,5 +1,5 @@
 import { StateLog } from './demos/StateLog';
-import { Links } from './demos/Links';
+import { LinksAndButtons } from './demos/LinksAndButtons';
 import { ShowOn } from './demos/ShowOn';
 import { FormElements } from './demos/FormElements';
 import { CssStickyHoverBug } from './demos/CssStickyHoverBug';
@@ -51,7 +51,7 @@ export const App = () => {
         navigation too!
       </DemoContainer>
       <StateLog />
-      <Links />
+      <LinksAndButtons />
       <ShowOn />
       <FormElements />
       <CssStickyHoverBug />

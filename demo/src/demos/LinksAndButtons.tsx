@@ -43,10 +43,49 @@ const P = styled('p', {
   marginTop: '10px',
 });
 
-export const Links: React.VFC = () => {
+const Button = styled(Interactive.Button, {
+  display: 'block',
+  padding: '10px 26px',
+  marginTop: '16px',
+  fontFamily: '$mono',
+  textAlign: 'center',
+  backgroundColor: '$formElementsBackground',
+  border: '1px solid',
+  borderRadius: '1000px',
+
+  '&.hover': {
+    borderColor: '$green',
+    boxShadow: '2px 3px 4px 0px rgba(0, 0, 0, 0.38)',
+  },
+  // focusFromKey styles are overridden by active styles (below), but not hover styles (above)
+  '&.focusFromKey': {
+    borderColor: '$purple',
+    boxShadow: '0 0 0 1px $colors$purple, 2px 3px 4px 0px rgba(0, 0, 0, 0.38)',
+  },
+  '&.mouseActive': {
+    color: '$green',
+    borderColor: '$green',
+    boxShadow: '1px 2px 3px 0px rgba(0, 0, 0, 0.38)',
+  },
+  '&.touchActive': {
+    color: '$blue',
+    borderColor: '$blue',
+    boxShadow: '0 0 0 1px $colors$blue',
+  },
+  '&.keyActive': {
+    color: '$purple',
+    borderColor: '$purple',
+    boxShadow: '0 0 0 1px $colors$purple, 1px 2px 3px 0px rgba(0, 0, 0, 0.38)',
+  },
+  '&.disabled': {
+    opacity: 0.5,
+  },
+});
+
+export const LinksAndButtons: React.VFC = () => {
   return (
     <DemoContainer id="links">
-      <DemoHeading>Links</DemoHeading>
+      <DemoHeading>Links and Buttons</DemoHeading>
       <AnchorLink href="#">
         Anchor tag link – <code>as="a" href="#"</code>
       </AnchorLink>
@@ -60,6 +99,7 @@ export const Links: React.VFC = () => {
         </Link>{' '}
         that appears in the middle of some text.
       </P>
+      <Button>as="button"</Button>
     </DemoContainer>
   );
 };

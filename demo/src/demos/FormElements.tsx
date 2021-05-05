@@ -189,7 +189,7 @@ const Button = styled(Interactive.Button, {
   '&.touchActive': {
     color: '$blue',
     borderColor: '$blue',
-    boxShadow: '0 0 0 1px $colors$blue, 2px 3px 4px 0px rgba(0, 0, 0, 0.38)',
+    boxShadow: '0 0 0 1px $colors$blue',
   },
   '&.keyActive': {
     color: '$purple',
