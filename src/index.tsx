@@ -54,11 +54,11 @@ const initialState: InteractiveState = {
 
 // event listeners set by RI
 const eventMap: Record<string, string> = {
-  mouseenter: 'onMouseEnter',
+  mouseover: 'onMouseOver',
   mouseleave: 'onMouseLeave',
   mousedown: 'onMouseDown',
   mouseup: 'onMouseUp',
-  pointerenter: 'onPointerEnter',
+  pointerover: 'onPointerOver',
   pointerleave: 'onPointerLeave',
   pointerdown: 'onPointerDown',
   pointerup: 'onPointerUp',
@@ -367,7 +367,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   ////////////////////////////////////
 
   // handleEvent handles all events that change the interactive state of the component
-  // for example <As onMouseEnter={handleEvent} onPointerEnter={handleEvent} etc...>
+  // for example <As onMouseOver={handleEvent} onPointerOver={handleEvent} etc...>
 
   // always set all pointer/mouse/touch event listeners
   // instead of just pointer event listeners (when supported by the browser)
@@ -376,7 +376,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   //   - 1. the pointer events implementation is buggy on some devices
   //        so pointer events on its own is not a good option
   //        for example, on iPadOS pointer events from mouse will cease to fire for the entire page
-  //        after using mouse and touch input at the same time on the same element (note that mouse events are unaffected)
+  //        after using mouse and touch input at the same time (note that mouse events are unaffected)
   //   - 2. the pointercancel event is useful for syncing the touchActive state with browser generated click events
   //        as it fires as soon as the browser uses the touch interaction for another purpose (e.g. scrolling)
   //        and this can't be replicated with touch events (touchcancel behaves differently)
@@ -387,6 +387,13 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   // the solution is to always set all listeners and make the stateChange function idempotent
   // and bail on updating state in setIState if the state hasn't changed to prevent unnecessary renders
   // also note that setting listeners for events not supported by the browser has no effect
+
+  // note: use onMouseOver and onPointerOver instead of onMouseEnter and onPointerEnter because
+  // of a react bug where enter events are not dispatched on an element when the element above it is removed,
+  // this also effects when navigating around a single page app where the user clicks on a link
+  // and the element that's rendered on the new page under the mouse doesn't receive enter events
+  // see: https://github.com/facebook/react/issues/13956
+  // note that since stateChange is idempotent the extra mouse/pointer over events will have no effect
 
   // useCallback so event handlers passed to <As> are referentially equivalent between renders
   const handleEvent = React.useCallback(
@@ -411,14 +418,14 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
       //   default switch on eventFrom(e)
       //     eventFrom mouse
       //       switch on e.type
-      //         mouse/pointer enter -> hover: enter true
+      //         mouse/pointer over -> hover: enter true
       //         mouse/pointer leave, pointercancel -> hover: enter false, active: exit mouseActive
       //         mouse/pointer down -> active: enter mouseActive
       //         mouse/pointer up -> active: exit mouseActive
       //     eventFrom touch
       //       switch on e.type
       //         touchstart/pointerdown -> active: enter touchActive
-      //         touchend/pointerup/touchcancel/pointercancel/mouseenter -> active: exit touchActive
+      //         touchend/pointerup/touchcancel/pointercancel/mouseover -> active: exit touchActive
       //         mouseleave -> hover: enter false, active: exit mouseActive
       switch (e.type) {
         case 'focus':
@@ -487,8 +494,8 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
           switch (eventFrom(e)) {
             case 'mouse':
               switch (e.type) {
-                case 'mouseenter':
-                case 'pointerenter':
+                case 'mouseover':
+                case 'pointerover':
                   stateChange({
                     iStateKey: 'hover',
                     state: true,
@@ -545,11 +552,11 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
                 case 'touchcancel':
                 case 'pointerup':
                 case 'pointercancel':
-                // exit touchActive on mouseenter eventFrom touch
+                // exit touchActive on mouseover eventFrom touch
                 // because on android, mouse events (and focus and context menu) fire ~500ms after touch start
                 // once they fire, click will never be fired, so exit touchActive
                 // eslint-disable-next-line no-fallthrough
-                case 'mouseenter':
+                case 'mouseover':
                   // if useExtendedTouchActive then only exit touchActive on touchend and touchcancel events
                   // which won't fire until the touch point is removed from the screen
                   if (
@@ -570,7 +577,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
                 // but RI is now stuck in the hover state
                 // so RI needs to exit the hover state on a mouseleave eventFrom touch,
                 // note that if no scrolling is involved this is not too bad because
-                // when the mouse is used again it will be over the RI element (and will fire mouseenter event),
+                // when the mouse is used again it will be over the RI element (and will fire mouseover event),
                 // but if the user scrolled with the touch interaction then RI will be stuck in the hover state
                 // until the user re-hovers and exits the RI element with their mouse, which is bad,
                 // also note that on touch only devices this stateChange call will have no effect because RI is never in the hover or mouseActive states
@@ -600,7 +607,7 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
       }
     },
     // handleEvent is dependent on event handler props that are also in eventMap
-    // for example, restProps.onMouseEnter, restProps.onTouchStart, etc
+    // for example, restProps.onMouseOver, restProps.onTouchStart, etc
     // this generates an array of event handler props that are also in eventMap
     // handleEvent is also dependent on stateChange, but this will always be referentially equivalent
     // eslint-disable-next-line react-hooks/exhaustive-deps
