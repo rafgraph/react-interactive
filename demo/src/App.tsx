@@ -1,8 +1,8 @@
 import { StateLog } from './demos/StateLog';
 import { LinksAndButtons } from './demos/LinksAndButtons';
 import { ShowOn } from './demos/ShowOn';
-import { FormElements } from './demos/FormElements';
 import { CssStickyHoverBug } from './demos/CssStickyHoverBug';
+import { FormElements } from './demos/FormElements';
 import { StressTest } from './demos/StressTest';
 import { styled } from './stitches.config';
 import { GitHubIconLink } from './ui/GitHubIconLink';
@@ -53,8 +53,8 @@ export const App = () => {
       <StateLog />
       <LinksAndButtons />
       <ShowOn />
-      <FormElements />
       <CssStickyHoverBug />
+      <FormElements />
       <StressTest />
     </AppContainer>
   );

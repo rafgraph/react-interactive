@@ -5,9 +5,8 @@ import { Link } from '../ui/Link';
 import { styled } from '../stitches.config';
 
 const PseudoClassButton = styled('button', {
-  display: 'block',
+  height: '100%',
   padding: '8px 20px',
-  marginTop: '18px',
   textAlign: 'center',
   backgroundColor: '$formElementsBackground',
   border: '1px solid',
@@ -24,9 +23,8 @@ const PseudoClassButton = styled('button', {
 });
 
 const InteractiveButton = styled(Interactive.Button, {
-  display: 'block',
+  height: '100%',
   padding: '8px 20px',
-  marginTop: '18px',
   textAlign: 'center',
   backgroundColor: '$formElementsBackground',
   border: '1px solid',
@@ -46,9 +44,13 @@ const InteractiveButton = styled(Interactive.Button, {
 });
 
 const ButtonsContainer = styled('div', {
-  display: 'flex',
-  gap: '15px',
   marginTop: '15px',
+  display: 'grid',
+  gridTemplateColumns: 'auto auto',
+  gridTemplateRows: 'auto auto',
+  gridAutoFlow: 'column',
+  gridColumnGap: '18px',
+  gridRowGap: '18px',
 });
 
 export const CssStickyHoverBug: React.VFC = () => {
@@ -65,18 +67,18 @@ export const CssStickyHoverBug: React.VFC = () => {
         until you tap someplace else on the screen.
       </p>
       <ButtonsContainer>
+        <p>
+          Button styled with pseudo-classes, <code>:hover</code> is green,{' '}
+          <code>:active</code> is red.
+        </p>
         <div>
-          <p>
-            Button styled with pseudo-classes, <code>:hover</code> is green,{' '}
-            <code>:active</code> is red.
-          </p>
           <PseudoClassButton>Pseudo-class Button</PseudoClassButton>
         </div>
+        <p>
+          Button styled with React Interactive, <code>.hover</code> is green,{' '}
+          <code>.active</code> is red.
+        </p>
         <div>
-          <p>
-            Button styled with React Interactive, <code>.hover</code> is green,{' '}
-            <code>.active</code> is red.
-          </p>
           <InteractiveButton
             // useExtendedTouchActive to match css :active functionality
             // which stays in the :active state as long a the touch point is on the screen,
