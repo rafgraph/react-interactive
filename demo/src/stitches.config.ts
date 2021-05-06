@@ -83,6 +83,7 @@ export const globalCss = createGlobalCss({
     MozOsxFontSmoothing: 'grayscale',
     fontSize: '16px',
     boxSizing: 'border-box',
+    WebkitTextSizeAdjust: 'none', // required because textSizeAdjust is not getting prefixed in Stitches v0.1.9
     textSizeAdjust: 'none',
   },
   code: {

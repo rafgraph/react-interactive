@@ -75,10 +75,6 @@ const CheckboxLabel = styled(createInteractive(RadixLabel.Root), {
     opacity: 0.5,
     cursor: 'unset',
   },
-  // required because of radix checkbox bug: https://github.com/radix-ui/primitives/issues/605
-  '&>input': {
-    display: 'none',
-  },
 });
 
 const Checkbox = styled(createInteractive(RadixCheckbox.Root), {
