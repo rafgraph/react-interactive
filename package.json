@@ -48,7 +48,7 @@
     "lint-staged": "^10.5.4",
     "pre-commit": "^1.2.2",
     "react": "file:demo/node_modules/react",
-    "rollpkg": "^0.5.5",
+    "rollpkg": "^0.5.6",
     "typescript": "^4.2.4"
   },
   "peerDependencies": {
@@ -64,13 +64,7 @@
   "eslintConfig": {
     "extends": [
       "./node_modules/rollpkg/configs/eslint"
-    ],
-    "rules": {
-      "@typescript-eslint/no-unsafe-call": "warn",
-      "@typescript-eslint/no-unsafe-return": "warn",
-      "@typescript-eslint/no-unsafe-member-access": "warn",
-      "@typescript-eslint/no-unsafe-assignment": "warn"
-    }
+    ]
   },
   "jest": {
     "preset": "rollpkg"
