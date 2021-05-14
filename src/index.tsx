@@ -848,18 +848,19 @@ export const Interactive: PolymorphicInteractive = Object.assign(
 export function createInteractive<
   T extends React.ElementType = typeof defaultAs
 >(as: T): React.ForwardRefExoticComponent<InteractivePropsWithoutAs<T>> {
-  // without any get TS error on return type of WrappedInteractive
-  const WrappedInteractive: any = React.forwardRef(function <
+  // eslint-disable-next-line react/display-name
+  const WrappedInteractive = React.forwardRef(function <
     T extends React.ElementType = typeof as
   >(
     props: PolymorphicPropsWithoutRef<InteractiveOwnProps, T>,
     ref: React.ForwardedRef<Element>,
   ) {
     return <Interactive {...props} as={as} ref={ref} />;
-  });
+    // without type casting get TS error on return type of WrappedInteractive
+  }) as React.ForwardRefExoticComponent<InteractivePropsWithoutAs<T>>;
   if (process.env.NODE_ENV !== 'production') {
     WrappedInteractive.displayName = `createInteractive.${
-      typeof as === 'string' ? as : (as as any).displayName
+      typeof as === 'string' ? as : Object(as).displayName
     }`;
   }
   return WrappedInteractive;
