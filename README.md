@@ -30,11 +30,9 @@ npm install --save react-interactive
 ```
 
 ```js
-import { Interactive } from 'react-interactive'
+import { Interactive } from 'react-interactive';
 
-...
-
-<Interactive as="button">My Button</Interactive>
+const App = () => <Interactive as="button">My Button</Interactive>;
 ```
 
 ---
@@ -47,11 +45,17 @@ React Interactive accepts a polymorphic `as` prop that can be a string represent
 import { Interactive } from 'react-interactive';
 import { Link } from 'react-router-dom';
 
-...
-
-<Interactive as="button">My Button</Interactive>
-<Interactive as="a" href="https://rafgraph.dev">My Link</Interactive>
-<Interactive as={Link} to="/some-page">My React Router Link</Interactive>
+const App = () => (
+  <>
+    <Interactive as="button">My Button</Interactive>
+    <Interactive as="a" href="https://rafgraph.dev">
+      My Link
+    </Interactive>
+    <Interactive as={Link} to="/some-page">
+      My React Router Link
+    </Interactive>
+  </>
+);
 ```
 
 ---
@@ -93,10 +97,12 @@ CSS classes for the current state are automatically added for easy styling with 
 ```js
 import { Interactive } from 'react-interactive';
 
-...
-
-// add a className to target the element in CSS
-<Interactive as="button" className="my-button">My Button</Interactive>
+const App = () => (
+  // add a className to target the element in CSS
+  <Interactive as="button" className="my-button">
+    My Button
+  </Interactive>
+);
 ```
 
 ```css
@@ -131,9 +137,7 @@ const StyledButton = styled(Interactive.Button, {
   },
 });
 
-...
-
-<StyledButton>My Button</StyledButton>
+const App = () => <StyledButton>My Button</StyledButton>;
 ```
 
 ---
@@ -159,16 +163,16 @@ const focusFromKeyStyle = {
   outline: '2px solid green',
 };
 
-...
-
-<Interactive
-  as="button"
-  hoverStyle={hoverAndActiveStyle}
-  activeStyle={hoverAndActiveStyle}
-  focusFromKeyStyle={focusFromKeyStyle}
->
-  My Button
-</Interactive>
+const App = () => (
+  <Interactive
+    as="button"
+    hoverStyle={hoverAndActiveStyle}
+    activeStyle={hoverAndActiveStyle}
+    focusFromKeyStyle={focusFromKeyStyle}
+  >
+    My Button
+  </Interactive>
+);
 ```
 
 ---
@@ -181,25 +185,25 @@ React Interactive accepts an `onStateChange` prop callback that is called each t
 import * as React from 'react';
 import { Interactive } from 'react-interactive';
 
-...
+const App = () => {
+  const handleInteractiveStateChange = React.useCallback(
+    ({ state, prevState }) => {
+      // both state and prevState are of the shape:
+      // {
+      //   hover: boolean,
+      //   active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
+      //   focus: 'focusFromMouse' | 'focusFromTouch' | 'focusFromKey' | false,
+      // }
+    },
+    [],
+  );
 
-const handleInteractiveStateChange = React.useCallback(({ state, prevState }) => {
-  // both state and prevState are of the shape:
-  // {
-  //   hover: boolean,
-  //   active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
-  //   focus: 'focusFromMouse' | 'focusFromTouch' | 'focusFromKey' | false,
-  // }
-}, []);
-
-...
-
-<Interactive
-  as="button"
-  onStateChange={handleInteractiveStateChange}
->
-  My Button
-</Interactive>
+  return (
+    <Interactive as="button" onStateChange={handleInteractiveStateChange}>
+      My Button
+    </Interactive>
+  );
+};
 ```
 
 ---
@@ -211,13 +215,13 @@ React Interactive uses the children as a function pattern to pass the current in
 ```js
 import { Interactive } from 'react-interactive';
 
-...
-
-<Interactive as="div" tabIndex={0}>
-  {({ hover, active, focus }) => (
-    `Current state - active: ${active}, hover: ${hover}, focus: ${focus}`
-  )}
-</Interactive>
+const App = () => (
+  <Interactive as="div" tabIndex={0}>
+    {({ hover, active, focus }) =>
+      `Current state - active: ${active}, hover: ${hover}, focus: ${focus}`
+    }
+  </Interactive>
+);
 ```
 
 ---
@@ -234,15 +238,15 @@ import { Interactive, createInteractive } from 'react-interactive';
 import { styled } from '@stitches/react';
 import { Link } from 'react-router-dom';
 
-const StyledButton = styled(Interactive.Button, {...});
-const StyledRouterLink = styled(createInteractive(Link), {...});
+const StyledButton = styled(Interactive.Button, {});
+const StyledRouterLink = styled(createInteractive(Link), {});
 
-...
-
-// onStateChange is an <Interactive> prop
-<StyledButton onStateChange={...}>Interactive Button</StyledButton>
-<StyledRouterLink onStateChange={...}>Interactive Router Link</StyledRouterLink>
-
+const App = () => (
+  <>
+    <StyledButton>Interactive Button</StyledButton>
+    <StyledRouterLink>Interactive Router Link</StyledRouterLink>
+  </>
+);
 ```
 
 ```js
@@ -253,10 +257,12 @@ import { SomePolymorphicComponent } from '...';
 
 const InteractiveRouterLink = createInteractive(Link);
 
-...
-
-<SomePolymorphicComponent as={Interactive.Button} />
-<SomePolymorphicComponent as={InteractiveRouterLink} />
+const App = () => (
+  <>
+    <SomePolymorphicComponent as={Interactive.Button} />
+    <SomePolymorphicComponent as={InteractiveRouterLink} />
+  </>
+);
 ```
 
 ---
@@ -274,8 +280,17 @@ Default value: `"button"`
 React Interactive accepts a polymorphic `as` prop that can be a string representing a DOM element (e.g. `"button`, `"a"`, `"div"`, etc), or a React component (e.g. React Router's `Link`, etc).
 
 ```js
-<Interactive as="button">My Button</Interactive>
-<Interactive as={Link} to="/some-page">My React Router Link</Interactive>
+import { Interactive } from 'react-interactive';
+import { Link } from 'react-router-dom';
+
+const App = () => (
+  <>
+    <Interactive as="button">My Button</Interactive>
+    <Interactive as={Link} to="/some-page">
+      My React Router Link
+    </Interactive>
+  </>
+);
 ```
 
 > Note that if `as` is a React component, then the component needs to pass through props to the element that it renders, including the `ref` prop using `React.forwardRef()`. Most libraries designed for composability do this by default, including React Router's `<Link>` component.
@@ -299,15 +314,20 @@ If `children` is a `ReactNode` (anything that React can render, e.g. an Element,
 If `children` is a function then it is called with an object containing the current interactive state (note that the function must return a `ReactNode` that React can render). See [Using the interactive state in `children`](#using-the-interactive-state-in-children).
 
 ```js
-<Interactive as="div" tabIndex={0}>
-  {({ hover, active, focus }) => {
-    //   hover: boolean,
-    //   active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
-    //   focus: 'focusFromMouse' | 'focusFromTouch' | 'focusFromKey' | false,
-    ...
-    // must return something that React can render
-  }}
-</Interactive>
+import { Interactive } from 'react-interactive';
+
+const App = () => (
+  <Interactive as="div" tabIndex={0}>
+    {({ hover, active, focus }) => {
+      // hover: boolean,
+      // active: 'mouseActive' | 'touchActive' | 'keyActive' | false,
+      // focus: 'focusFromMouse' | 'focusFromTouch' | 'focusFromKey' | false,
+      // ...
+      // must return something that React can render
+      return `Current state - active: ${active}, hover: ${hover}, focus: ${focus}`;
+    }}
+  </Interactive>
+);
 ```
 
 ---
@@ -393,6 +413,7 @@ Default value: `false`
 By default React Interactive only stays in the `touchActive` state while a `click` event (from the touch interaction) is still possible. To remain in the `touchActive` state for as long as the touch point is on the screen, pass in the `useExtendedTouchActive` prop. This can be useful for implementing functionality such as show on `touchActive`, long press, etc.
 
 Note that anchor tags, `<a>`, on touch devices have their own device/browser specific behavior for long press (context/callout menu, dragging, etc). If you need to disable the native behavior for long press of links you can:
+
 - Set a `onContextMenu` event listener and call `preventDefault()`, to prevent the context menu from appearing.
 - Set `-webkit-touch-callout: none` style to prevent the iOS "context menu" from appearing (iOS doesn't support `contextmenu` events).
 - Set `draggable="false"` on the `<a>` element (by passing it in as a prop).
@@ -413,11 +434,11 @@ React Interactive supports both object refs created with `React.useRef()` and ca
 
 React Interactive exports a `createInteractive(as)` function that returns a fully typed `<Interactive>` component with the `as` prop predefined.
 
-This is the same as wrapping `<Interactive>` and passing through props like `<Interactive {...props} as={SomeAs} ref={ref} />`, but by the time you add ref forwarding and typing this can become verbose, and it may be something you need to do frequently in your app. So React Interactive provides a `createInteractive` convenience function that makes extending `<Interactive>` quick and easy.
+This is the same as wrapping `<Interactive>` and passing through props like `const MyWrappedInteractive = (props) => <Interactive {...props} as={SomeAs} ref={ref} />`, but by the time you add ref forwarding and typing this can become verbose, and it may be something you need to do frequently in your app. So React Interactive provides a `createInteractive` convenience function that makes extending `<Interactive>` quick and easy.
 
 Also, some commonly used DOM elements are available using `Interactive.Tagname`, for example `Interactive.Button`, to make things even easier (they are created using `createInteractive('tagname')`).
 
-You can use the predefined `as` components with JSX (instead of using the `as` prop), or you can use them with CSS-in-JS libraries and other polymorphic components to avoid `as` prop conflicts. For more see [Extending the `<Interactive>` component
+You can use components with the `as` prop predefined with JSX (instead of using the `as` prop), or you can use them with CSS-in-JS libraries and other polymorphic components to avoid `as` prop conflicts (this is where they are most useful). For more see [Extending the `<Interactive>` component
 ](#extending-the-interactive-component).
 
 ```js
@@ -454,30 +475,27 @@ The `eventFrom(event)` function takes a browser event and returns 1 of 3 strings
 import * as React from 'react';
 import { Interactive, eventFrom } from 'react-interactive';
 
-...
+const App = () => {
+  const handleClickEvent = React.useCallback((e) => {
+    switch (eventFrom(e)) {
+      case 'mouse':
+        // click event from mouse
+        break;
+      case 'touch':
+        // click event from touch
+        break;
+      case 'key':
+        // click event from key
+        break;
+    }
+  }, []);
 
-const handleClickEvent = React.useCallback((e) => {
-  switch (eventFrom(e)) {
-    case 'mouse':
-      // click event from mouse
-      break;
-    case 'touch':
-      // click event from touch
-      break;
-    case 'key':
-      // click event from key
-      break;
-  }
-}, []);
-
-...
-
-<Interactive
-  as="button"
-  onClick={handleClickEvent}
->
-  My Button
-</Interactive>
+  return (
+    <Interactive as="button" onClick={handleClickEvent}>
+      My Button
+    </Interactive>
+  );
+};
 ```
 
 ### `setEventFrom(inputType)`
@@ -490,28 +508,31 @@ This is useful when manually generating events. For example, when calling `focus
 import * as React from 'react';
 import { Interactive, setEventFrom } from 'react-interactive';
 
-...
+const App = () => {
+  const myButtonRef = React.useRef(null);
 
-const myButtonRef = React.useRef(null);
+  const focusInteractiveButton = React.useCallback(() => {
+    if (myButtonRef.current) {
+      // so the <Interactive> component will enter the focusFromKey state
+      setEventFrom('key');
+      myButtonRef.current.focus();
+    }
+  }, []);
 
-// called from someplace else in your code
-const focusButton = () => {
-  if (myButtonRef.current) {
-    // so the <Interactive> component will enter the focusFromKey state
-    setEventFrom('key');
-    myButtonRef.current.focus()
-  }
+  return (
+    <>
+      <button onClick={focusInteractiveButton}>Focus "My button"</button>
+
+      <Interactive
+        as="button"
+        ref={myButtonRef}
+        focusFromKeyStyle={{ outline: '2px solid green' }}
+      >
+        My Button
+      </Interactive>
+    </>
+  );
 };
-
-...
-
-<Interactive
-  as="button"
-  ref={myButtonRef}
-  focusFromKeyStyle={{ outline: '2px solid green' }}
->
-  My Button
-</Interactive>
 ```
 
 ---
@@ -521,12 +542,16 @@ const focusButton = () => {
 React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of its own props and the props that the `as` prop accepts. Live TypeScript examples are available in [TypeScriptExamples.tsx](https://github.com/rafgraph/react-interactive/blob/main/demo/src/other/TypeScriptExamples.tsx) in the demo app.
 
 ```ts
-<Interactive
-  as="a" // render as an anchor link
-  href="https://rafgraph.dev" // TS knows href is a string b/c as="a"
->
-  My Link
-</Interactive>
+import { Interactive } from 'react-interactive';
+
+const App = () => (
+  <Interactive
+    as="a" // render as an anchor link
+    href="https://rafgraph.dev" // TS knows href is a string b/c as="a"
+  >
+    My Link
+  </Interactive>
+);
 ```
 
 ---
@@ -571,35 +596,31 @@ import {
   InteractiveStateChange,
 } from 'react-interactive';
 
-...
+const App = () => {
+  // use the InteractiveStateChange type to type the argument
+  // passed to the onStateChange callback
+  const handleInteractiveStateChange = React.useCallback(
+    ({ state, prevState }: InteractiveStateChange) => {
+      // ...
+    },
+    [],
+  );
 
-// use the InteractiveStateChange type to type the argument
-// passed to the onStateChange callback
-const handleInteractiveStateChange = React.useCallback(
-  ({ state, prevState }: InteractiveStateChange) => {
-    // ...
-  },
-  [],
-);
+  // use the InteractiveState type to type the argument
+  // passed to children (when children is a function)
+  const childrenAsAFunction = React.useCallback(
+    ({ hover, active, focus }: InteractiveState) => {
+      // ...
+    },
+    [],
+  );
 
-// use the InteractiveState type to type the argument
-// passed to children (when children is a function)
-const childrenAsAFunction = React.useCallback(
-  ({ hover, active, focus }: InteractiveState ) => (
-    // ...
-  ),
-  []
-);
-
-...
-
-<Interactive
-  as="button"
-  onStateChange={handleInteractiveStateChange}
->
-  {childrenAsAFunction}
-</Interactive>
-
+  return (
+    <Interactive as="button" onStateChange={handleInteractiveStateChange}>
+      {childrenAsAFunction}
+    </Interactive>
+  );
+};
 ```
 
 ---
@@ -616,19 +637,21 @@ import { Interactive, InteractiveProps } from 'react-interactive';
 const propsForInteractiveButton: InteractiveProps<'button'> = {
   as: 'button',
   type: 'submit', // button specific prop
-  ...
+  // ...
 };
 
 // for as={Component} use InteractiveProps<typeof Component>
 const propsForInteractiveAsComponent: InteractiveProps<typeof Component> = {
   as: Component,
-  ...
+  // ...
 };
 
-...
-
-<Interactive {...propsForInteractiveButton} />
-<Interactive {...propsForInteractiveAsComponent} />
+const App = () => (
+  <>
+    <Interactive {...propsForInteractiveButton} />
+    <Interactive {...propsForInteractiveAsComponent} />
+  </>
+);
 ```
 
 ---
