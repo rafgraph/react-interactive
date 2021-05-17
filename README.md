@@ -25,6 +25,12 @@ Code is in the [`/demo`](/demo) folder, or open the [demo in CodeSandbox](https:
 
 ## Basics
 
+[Install](#install), [`as` prop](#polymorphic-as-prop), [Interactive state](#interactive-state), [CSS](#styling-with-css), [CSS-in-JS](#styling-with-css-in-js), [Inline styles](#styling-with-inline-styles), [Interactive state changes](#reacting-to-interactive-state-changes), [Interactive state in `children`](#using-the-interactive-state-in-children), [Extending `<Interactive>`](#extending-the-interactive-component)
+
+---
+
+### Install
+
 ```shell
 npm install --save react-interactive
 ```
@@ -538,6 +544,12 @@ const App = () => {
 ---
 
 ## Using with TypeScript
+
+[Basics](#typescript-basics), [Exported `types`](#exported-types-from-react-interactive), [`onStateChange` callback and `children` as a function](#typing-onstatechange-callback-and-children-as-a-function), [Props passed to `<Interactive>`](#typing-props-passed-to-interactive), [Components that wrap `<Interactive>`](#typing-components-that-wrap-interactive)
+
+---
+
+### TypeScript Basics
 
 React Interactive is fully typed, including the polymorphic `as` prop. The props that an `<Interactive>` component accepts are a union of its own props and the props that the `as` prop accepts. Live TypeScript examples are available in [TypeScriptExamples.tsx](https://github.com/rafgraph/react-interactive/blob/main/demo/src/other/TypeScriptExamples.tsx) in the demo app.
 
