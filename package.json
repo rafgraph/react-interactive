@@ -1,6 +1,6 @@
 {
   "name": "react-interactive",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Better hover, active and focus states than CSS pseudo-classes, and a callback when the interactive state changes.",
   "main": "dist/react-interactive.cjs.js",
   "module": "dist/react-interactive.esm.js",
