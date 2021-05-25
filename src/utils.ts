@@ -61,7 +61,22 @@ export const classNameToString = (className: any) =>
 // to prevent the browser from selecting text on long touch
 // note that it needs to be set on the body not the RI element
 // because iOS will still select nearby text
-export const setUserSelectOnBody = (value: 'none' | ''): void => {
-  document.body.style.userSelect = value;
-  document.body.style.webkitUserSelect = value;
+let pendingUserSelectReset = false;
+
+export const setUserSelectNone = (): void => {
+  pendingUserSelectReset = false;
+  document.body.style.userSelect = 'none';
+  document.body.style.webkitUserSelect = 'none';
+};
+
+export const resetUserSelect = (): void => {
+  pendingUserSelectReset = true;
+  // use setTimeout delay for reset because iOS will select text shortly after touch end
+  // when the touch end event occurs near the time that iOS would normally select text
+  window.setTimeout(() => {
+    if (pendingUserSelectReset) {
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
+    }
+  }, 250);
 };

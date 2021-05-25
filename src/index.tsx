@@ -7,7 +7,8 @@ import {
   cursorPointer,
   elementSupportsDisabled,
   classNameToString,
-  setUserSelectOnBody,
+  setUserSelectNone,
+  resetUserSelect,
 } from './utils';
 import {
   PolymorphicForwardRefExoticComponent,
@@ -666,8 +667,8 @@ const InteractiveNotMemoized: PolymorphicForwardRefExoticComponent<
   // because iOS will still select nearby text if it is only set on the element
   React.useEffect(() => {
     if (inTouchActiveState && useExtendedTouchActive) {
-      setUserSelectOnBody('none');
-      return () => setUserSelectOnBody('');
+      setUserSelectNone();
+      return resetUserSelect;
     }
     return;
   }, [inTouchActiveState, useExtendedTouchActive]);
